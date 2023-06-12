@@ -1,0 +1,36 @@
+# Time variables ------------------------------------------------------------------------
+IDLE_TIME: 300  # Time without interaction before considered idle
+IDLE_CHECK_INTERVAL: 5   # Time between checking for idle
+ACTIVITY_CHECK_INTERVAL: 1  # Time between checking for interaction
+MINIMUM_ACTIVITY_TIME: 60  # Minimum time for activity to show in cards
+UNRESPONSIVE_THRESHOLD: 5  # Minimum time without backend update before server restart
+RETRY_ATTEMPS: 5  # Retry attempts for various IO operations
+
+# Sizes ---------------------------------------------------------------------------------
+CATEGORY_HEIGHT: 300  # Size of categories graph
+CATEGORY_FONT_SIZE: 25  # Font size of hour text
+DIVISION_PADDING: 10  # Space between sections
+SIDE_PADDING: 20  # Space between sections and the side of the page
+TROUBLESHOOTING_HEIGHT: 900  # Size of troubleshooting page's graph
+
+# Colors --------------------------------------------------------------------------------
+BACKGROUND: "#1E1E1E"
+TEXT_COLOR: "#FFFFFF" 
+CATEGORY_COLORS:
+- "#FFCCCC"  # Neutral
+- "#AA00FF"  # Personal
+- "#AAAAFF"  # Work
+
+# Path for files ------------------------------------------------------------------------
+DATA_PATH: 'data/'
+URLS_PATH: "C:/Users/pedro/Downloads/EXTENSION/"
+
+# Process names to hide info
+HIDDEN_APPS:
+- 'firefox.exe'
+- 'mpc-hc64.exe'
+- 'explorer.exe'
+
+# Process names to consider fullscreen as non-idle activity
+FULLSCREEN_APPS:
+- 'sandrock.exe'

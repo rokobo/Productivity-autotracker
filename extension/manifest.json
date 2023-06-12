@@ -1,0 +1,9 @@
+{
+    "manifest_version": 2,
+    "name": "Autodownload URLs",
+    "description": "Downloads a file that contains the tab's title and URL every time there is a URL change, tab close or new tab open.",
+    "version": "5.5",
+    "background": {"scripts": ["background.js"], "persistent": true},
+    "permissions": ["tabs", "downloads", "downloads.shelf"],
+    "icons": {"1280": "icon.png"}
+}

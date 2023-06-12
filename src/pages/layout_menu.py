@@ -1,0 +1,23 @@
+"""Menu component layout."""
+import dash_bootstrap_components as dbc
+
+menu_items = [
+    dbc.DropdownMenuItem("Productivity pages", header=True),
+    dbc.DropdownMenuItem("Dashboard page", href="/"),
+    dbc.DropdownMenuItem(divider=True),
+    dbc.DropdownMenuItem("Analytics pages", header=True),
+    dbc.DropdownMenuItem(divider=True),
+    dbc.DropdownMenuItem("Troubleshooting pages", header=True),
+    dbc.DropdownMenuItem("Activity table", href="/activity"),
+    dbc.DropdownMenuItem("Categories table", href="/categories"),
+    dbc.DropdownMenuItem("Input tables", href="/inputs")
+]
+
+layout = dbc.Col(dbc.DropdownMenu(
+    label="Pages",
+    nav=True,
+    size="lg",
+    menu_variant="dark",
+    children=menu_items,
+    style={"fontSize": "20px"}
+), width='auto')

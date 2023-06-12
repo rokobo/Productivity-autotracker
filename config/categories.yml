@@ -1,0 +1,62 @@
+# Application names (regex) -------------------------------------------------------------
+WORK_APPS: 
+- 'terminal\.exe'
+- 'code\.exe'
+- 'notion\.exe'
+- 'windowsterminal\.exe'
+- 'githubdesktop\.exe'
+- 'notepad\.exe'
+PERSONAL_APPS: 
+- 'applicationframehost\.exe'
+- 'signal\.exe'
+- 'discord\.exe'
+- 'steam\.exe'
+- 'mpc-hc64\.exe'
+- 'explorer\.exe'
+- 'firefox\.exe'
+- 'sandrock\.exe'
+- 'digikam\.exe'
+- 'cheatengine'
+
+# Domain names (regex) ------------------------------------------------------------------
+WORK_DOMAINS:
+- 'localhost:\d+'
+- 'openai'
+- 'dash-bootstrap-components'
+- 'file:\/\/'
+- 'stackoverflow'
+- 'edx\.org'
+- 'coursera\.org'
+- 'desmos\.com'
+- 'support\.google'
+- 'github'
+- 'pytest\.org'
+- 'visualstudio\.com'
+- '.*\.pycqa\.org'
+- 'regex'
+- 'pandas\.pydata'
+- 'w3schools'
+- 'python\.'
+- 'sql'
+- 'geeksforgeeks'
+- 'gitguardian'
+PERSONAL_DOMAINS:
+- 'youtube'
+- 'mercadolivre'
+- 'hbomax'
+
+# Window title keywords (regex) ---------------------------------------------------------
+WORK_KEYWORDS:
+- 'pandas'
+- 'plotly'
+- 'dash'
+- 'datascience'
+- 'dash-bootstrap'
+- 'python'
+- 'algorithm'
+- 'katex'
+- '\.pdf'
+- 'code'
+- 'debug'
+PERSONAL_KEYWORDS:
+- 'episode'

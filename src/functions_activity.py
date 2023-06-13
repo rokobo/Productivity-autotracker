@@ -184,7 +184,7 @@ def join(dataframe: pd.DataFrame) -> None:
         # Check if merge should be done
         same_event = all(activity.iloc[0, 2:9] == dataframe.iloc[0, 2:9])
         not_idle = (
-            time.time() - activity.loc[0, 'end_time']) < cfg['IDLE_TIME']
+            int(time.time()) - activity.loc[0, 'end_time']) < cfg['IDLE_TIME']
         if not_idle:
             if same_event:  # Join to last event
                 activity.loc[0, 'end_time'] = dataframe.loc[0, 'end_time']
@@ -326,5 +326,5 @@ def parser(save_files: bool = True) -> tuple[pd.DataFrame]:
         save_dataframe(grouped_dataframe, 'totals')
 
     # Update last time since backend update
-    save_dataframe(pd.DataFrame({'time': [time.time()]}), 'backend')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'backend')
     return categorized_dataframe, grouped_dataframe

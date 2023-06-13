@@ -38,7 +38,7 @@ if __name__ == '__main__':
             time.sleep(cfg['IDLE_CHECK_INTERVAL'] * 5)
 
             # Restart all threads if server is unresponsive
-            while (time.time() - load_input_time('backend')) < threshold:
+            while (int(time.time()) - load_input_time('backend')) < threshold:
                 time.sleep(3)
             raise RuntimeError
 

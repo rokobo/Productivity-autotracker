@@ -135,7 +135,7 @@ def update_category(_1):
 def update_element_list(_1):
     """Generates the event cards."""
     _, dataframe = load_dataframe('categories')
-    save_dataframe(pd.DataFrame({'time': [time.time()]}), 'frontend')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')
     return generate_cards(dataframe)
 
 
@@ -145,26 +145,21 @@ def update_element_list(_1):
 )
 def update_info_row(_1):
     """Makes time since last update row."""
-    backend = "Backend: "
-    fronent = "Frontend: "
-    mouse = "Mouse: "
-    keyboard = "Keyboard: "
-    audio = "Audio: "
-    fullscreen = "Fullscreen: "
-    now = time.time()
-    backend += format_short_duration(now - load_input_time('backend'))
-    fronent += format_short_duration(now - load_input_time('frontend'))
-    mouse += format_short_duration(now - load_input_time('mouse'))
-    keyboard += format_short_duration(now - load_input_time('keyboard'))
-    audio += format_short_duration(now - load_input_time('audio'))
-    fullscreen += format_short_duration(now - load_input_time('fullscreen'))
+    now = int(time.time())
+    backend = format_short_duration(now - load_input_time('backend'))
+    frontend = format_short_duration(now - load_input_time('frontend'))
+    mouse = format_short_duration(now - load_input_time('mouse'))
+    keyboard = format_short_duration(now - load_input_time('keyboard'))
+    audio = format_short_duration(now - load_input_time('audio'))
+    fullscreen = format_short_duration(now - load_input_time('fullscreen'))
+    style = {'margin': '0px'}
     row = dbc.Row([
-        dbc.Col(html.H5(backend), style={'margin': '0px'}),
-        dbc.Col(html.H5(fronent), style={'margin': '0px'}),
-        dbc.Col(html.H5(mouse), style={'margin ': '0px'}),
-        dbc.Col(html.H5(keyboard), style={'margin  ': '0px'}),
-        dbc.Col(html.H5(audio), style={'margin ': '0px'}),
-        dbc.Col(html.H5(fullscreen), style={'margin ': '0px'})
+        dbc.Col([html.H5("Backend"), html.H5(backend)], style=style),
+        dbc.Col([html.H5("Fronent"), html.H5(frontend)], style=style),
+        dbc.Col([html.H5("Mouse"), html.H5(mouse)], style=style),
+        dbc.Col([html.H5("Keyboard"), html.H5(keyboard)], style=style),
+        dbc.Col([html.H5("Audio"), html.H5(audio)], style=style),
+        dbc.Col([html.H5("Fullscreen"), html.H5(fullscreen)], style=style)
     ])
     return row
 

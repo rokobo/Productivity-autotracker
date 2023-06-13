@@ -7,7 +7,6 @@ WORK_APPS:
 - 'githubdesktop\.exe'
 - 'notepad\.exe'
 PERSONAL_APPS: 
-- 'applicationframehost\.exe'
 - 'signal\.exe'
 - 'discord\.exe'
 - 'steam\.exe'
@@ -40,6 +39,11 @@ WORK_DOMAINS:
 - 'sql'
 - 'geeksforgeeks'
 - 'gitguardian'
+- 'ubuntu'
+- 'learn'
+- 'microsoft'
+- 'readthedocs'
+- 'python'
 PERSONAL_DOMAINS:
 - 'youtube'
 - 'mercadolivre'
@@ -60,3 +64,4 @@ WORK_KEYWORDS:
 - 'debug'
 PERSONAL_KEYWORDS:
 - 'episode'
+- 'whatsapp'

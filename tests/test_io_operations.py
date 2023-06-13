@@ -6,7 +6,7 @@ import shutil
 import pandas as pd
 from helper_io import save_dataframe, load_dataframe, load_input_time,\
     clean_and_select_newest_url, load_urls, load_config, load_lastest_row, \
-    modify_latest_row, append_to_database
+    modify_latest_row, append_to_database, load_activity_between
 
 cfg = load_config()
 
@@ -131,6 +131,41 @@ def test_append_to_database() -> None:
 
     # Clean files
     path = os.path.join(cfg["WORKSPACE"], f'{cfg["DATA_PATH"]}__test5__.db')
+    os.remove(path)
+
+
+def test_load_activity_between() -> None:
+    """Tests the load_activity_between function."""
+    dataframe = pd.DataFrame({'start_time': [2], 'end_time': [3]})
+    save_dataframe(dataframe, '__test6__')
+    _, loaded_dataframe = load_activity_between(1, 9, '__test6__')
+    assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
+    _, loaded_dataframe = load_activity_between(2, 9, '__test6__')
+    assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
+    _, loaded_dataframe = load_activity_between(1, 3, '__test6__')
+    assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
+    _, loaded_dataframe = load_activity_between(2, 3, '__test6__')
+    assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
+
+    dataframe = pd.DataFrame({'start_time': [2, 4, 3], 'end_time': [3, 5, 4]})
+    save_dataframe(dataframe, '__test6__')
+    _, loaded_dataframe = load_activity_between(1, 9, '__test6__')
+    assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
+
+    dataframe = pd.DataFrame({'start_time': [4, 3], 'end_time': [5, 4]})
+    _, loaded_dataframe = load_activity_between(3, 9, '__test6__')
+    assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
+
+    dataframe = pd.DataFrame({'start_time': [2, 3], 'end_time': [3, 4]})
+    _, loaded_dataframe = load_activity_between(2, 4, '__test6__')
+    assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
+
+    dataframe = pd.DataFrame({'start_time': [4], 'end_time': [5]})
+    _, loaded_dataframe = load_activity_between(4, 9, '__test6__')
+    assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
+
+    # Clean files
+    path = os.path.join(cfg["WORKSPACE"], f'{cfg["DATA_PATH"]}__test6__.db')
     os.remove(path)
 
 

@@ -120,6 +120,43 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
         environment=locals())
 
 
+def load_activity_between(
+        start: int, end: int, name: str = "activity"
+        ) -> tuple[bool, pd.DataFrame]:
+    """
+    Loads events in activity database between the start and end timestamp.
+
+    Args:
+        start (int): start timestamp.
+        end (int): end timestamp.
+
+    Returns:
+        bool: True if dataframe is accessible and has data.
+        pd.DataFrame: Accessed dataframe.
+        name (str, optional): database name. Defaults to "activity".
+    """
+    # Check if file does not exists
+    path = os.path.join(cfg["WORKSPACE"], f'{cfg["DATA_PATH"]}{name}.db')
+    dataframe = pd.DataFrame({})
+    if not os.path.exists(path):
+        return False, dataframe
+
+    # Access database
+    retries = cfg['RETRY_ATTEMPS']
+    dataframe = try_to_run(
+        var='dataframe',
+        code='conn = sql.connect(path)\
+            \nconn.execute("BEGIN EXCLUSIVE")\
+            \ndataframe = pd.read_sql(\
+                f"SELECT *, rowid FROM {name}\
+                    WHERE start_time >= {start} AND end_time <= {end}", conn)',
+        error_check='',
+        final_code='conn.close()',
+        retries=retries,
+        environment=locals())
+    return not dataframe.empty, dataframe
+
+
 def load_dataframe(name: str) -> tuple[bool, pd.DataFrame]:
     """
     Check if DataFrame is empty and

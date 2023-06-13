@@ -15,7 +15,7 @@ from helper_server import format_long_duration
 from helper_retry import try_to_run
 from helper_io import load_dataframe, load_input_time, append_to_database, \
     save_dataframe, load_urls, clean_and_select_newest_url, load_config, \
-    load_lastest_row, modify_latest_row
+    load_lastest_row, modify_latest_row, load_activity_between
 
 cfg = load_config()
 
@@ -157,11 +157,10 @@ def parse_data(data: tuple[int, str, int, int, str, str, str]) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Dataframe with parsed data.
     """
-    sections = data[1].split(" - ")
     parsed = {
         'start_time': [data[0]],
         'end_time': [data[0]],
-        'app': [sections[-1]],
+        'app': [data[1].split(" - ")[-1]],
         'info': [data[1]],
         'handle': data[2],
         'pid': data[3],
@@ -199,21 +198,16 @@ def join(dataframe: pd.DataFrame) -> None:
             append_to_database('activity', dataframe)
 
 
-def organize_by_date(dataframe: pd.DataFrame) -> pd.DataFrame:
+def organize_by_date() -> pd.DataFrame:
     """
-    Filters dataframe to get events between two dates stored in date.db.
-
-    Args:
-        dataframe (pd.DataFrame): Given dataframe.
+    Filters activity database to get events between timestamps in date.db.
 
     Returns:
         pd.DataFrame: Filtered dataframe.
     """
     _, date_range = load_dataframe('date')
     start, end = date_range.iloc[0, 0:2]
-    filtered_df = dataframe[
-        (dataframe['start_time'] >= start) &
-        (dataframe['end_time'] <= end)]
+    _, filtered_df = load_activity_between(start, end)
     return filtered_df
 
 
@@ -320,8 +314,7 @@ def parser(save_files: bool = True) -> tuple[pd.DataFrame]:
     join(parsed_data)
 
     # Make secondary file containing aggregated entries
-    _, activity = load_dataframe('activity')
-    dated_dataframe = organize_by_date(activity)
+    dated_dataframe = organize_by_date()
     categorized_dataframe = categories_sum(dated_dataframe)
 
     # Make third file containing total by category

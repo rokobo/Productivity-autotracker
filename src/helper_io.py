@@ -277,11 +277,11 @@ def clean_and_select_newest_url(
     # Check path exists
     if not os.path.exists(path):
         return True, ""
-    path += "*.txt"
 
+    path += "*.txt"
     files = glob.glob(path)
-    # Using creation time here leads to errors
-    newest_file = max(files, key=os.path.getmtime)
+    newest_file = max(files, key=os.path.getmtime)  # getctime leads to errors
+
     for file in files:
         if file != newest_file:
             os.remove(file)

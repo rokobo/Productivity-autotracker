@@ -47,12 +47,8 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
 
     process_name = try_to_run(
         var='process_name',
-        code='process_name = ""\
-            \nprocesses = process_iter()\
-            \nfor process in processes:\
-            \n    if process.pid == pid:\
-            \n        process_name = process.name()',
-        error_check='processes == ""',
+        code='process_name = Process(pid).name()',
+        error_check='process_name == ""',
         final_code='',
         retries=retries,
         environment=locals())

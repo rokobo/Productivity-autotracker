@@ -7,7 +7,7 @@ import sqlite3 as sql
 import pandas as pd
 from win32com.client import GetObject
 from win32gui import GetForegroundWindow
-from psutil import process_iter
+from psutil import process_iter, Process
 
 
 def try_to_run(var: str, code: str, error_check: str, final_code: str,

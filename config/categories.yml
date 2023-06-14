@@ -48,6 +48,7 @@ PERSONAL_DOMAINS:
 - 'youtube'
 - 'mercadolivre'
 - 'hbomax'
+- 'tv\.apple'
 
 # Window title keywords (regex) ---------------------------------------------------------
 WORK_KEYWORDS:

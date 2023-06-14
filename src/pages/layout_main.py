@@ -154,12 +154,12 @@ def update_info_row(_1):
     fullscreen = format_short_duration(now - load_input_time('fullscreen'))
     style = {'margin': '0px'}
     row = dbc.Row([
-        dbc.Col([html.H5("Backend"), html.H5(backend)], style=style),
-        dbc.Col([html.H5("Fronent"), html.H5(frontend)], style=style),
-        dbc.Col([html.H5("Mouse"), html.H5(mouse)], style=style),
-        dbc.Col([html.H5("Keyboard"), html.H5(keyboard)], style=style),
-        dbc.Col([html.H5("Audio"), html.H5(audio)], style=style),
-        dbc.Col([html.H5("Fullscreen"), html.H5(fullscreen)], style=style)
+        dbc.Col([html.H4("Backend"), html.H5(backend)], style=style),
+        dbc.Col([html.H4("Fronent"), html.H5(frontend)], style=style),
+        dbc.Col([html.H4("Mouse"), html.H5(mouse)], style=style),
+        dbc.Col([html.H4("Keyboard"), html.H5(keyboard)], style=style),
+        dbc.Col([html.H4("Audio"), html.H5(audio)], style=style),
+        dbc.Col([html.H4("Fullscreen"), html.H5(fullscreen)], style=style)
     ])
     return row
 

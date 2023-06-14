@@ -5,10 +5,10 @@ Collection of helper functions for input and output rountines.
 # pylint: disable=unused-argument, import-error
 import os
 import glob
+from threading import Thread
 import pandas as pd
 import yaml
 from helper_retry import try_to_run
-from threading import Thread
 
 
 def load_config() -> dict[str, any]:
@@ -297,7 +297,7 @@ def clean_and_select_newest_url(
     newest_file = max(files, key=os.path.getmtime)  # getctime leads to errors
 
     threads = [
-        Thread(target=os.remove, args=(file,)) 
+        Thread(target=os.remove, args=(file,))
         for file in files if file != newest_file]
 
     for thread in threads:

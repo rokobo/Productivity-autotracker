@@ -62,7 +62,6 @@ def load_lastest_row(name: str) -> tuple[bool, pd.DataFrame]:
     dataframe = try_to_run(
         var='dataframe',
         code='conn = sql.connect(path)\
-            \nconn.execute("BEGIN EXCLUSIVE")\
             \ndataframe = pd.read_sql(\
                 f"SELECT *, rowid FROM {name}\
                     ORDER BY rowid DESC LIMIT 1", conn)',
@@ -160,7 +159,6 @@ def load_activity_between(
     dataframe = try_to_run(
         var='dataframe',
         code='conn = sql.connect(path)\
-            \nconn.execute("BEGIN EXCLUSIVE")\
             \ndataframe = pd.read_sql(\
                 f"SELECT *, rowid FROM {name}\
                     WHERE start_time >= {start} AND end_time <= {end}", conn)',
@@ -190,7 +188,6 @@ def load_dataframe(name: str) -> tuple[bool, pd.DataFrame]:
     dataframe = try_to_run(
         var='dataframe',
         code='conn = sql.connect(path)\
-            \nconn.execute("BEGIN EXCLUSIVE")\
             \ndataframe = pd.read_sql(f"SELECT *, rowid FROM {name}", conn)',
         error_check='',
         final_code='conn.close()',

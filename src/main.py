@@ -1,7 +1,7 @@
 """
 Main runner file for the Dash app and its background processes.
 """
-import threading
+from threading import Thread
 import time
 from helper_io import load_input_time, load_config
 from functions_threads import mouse_idle_detector, keyboard_idle_detector, \
@@ -12,24 +12,24 @@ if __name__ == '__main__':
     while True:
         try:
             # Background detection threads
-            mouse_thread = threading.Thread(target=mouse_idle_detector)
+            mouse_thread = Thread(target=mouse_idle_detector)
             mouse_thread.daemon = True
             mouse_thread.start()
 
-            keyboard_thread = threading.Thread(target=keyboard_idle_detector)
+            keyboard_thread = Thread(target=keyboard_idle_detector)
             keyboard_thread.daemon = True
             keyboard_thread.start()
 
-            audio_thread = threading.Thread(target=audio_idle_detector)
+            audio_thread = Thread(target=audio_idle_detector)
             audio_thread.daemon = True
             audio_thread.start()
 
-            activity_thread = threading.Thread(target=activity_detector)
+            activity_thread = Thread(target=activity_detector)
             activity_thread.daemon = True
             activity_thread.start()
 
             # Dash server thread
-            server_thread = threading.Thread(target=server_supervisor)
+            server_thread = Thread(target=server_supervisor)
             server_thread.daemon = True
             server_thread.start()
 

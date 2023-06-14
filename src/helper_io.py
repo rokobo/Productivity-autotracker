@@ -8,6 +8,7 @@ import glob
 import pandas as pd
 import yaml
 from helper_retry import try_to_run
+from threading import Thread
 
 
 def load_config() -> dict[str, any]:
@@ -26,6 +27,19 @@ def load_config() -> dict[str, any]:
 
 
 cfg = load_config()
+
+
+def load_categories() -> dict[str, any]:
+    """
+    Loads the categories configuration file.
+
+    Returns:
+        dict[str, any]: Dictionary config file.
+    """
+    config_path = os.path.join(cfg["WORKSPACE"], "config/categories.yml")
+    with open(config_path, 'r', encoding='utf-8') as categories_file:
+        categories = yaml.safe_load(categories_file)
+    return categories
 
 
 def load_lastest_row(name: str) -> tuple[bool, pd.DataFrame]:
@@ -282,7 +296,10 @@ def clean_and_select_newest_url(
     files = glob.glob(path)
     newest_file = max(files, key=os.path.getmtime)  # getctime leads to errors
 
-    for file in files:
-        if file != newest_file:
-            os.remove(file)
+    threads = [
+        Thread(target=os.remove, args=(file,)) 
+        for file in files if file != newest_file]
+
+    for thread in threads:
+        thread.start()
     return False, newest_file

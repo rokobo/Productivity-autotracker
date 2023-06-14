@@ -4,18 +4,20 @@ Updates DataFrame with current activity.
 # pylint: disable=protected-access, broad-exception-caught
 # pylint: disable=c-extension-no-member, import-error, no-name-in-module
 import time
+from threading import Thread
 from ctypes import windll
 from urllib.parse import urlparse
+from concurrent.futures import ThreadPoolExecutor, wait
 from win32gui import GetWindowText, GetWindowRect
 from win32process import GetWindowThreadProcessId
 import pandas as pd
 import numpy as np
-import yaml
 from helper_server import format_long_duration
 from helper_retry import try_to_run
 from helper_io import load_dataframe, load_input_time, append_to_database, \
     save_dataframe, load_urls, clean_and_select_newest_url, load_config, \
-    load_lastest_row, modify_latest_row, load_activity_between
+    load_lastest_row, modify_latest_row, load_activity_between,\
+    load_categories
 
 cfg = load_config()
 
@@ -47,7 +49,8 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
 
     process_name = try_to_run(
         var='process_name',
-        code='process_name = Process(pid).name()',
+        code='process_name = ""\
+            \nprocess_name = Process(pid).name()',
         error_check='process_name == ""',
         final_code='',
         retries=retries,
@@ -60,7 +63,8 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
         url, domain = match_to_url(title)
     else:
         # Clean url files (clutters if this is not done)
-        clean_and_select_newest_url()
+        input_thread = Thread(target=clean_and_select_newest_url)
+        input_thread.start()
 
     # Hide information from apps in HIDDEN_APPS list
     if process_name.lower() in cfg["HIDDEN_APPS"]:
@@ -71,6 +75,8 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
         if detect_fullscreen(handle):
             save_dataframe(
                 pd.DataFrame({'time': [int(time.time())]}), 'fullscreen')
+
+    # Wait for thread finish
     return (int(time.time()), title, handle, pid, process_name, url, domain)
 
 
@@ -130,11 +136,21 @@ def detect_idle() -> tuple[int, str, int, int, str, str, str]:
         tuple[int, str, int, int, str, str]: Idle raw data or empty tuple.
     """
     now = int(time.time())
-    mouse_time = now - load_input_time('mouse')
-    keyboard_time = now - load_input_time('keyboard')
-    audio_time = now - load_input_time('audio')
-    fullscreen_time = now - load_input_time('fullscreen')
-    idle_time = min(mouse_time, keyboard_time, audio_time, fullscreen_time)
+
+    # Access all input times concurrently
+    executor = ThreadPoolExecutor(max_workers=4)
+    mouse_time = executor.submit(load_input_time, 'mouse')
+    keyboard_time = executor.submit(load_input_time, 'keyboard')
+    audio_time = executor.submit(load_input_time, 'audio')
+    fullscreen_time = executor.submit(load_input_time, 'fullscreen')
+
+    wait([mouse_time, keyboard_time, audio_time, fullscreen_time])
+
+    idle_time = min(
+        now - mouse_time.result(),
+        now - keyboard_time.result(),
+        now - audio_time.result(),
+        now - fullscreen_time.result())
 
     if idle_time > cfg['IDLE_TIME']:
         return (now, "Time not counted", -1, -1, "IDLE TIME", "", "")
@@ -207,21 +223,18 @@ def organize_by_date() -> pd.DataFrame:
     return filtered_df
 
 
-def categories_sum(input_dataframe: pd.DataFrame) -> pd.DataFrame:
+def categories_sum(
+        dataframe: pd.DataFrame, cfg2: dict[str, any]) -> pd.DataFrame:
     """
     Generates the sum of time of equivalent rows in the input dataframe.
 
     Args:
-        input_dataframe (pd.DataFrame): Activity dataframe.
+        dataframe (pd.DataFrame): Activity dataframe.
+        cfg2 (dict[str, any]): Categories dictionary.
 
     Returns:
         pd.DataFrame: Aggregated categorized dataframe.
     """
-    dataframe = input_dataframe.copy()
-    config_path = '../config/categories.yml'
-    with open(config_path, 'r', encoding='utf-8') as file:
-        cfg2 = yaml.safe_load(file)
-
     dataframe.loc[
         :, 'duration'] = dataframe['end_time'] - dataframe['start_time']
 
@@ -299,6 +312,12 @@ def parser(save_files: bool = True) -> tuple[pd.DataFrame]:
     Returns:
         tuple[pd.DataFrame]: Dataframes created.
     """
+    # Update backend update time
+    arg = (pd.DataFrame({'time': [int(time.time())]}), 'backend')
+    input_thread = Thread(target=save_dataframe, args=arg)
+    input_thread.daemon = True
+    input_thread.start()
+
     # Get raw data
     raw_data = detect_activity()
     idle_data = detect_idle()
@@ -311,16 +330,20 @@ def parser(save_files: bool = True) -> tuple[pd.DataFrame]:
 
     # Make secondary file containing aggregated entries
     dated_dataframe = organize_by_date()
-    categorized_dataframe = categories_sum(dated_dataframe)
+    cfg2 = load_categories()
+    categorized_dataframe = categories_sum(dated_dataframe, cfg2)
+    if save_files:
+        arg = (categorized_dataframe, 'categories')
+        categories_thread = Thread(target=save_dataframe, args=arg)
+        categories_thread.daemon = True
+        categories_thread.start()
 
     # Make third file containing total by category
     grouped_dataframe = total_by_category(categorized_dataframe)
+    save_dataframe(grouped_dataframe, "totals")
 
-    # Save dataframes
+    # Wait for thread finish
     if save_files:
-        save_dataframe(categorized_dataframe, 'categories')
-        save_dataframe(grouped_dataframe, 'totals')
-
-    # Update last time since backend update
-    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'backend')
+        categories_thread.join()
+    input_thread.join()
     return categorized_dataframe, grouped_dataframe

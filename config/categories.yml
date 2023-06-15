@@ -33,6 +33,7 @@ WORK_DOMAINS:
 - 'visualstudio\.com'
 - '.*\.pycqa\.org'
 - 'regex'
+- 'plotly'
 - 'pandas\.pydata'
 - 'w3schools'
 - 'python\.'
@@ -42,8 +43,8 @@ WORK_DOMAINS:
 - 'ubuntu'
 - 'learn'
 - 'microsoft'
-- 'readthedocs'
 - 'python'
+- 'docs'
 PERSONAL_DOMAINS:
 - 'youtube'
 - 'mercadolivre'
@@ -53,7 +54,6 @@ PERSONAL_DOMAINS:
 # Window title keywords (regex) ---------------------------------------------------------
 WORK_KEYWORDS:
 - 'pandas'
-- 'plotly'
 - 'dash'
 - 'datascience'
 - 'dash-bootstrap'

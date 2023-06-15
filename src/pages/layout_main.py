@@ -100,7 +100,12 @@ layout = html.Div([
                 html.Br(),
             ])],
         id="idle_modal", centered=True, is_open=False
-    )
+    ),
+    dcc.Interval(
+        id='idle_interval',
+        interval=4 * 1000,
+        n_intervals=-1
+    ),
 ])
 
 
@@ -189,7 +194,7 @@ def update_info_row(_1):
 
 @callback(
     Output('idle_modal', 'is_open'),
-    Input('date_reset_interval', 'n_intervals')
+    Input('idle_interval', 'n_intervals')
 )
 def update_modal(_1):
     """Checks if user is idle and shows modal if user is."""

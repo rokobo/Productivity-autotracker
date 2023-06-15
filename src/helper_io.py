@@ -7,6 +7,7 @@ import os
 import time
 import glob
 from threading import Thread
+from notifypy import Notify
 import pandas as pd
 import yaml
 from helper_retry import try_to_run
@@ -24,6 +25,12 @@ def load_config() -> dict[str, any]:
     with open(config_path, 'r', encoding='utf-8') as config_file:
         config = yaml.safe_load(config_file)
     config["WORKSPACE"] = workspace
+    app_name = "Productivity Dashboard - Schedule advisor"
+    config["NOTIFICATION"] = Notify(
+        default_notification_application_name=app_name,
+        default_notification_icon=os.path.join(
+            workspace, "assets\\notification.ico"),
+    )
     return config
 
 
@@ -302,6 +309,8 @@ def clean_and_select_newest_url(
     try:
         for thread in threads:
             thread.start()
+        for thread in threads:
+            thread.join()
     except FileNotFoundError:
         pass
     return False, newest_file
@@ -309,7 +318,7 @@ def clean_and_select_newest_url(
 
 def set_idle():
     """Function that sets all input databases to idle state."""
-    time.sleep(3)
+    time.sleep(4)
     now = int(time.time())
     idle_time = cfg["IDLE_TIME"]
     inputs = ["mouse", "keyboard", "audio", "fullscreen"]
@@ -319,3 +328,20 @@ def set_idle():
         if now - input_dataframe.loc[0, 'time'] < idle_time:
             input_dataframe.loc[0, 'time'] = now - idle_time
             modify_latest_row(input_name, input_dataframe, ['time'])
+
+
+def send_notification(title: str, message: str, audio: str = "notification") -> None:
+    """
+    Sends a desktop notification with the title and message.
+
+    Args:
+        title (str): Title of the notification.
+        message (str): Message of the notification.
+        audio (str): Desired audio to play.
+    """
+    notification = cfg["NOTIFICATION"]
+    notification.title = title
+    notification.message = message
+    notification.audio = os.path.join(
+        cfg["WORKSPACE"], "assets", audio + ".wav")
+    notification.send(block=False)

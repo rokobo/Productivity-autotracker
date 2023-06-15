@@ -4,6 +4,7 @@ Collection of helper functions for input and output rountines.
 # pylint: disable=broad-exception-caught, possibly-unused-variable
 # pylint: disable=unused-argument, import-error
 import os
+import time
 import glob
 from threading import Thread
 import pandas as pd
@@ -183,6 +184,7 @@ def load_dataframe(name: str) -> tuple[bool, pd.DataFrame]:
     dataframe = pd.DataFrame({})
     if not os.path.exists(path):
         return False, dataframe
+
     # Access database
     retries = cfg['RETRY_ATTEMPS']
     dataframe = try_to_run(
@@ -297,6 +299,23 @@ def clean_and_select_newest_url(
         Thread(target=os.remove, args=(file,))
         for file in files if file != newest_file]
 
-    for thread in threads:
-        thread.start()
+    try:
+        for thread in threads:
+            thread.start()
+    except FileNotFoundError:
+        pass
     return False, newest_file
+
+
+def set_idle():
+    """Function that sets all input databases to idle state."""
+    time.sleep(3)
+    now = int(time.time())
+    idle_time = cfg["IDLE_TIME"]
+    inputs = ["mouse", "keyboard", "audio", "fullscreen"]
+
+    for input_name in inputs:
+        input_dataframe = load_lastest_row(input_name)[1]
+        if now - input_dataframe.loc[0, 'time'] < idle_time:
+            input_dataframe.loc[0, 'time'] = now - idle_time
+            modify_latest_row(input_name, input_dataframe, ['time'])

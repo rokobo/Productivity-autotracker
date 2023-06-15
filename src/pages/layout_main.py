@@ -15,8 +15,9 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import layout_menu
 from helper_server import generate_cards, \
     format_short_duration, set_date_range
+from functions_activity import detect_idle
 from helper_io import save_dataframe, load_dataframe, \
-    load_input_time, load_config
+    load_input_time, load_config, set_idle
 
 cfg = load_config()
 
@@ -29,6 +30,15 @@ layout = html.Div([
             id='date_reset_interval',
             interval=30 * 1000,
             n_intervals=-1
+        ),
+        dbc.Col(
+            dbc.Button([
+                    dbc.Spinner(html.Div(id="idle_loading"), size="sm"),
+                    "Set state to idle"
+                ],
+                id="set_idle_button",
+                color="warning", outline=True
+            ), class_name="d-md-flex justify-content-md-end"
         )
     ], style={
         'margin-left': f"{cfg['SIDE_PADDING']}px",
@@ -76,8 +86,21 @@ layout = html.Div([
                 }
             )
         ])
-
-    ])
+    ]),
+    dbc.Modal([
+            dbc.ModalBody([
+                html.Br(),
+                html.H2("Attention, you are currently idle!"),
+                html.Img(
+                    src='/assets/warning.gif',
+                    alt="warning",
+                    style={"display": "block", "margin": "0 auto"}
+                ),
+                html.H2("Attention, you are currently idle!"),
+                html.Br(),
+            ])],
+        id="idle_modal", centered=True, is_open=False
+    )
 ])
 
 
@@ -165,6 +188,15 @@ def update_info_row(_1):
 
 
 @callback(
+    Output('idle_modal', 'is_open'),
+    Input('date_reset_interval', 'n_intervals')
+)
+def update_modal(_1):
+    """Checks if user is idle and shows modal if user is."""
+    return len(detect_idle()) != 0
+
+
+@callback(
     Output('date_reset_interval', 'n_intervals'),
     Input('date_reset_interval', 'n_intervals')
 )
@@ -172,3 +204,15 @@ def save_date(intevals):
     """Sets the desired date range to file."""
     set_date_range()
     return intevals
+
+
+@callback(
+    Output('idle_loading', 'children'),
+    Input('set_idle_button', 'n_clicks'),
+    prevent_initial_call=True
+)
+def set_idle_button(_1):
+    """Sets all input databases to idle state."""
+    set_idle()
+    time.sleep(0.5)
+    return ""

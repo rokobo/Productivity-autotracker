@@ -33,3 +33,10 @@ body::-webkit-scrollbar {
     background-color: rgb(43, 43, 43);
     border-color: white;
 }
+.modal-content {
+    background-color: rgb(43, 43, 43);
+    display: flex;
+    text-align: center;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+}

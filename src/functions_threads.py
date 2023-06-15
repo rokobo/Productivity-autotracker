@@ -13,7 +13,7 @@ import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, Input, Output, callback
 from functions_activity import parser
 from pages import layout_main, layout_activity, layout_categories, \
-    layout_inputs
+    layout_inputs, layout_credits
 from helper_io import save_dataframe, load_config
 
 cfg = load_config()
@@ -117,6 +117,8 @@ def server_supervisor():
             return layout_categories.layout
         if pathname == "/inputs":
             return layout_inputs.layout
+        if pathname == "/credits":
+            return layout_credits.layout
         return layout_main.layout
 
     log = logging.getLogger('werkzeug')

@@ -10,7 +10,10 @@ menu_items = [
     dbc.DropdownMenuItem("Troubleshooting pages", header=True),
     dbc.DropdownMenuItem("Activity table", href="/activity"),
     dbc.DropdownMenuItem("Categories table", href="/categories"),
-    dbc.DropdownMenuItem("Input tables", href="/inputs")
+    dbc.DropdownMenuItem("Input tables", href="/inputs"),
+    dbc.DropdownMenuItem(divider=True),
+    dbc.DropdownMenuItem("Credits", header=True),
+    dbc.DropdownMenuItem("Attributions page", href="/credits"),
 ]
 
 layout = dbc.Col(dbc.DropdownMenu(

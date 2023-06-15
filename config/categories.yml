@@ -45,6 +45,9 @@ WORK_DOMAINS:
 - 'microsoft'
 - 'python'
 - 'docs'
+- 'dash-'
+- 'flaticon'
+- 'pypi\.org'
 PERSONAL_DOMAINS:
 - 'youtube'
 - 'mercadolivre'
@@ -66,3 +69,4 @@ WORK_KEYWORDS:
 PERSONAL_KEYWORDS:
 - 'episode'
 - 'whatsapp'
+- 'photos'

@@ -14,15 +14,15 @@ SIDE_PADDING: 20  # Space between sections and the side of the page
 TROUBLESHOOTING_HEIGHT: 900  # Size of troubleshooting page's graph
 
 # Colors --------------------------------------------------------------------------------
-BACKGROUND: "#1E1E1E"
-TEXT_COLOR: "#FFFFFF" 
+BACKGROUND: "rgb(30, 30, 30)"
+CARD_COLOR: "rgb(43, 43, 43)"
+TEXT_COLOR: "rgb(255, 255, 255)" 
 CATEGORY_COLORS:
 - "#FFCCCC"  # Neutral
 - "#AA00FF"  # Personal
 - "#AAAAFF"  # Work
 
 # Path for files ------------------------------------------------------------------------
-DATA_PATH: 'data/'
 URLS_PATH: "C:/Users/pedro/Downloads/EXTENSION/"
 
 # Process names to hide info

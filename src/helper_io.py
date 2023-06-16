@@ -60,7 +60,7 @@ def load_lastest_row(name: str) -> tuple[bool, pd.DataFrame]:
         pd.DataFrame: Accessed dataframe.
     """
     # Check if file does not exists
-    path = os.path.join(cfg["WORKSPACE"], f'{cfg["DATA_PATH"]}{name}.db')
+    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
     if not os.path.exists(path):
         return False, dataframe
@@ -92,7 +92,7 @@ def modify_latest_row(
         columns_to_update (list[str]): List of columns to update.
     """
     # Check if file does not exists
-    path = os.path.join(cfg["WORKSPACE"], f'{cfg["DATA_PATH"]}{name}.db')
+    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     if not os.path.exists(path):
         return
 
@@ -126,7 +126,7 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
         name (str): Name of database.
         new_row (pd.DataFrame): New row of database.
     """
-    path = os.path.join(cfg["WORKSPACE"], f'{cfg["DATA_PATH"]}{name}.db')
+    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     retries = cfg['RETRY_ATTEMPS']
 
     try_to_run(
@@ -157,7 +157,7 @@ def load_activity_between(
         name (str, optional): database name. Defaults to "activity".
     """
     # Check if file does not exists
-    path = os.path.join(cfg["WORKSPACE"], f'{cfg["DATA_PATH"]}{name}.db')
+    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
     if not os.path.exists(path):
         return False, dataframe
@@ -187,7 +187,7 @@ def load_dataframe(name: str) -> tuple[bool, pd.DataFrame]:
         pd.DataFrame: Accessed dataframe.
     """
     # Check if file does not exists
-    path = os.path.join(cfg["WORKSPACE"], f'{cfg["DATA_PATH"]}{name}.db')
+    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
     if not os.path.exists(path):
         return False, dataframe
@@ -213,7 +213,7 @@ def save_dataframe(dataframe: pd.DataFrame, name: str):
         dataframe (pd.DataFrame): Dataframe to be saved.
         path (str): Location the dataframe will be saved.
     """
-    path = os.path.join(cfg["WORKSPACE"], f'{cfg["DATA_PATH"]}{name}.db')
+    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     retries = cfg['RETRY_ATTEMPS']
 
     try_to_run(

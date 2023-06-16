@@ -17,14 +17,14 @@ Having the window information, the program will try to classify it using the rul
 ### **Configuration files**
 
 1. `config/categories.yml`:
-    - This file has regex patterns used to match your current activity to either the personal or work category.
-    - Any activity that does not match is considered neutral.
+    + This file has regex patterns used to match your current activity to either the personal or work category.
+    + Any activity that does not match is considered neutral.
 
 2. `config/config.yml`:
-    - This file has some values that can be personalized, including color, intervals, spacings and others.
-    - The `URLS_PATH` variable is your standard download location, which is where the custom  browser extension will save the URLs file.
-    - The `HIDDEN_APPS` list is used to define processes that should have their title information hidden (E.g. `explorer.exe` shows which folder you are currently on, this may be undesirable).
-    - The `FULLSCREEN_APPS` list is used to detect non-idle activity when the process is in fullscreen (if a process that is not on this list is fullscreen and the program has not detected activity for some time, it will consider the state as idle).
+    + This file has some values that can be personalized, including color, intervals, spacings and others.
+    + The `URLS_PATH` variable is your standard download location, which is where the custom  browser extension will save the URLs file.
+    + The `HIDDEN_APPS` list is used to define processes that should have their title information hidden (E.g. `explorer.exe` shows which folder you are currently on, this may be undesirable).
+    + The `FULLSCREEN_APPS` list is used to detect non-idle activity when the process is in fullscreen (if a process that is not on this list is fullscreen and the program has not detected activity for some time, it will consider the state as idle).
 
 ### **Idle detection**
 
@@ -40,18 +40,18 @@ You also have the option to set your status as idle with the top-right button of
 
 Pages are divided into three categories: Productivity, Analytics and Troubleshooting.
 
-- **Productivity pages**:
-  - `Dashboard page` - Contains the categoried and aggregated events, along with a graph with the total daily time of each category.
++ **Productivity pages**:
+  + `Dashboard page` - Contains the categoried and aggregated events, along with a graph with the total daily time of each category.
 
-- **Analytics pages**:
++ **Analytics pages**:
 
-- **Troubleshooting pages**:
-  - `Activity table` - Contains a scrollable version of the `activity.db` file.
-  - `Categories table` - Contains a scrollable version of the `categories.db` file.
-  - `Input tables` - Contains a scrollable version of the `audio.db`, `backend.db`, `frontend.db`, `mouse.db`, `keyboard.db`, `fullscreen.db` and `date.db` files.
++ **Troubleshooting pages**:
+  + `Activity table` - Contains a scrollable version of the `activity.db` file.
+  + `Categories table` - Contains a scrollable version of the `categories.db` file.
+  + `Input tables` - Contains a scrollable version of the `audio.db`, `backend.db`, `frontend.db`, `mouse.db`, `keyboard.db`, `fullscreen.db` and `date.db` files.
 
-- **Credits**:
-  - `Attributions page` - Contains image attributions for assets used in this project.
++ **Credits**:
+  + `Attributions page` - Contains image attributions for assets used in this project.
 
 ## **Browser URL problem**
 

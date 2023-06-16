@@ -6,12 +6,12 @@ WORK_APPS:
 - 'windowsterminal\.exe'
 - 'githubdesktop\.exe'
 - 'notepad\.exe'
+- 'photo\.exe'
 PERSONAL_APPS: 
 - 'signal\.exe'
 - 'discord\.exe'
 - 'steam\.exe'
 - 'mpc-hc64\.exe'
-- 'explorer\.exe'
 - 'firefox\.exe'
 - 'sandrock\.exe'
 - 'digikam\.exe'
@@ -48,6 +48,7 @@ WORK_DOMAINS:
 - 'dash-'
 - 'flaticon'
 - 'pypi\.org'
+- 'mixkit'
 PERSONAL_DOMAINS:
 - 'youtube'
 - 'mercadolivre'

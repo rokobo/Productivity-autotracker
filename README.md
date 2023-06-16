@@ -25,7 +25,7 @@ Having the window information, the program will try to classify it using the rul
 If the program detects you are idle, it will display a warning modal like this:
 
 <p align="center">
-  <img src="https://github.com/rokobo/Productivity-autotracker/blob/main/images/idle_warning.png?raw=true"/>
+  <img src="https://github.com/rokobo/Productivity-autotracker/blob/main/images/idle_warning.png?raw=true" width="300"/>
 </p>
 
 You also have the option to set your status as idle with the top-right button of the main page.

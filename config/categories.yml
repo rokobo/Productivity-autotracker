@@ -7,6 +7,7 @@ WORK_APPS:
 - 'githubdesktop\.exe'
 - 'notepad\.exe'
 - 'photo\.exe'
+- 'seccenter\.exe'
 PERSONAL_APPS: 
 - 'signal\.exe'
 - 'discord\.exe'
@@ -50,8 +51,12 @@ WORK_DOMAINS:
 - 'pypi\.org'
 - 'mixkit'
 - 'wiki'
+- 'physic'
+- 'translate'
+- 'bitdefender'
 PERSONAL_DOMAINS:
 - 'youtube'
+- 'reddit'
 - 'mercadolivre'
 - 'hbomax'
 - 'tv\.apple'

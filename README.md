@@ -2,6 +2,12 @@
 
 This project began with a desire to have a time tracking software with the automatic nature of Rescuetime, the flexibility of Toggl and a custom-made data analysis.
 
++ [How it works](#how-it-works)
+  + [Configuration files](#configuration-files)
+  + [Idle detection](#idle-detection)
++ [Pages](#pages)
++ [Browser URL problem](#browser-url-problem)
+
 ## **How it works**
 
 This program works by having it constantly running (I always have a terminal running a couple programs). It is periodically getting your active window and other pieces of information to determine what you are doing and if you are idle.

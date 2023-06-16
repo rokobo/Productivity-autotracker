@@ -2,6 +2,7 @@
 # pylint: disable=exec-used, eval-used, broad-exception-caught
 # pylint: disable=unused-import, too-many-arguments, no-name-in-module
 # flake8: noqa: F401
+import os
 import time
 import sqlite3 as sql
 import pandas as pd

@@ -300,7 +300,14 @@ def clean_and_select_newest_url(
 
     path += "*.txt"
     files = glob.glob(path)
-    newest_file = max(files, key=os.path.getmtime)  # getctime leads to errors
+    # getctime here leads to errors, use getmtime
+    newest_file = try_to_run(
+        var='file',
+        code='file = max(files, key=os.path.getmtime)',
+        error_check='not isinstance(file, str)',
+        final_code='',
+        retries=cfg['RETRY_ATTEMPS'],
+        environment=locals())
 
     threads = [
         Thread(target=os.remove, args=(file,))

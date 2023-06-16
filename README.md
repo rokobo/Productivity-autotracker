@@ -1,14 +1,14 @@
-# Productivity autotracker
+# **Productivity autotracker**
 
 This project began with a desire to have a time tracking software with the automatic nature of Rescuetime, the flexibility of Toggl and a custom-made data analysis.
 
-## How it works
+## **How it works**
 
 This program works by having it constantly running (I always have a terminal running a couple programs). It is periodically getting your active window and other pieces of information to determine what you are doing and if you are idle.
 
 Having the window information, the program will try to classify it using the rules defined in the `config/categories.yml` and `config/config.yml`.
 
-### Configuration files
+### **Configuration files**
 
 1. `config/categories.yml`:
     - This file has regex patterns used to match your current activity to either the personal or work category.
@@ -20,7 +20,7 @@ Having the window information, the program will try to classify it using the rul
     - The `HIDDEN_APPS` list is used to define processes that should have their title information hidden (E.g. `explorer.exe` shows which folder you are currently on, this may be undesirable).
     - The `FULLSCREEN_APPS` list is used to detect non-idle activity when the process is in fullscreen (if a process that is not on this list is fullscreen and the program has not detected activity for some time, it will consider the state as idle).
 
-### Idle detection
+### **Idle detection**
 
 If the program detects you are idle, it will display a warning modal like this:
 
@@ -28,9 +28,9 @@ If the program detects you are idle, it will display a warning modal like this:
   <img src="https://github.com/rokobo/Productivity-autotracker/blob/main/images/idle_warning.png?raw=true" width="300"/>
 </p>
 
-You also have the option to set your status as idle with the top-right button of the main page.
+You also have the option to set your status as idle with the top-right button of the main page. Do note that the idle detection uses multiple sources of activity detection, specifically: audio, keyboard, mouse and specific fullscreen apps. If you press the button and move your mouse or forget to pause music, the idle status will be reverted.
 
-## Pages
+## **Pages**
 
 Pages are divided into three categories: Productivity, Analytics and Troubleshooting.
 
@@ -44,7 +44,10 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
   - `Categories table` - Contains a scrollable version of the `categories.db` file.
   - `Input tables` - Contains a scrollable version of the `audio.db`, `backend.db`, `frontend.db`, `mouse.db`, `keyboard.db`, `fullscreen.db` and `date.db` files.
 
-## Browser URL problem
+- **Credits**:
+  - `Attributions page` - Contains image attributions for assets used in this project.
+
+## **Browser URL problem**
 
 One of the most important features of a time tracker, in my opnion, is the ability to match browser usage with a specific site. On this project I simplified things a bit and I organize the events based on domain (since any small update would create a new event).
 

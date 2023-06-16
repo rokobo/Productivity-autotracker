@@ -91,11 +91,13 @@ layout = html.Div([
             dbc.ModalBody([
                 html.Br(),
                 html.H2("Attention, you are currently idle!"),
+                html.Br(),
                 html.Img(
                     src='/assets/warning.gif',
                     alt="warning",
                     style={"display": "block", "margin": "0 auto"}
                 ),
+                html.Br(),
                 html.H2("Attention, you are currently idle!"),
                 html.Br(),
             ])],
@@ -218,6 +220,12 @@ def save_date(intevals):
 )
 def set_idle_button(_1):
     """Sets all input databases to idle state."""
+    # Ensure idle is set (late mouse thread can revert this sometimes)
     set_idle()
+    time.sleep(0.5)
+    set_idle()
+    time.sleep(0.5)
+    set_idle()
+    # Loading animation has a delay
     time.sleep(0.5)
     return ""

@@ -20,15 +20,16 @@ layout = html.Div([
     dbc.Row([
         layout_menu.layout,
         dbc.Col(id='activity_update_time'),
+        dbc.Col(id='activity_data'),
         dbc.Col(
             html.Button(
                 "Update table", id='activity_refresh_button',
                 style={
-                    'width': '65%', 'border-radius': '4px',
-                    'background-color': cfg['BACKGROUND'],
+                    'width': '100%', 'border-radius': '4px',
+                    'background-color': cfg['CARD_COLOR'],
                     'margin-top': '5px', 'color': cfg['TEXT_COLOR']
                 }
-            ),
+            ), width=2
         )
     ], style={
         'margin-left': f"{cfg['SIDE_PADDING']}px",
@@ -49,6 +50,7 @@ layout = html.Div([
 @callback(
     Output('activity_table', 'figure'),
     Output('activity_update_time', 'children'),
+    Output('activity_data', 'children'),
     Input('activity_refresh_button', 'n_clicks'))
 def update_activity(_1):
     """Makes activity graph."""
@@ -70,4 +72,7 @@ def update_activity(_1):
         margin={'b': 0, 't': 0, 'l': 0, 'r': 0}
     )
     title = f'Last update: {datetime.now().strftime("%H:%M:%S")}'
-    return fig, html.H3(title)
+    info = f'Rows: {dataframe.shape[0]}, '
+    info += f'Columns: {dataframe.shape[1]}, '
+    info += f'Process_names: {dataframe["process_name"].nunique()}'
+    return fig, html.H3(title), html.H4(info)

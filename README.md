@@ -20,6 +20,16 @@ Having the window information, the program will try to classify it using the rul
     - The `HIDDEN_APPS` list is used to define processes that should have their title information hidden (E.g. `explorer.exe` shows which folder you are currently on, this may be undesirable).
     - The `FULLSCREEN_APPS` list is used to detect non-idle activity when the process is in fullscreen (if a process that is not on this list is fullscreen and the program has not detected activity for some time, it will consider the state as idle).
 
+### Idle detection
+
+If the program detects you are idle, it will display a warning modal like this:
+
+<p align="center">
+  <img src="https://github.com/rokobo/Productivity-autotracker/blob/main/images/idle_warning.png?raw=true"/>
+</p>
+
+You also have the option to set your status as idle with the top-right button of the main page.
+
 ## Pages
 
 Pages are divided into three categories: Productivity, Analytics and Troubleshooting.

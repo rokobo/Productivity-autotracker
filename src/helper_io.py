@@ -29,7 +29,7 @@ def load_config() -> dict[str, any]:
     config["NOTIFICATION"] = Notify(
         default_notification_application_name=app_name,
         default_notification_icon=os.path.join(
-            workspace, "assets\\notification.ico"),
+            workspace, "assets\\sprout.gif"),
     )
     return config
 
@@ -318,7 +318,7 @@ def clean_and_select_newest_url(
 
 def set_idle():
     """Function that sets all input databases to idle state."""
-    time.sleep(4)
+    time.sleep(1)
     now = int(time.time())
     idle_time = cfg["IDLE_TIME"]
     inputs = ["mouse", "keyboard", "audio", "fullscreen"]

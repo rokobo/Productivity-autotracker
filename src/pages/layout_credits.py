@@ -48,7 +48,7 @@ layout = html.Div([
         dbc.Col(dbc.Card([dbc.Row([
             dbc.Col(
                 dbc.CardImg(
-                    src="/assets/notification.ico",
+                    src="/assets/sprout.png",
                     className="img-fluid rounded-start",
                 ), className="col-md-4",
             ),

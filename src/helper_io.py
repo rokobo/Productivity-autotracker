@@ -330,7 +330,8 @@ def set_idle():
             modify_latest_row(input_name, input_dataframe, ['time'])
 
 
-def send_notification(title: str, message: str, audio: str = "notification") -> None:
+def send_notification(
+        title: str, message: str, audio: str = "notification") -> None:
     """
     Sends a desktop notification with the title and message.
 

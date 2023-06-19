@@ -21,10 +21,12 @@ PERSONAL_APPS:
 # Domain names (regex) ------------------------------------------------------------------
 WORK_DOMAINS:
 - 'localhost:\d+'
+- '\d+\.\d+\.\d+\.\d+'
 - 'openai'
 - 'dash-bootstrap-components'
 - 'file:\/\/'
 - 'stackoverflow'
+- 'huggingface\.co'
 - 'edx\.org'
 - 'coursera\.org'
 - 'desmos\.com'

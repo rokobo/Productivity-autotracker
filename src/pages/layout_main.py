@@ -17,7 +17,7 @@ from helper_server import generate_cards, \
     format_short_duration, set_date_range
 from functions_activity import detect_idle
 from helper_io import save_dataframe, load_dataframe, \
-    load_input_time, load_config, set_idle
+    load_input_time, load_config, set_idle, load_lastest_row
 
 cfg = load_config()
 
@@ -171,10 +171,11 @@ def update_element_list(_1):
 
 @callback(
     Output('info_row', 'children'),
+    Output('idle_modal', 'is_open'),
     Input('categorized_interval', 'n_intervals')
 )
 def update_info_row(_1):
-    """Makes time since last update row."""
+    """Makes time since last update row and updates idle modal."""
     now = int(time.time())
     backend = format_short_duration(now - load_input_time('backend'))
     frontend = format_short_duration(now - load_input_time('frontend'))
@@ -191,16 +192,11 @@ def update_info_row(_1):
         dbc.Col([html.H4("Audio"), html.H5(audio)], style=style),
         dbc.Col([html.H4("Fullscreen"), html.H5(fullscreen)], style=style)
     ])
-    return row
 
-
-@callback(
-    Output('idle_modal', 'is_open'),
-    Input('idle_interval', 'n_intervals')
-)
-def update_modal(_1):
-    """Checks if user is idle and shows modal if user is."""
-    return len(detect_idle()) != 0
+    # Modal
+    last_row = load_lastest_row('activity')[1]
+    idle = last_row.loc[0, "process_name"] == "IDLE TIME"
+    return row, idle
 
 
 @callback(
@@ -221,6 +217,7 @@ def save_date(intevals):
 def set_idle_button(_1):
     """Sets all input databases to idle state."""
     # Ensure idle is set (late mouse thread can revert this sometimes)
+    time.sleep(3)
     set_idle()
     time.sleep(0.5)
     set_idle()

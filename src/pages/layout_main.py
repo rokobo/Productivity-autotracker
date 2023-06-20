@@ -15,7 +15,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import layout_menu
 from helper_server import generate_cards, \
     format_short_duration, set_date_range
-from functions_activity import detect_idle
 from helper_io import save_dataframe, load_dataframe, \
     load_input_time, load_config, set_idle, load_lastest_row
 

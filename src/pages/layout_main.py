@@ -61,7 +61,7 @@ layout = html.Div([
             ),
             dcc.Interval(
                 id='category_interval',
-                interval=10 * 1000,
+                interval=30 * 1000,  # 36 seconds is 0.01 hour
                 n_intervals=-1
             )
         ])])
@@ -145,7 +145,7 @@ def update_category(_1):
         {
             'x': xi,
             'y': yi + (data['total'].max() / 8),
-            'text': f"{yi:.2f} hour" + ("s" if yi >= 2 else ""),
+            'text': f"{yi:.2f} hour" + ("s" if yi >= 1 else ""),
             'xanchor': 'center',
             'yanchor': 'top',
             'showarrow': False,

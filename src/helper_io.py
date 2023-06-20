@@ -9,7 +9,6 @@ import glob
 from threading import Thread
 from notifypy import Notify
 import pandas as pd
-import yaml
 from helper_retry import try_to_run
 
 
@@ -22,8 +21,16 @@ def load_config() -> dict[str, any]:
     """
     workspace = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     config_path = os.path.join(workspace, "config/config.yml")
-    with open(config_path, 'r', encoding='utf-8') as config_file:
-        config = yaml.safe_load(config_file)
+
+    config = try_to_run(
+        var='config',
+        code='with open(config_path, "r", encoding="utf-8") as file:\
+            \n    config = yaml.safe_load(file)',
+        error_check='',
+        final_code='',
+        retries=5,
+        environment=locals())
+
     config["WORKSPACE"] = workspace
     app_name = "Productivity Dashboard - Schedule advisor"
     config["NOTIFICATION"] = Notify(
@@ -45,8 +52,14 @@ def load_categories() -> dict[str, any]:
         dict[str, any]: Dictionary config file.
     """
     config_path = os.path.join(cfg["WORKSPACE"], "config/categories.yml")
-    with open(config_path, 'r', encoding='utf-8') as categories_file:
-        categories = yaml.safe_load(categories_file)
+    categories = try_to_run(
+        var='categories',
+        code='with open(config_path, "r", encoding="utf-8") as file:\
+            \n    categories = yaml.safe_load(file)',
+        error_check='',
+        final_code='',
+        retries=5,
+        environment=locals())
     return categories
 
 

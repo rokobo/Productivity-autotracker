@@ -5,6 +5,7 @@
 import os
 import time
 import sqlite3 as sql
+import yaml
 import pandas as pd
 from win32com.client import GetObject
 from win32gui import GetForegroundWindow

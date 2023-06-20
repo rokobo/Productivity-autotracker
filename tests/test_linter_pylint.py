@@ -63,6 +63,13 @@ def test_pylint_layout_categories() -> None:
     assert result.global_note == 10, result.by_msg
 
 
+def test_pylint_layout_configuration() -> None:
+    """Ensures layout_configuration passes pylint specifications."""
+    file = os.path.join(pages_folder, "layout_configuration.py")
+    result = Run([file], do_exit=False).linter.stats
+    assert result.global_note == 10, result.by_msg
+
+
 def test_pylint_layout_credits() -> None:
     """Ensures layout_credits passes pylint specifications."""
     file = os.path.join(pages_folder, "layout_credits.py")
@@ -77,9 +84,9 @@ def test_pylint_layout_inputs() -> None:
     assert result.global_note == 10, result.by_msg
 
 
-def test_pylint_layout_main() -> None:
-    """Ensures layout_main passes pylint specifications."""
-    file = os.path.join(pages_folder, "layout_main.py")
+def test_pylint_layout_dashboard() -> None:
+    """Ensures layout_dashboard passes pylint specifications."""
+    file = os.path.join(pages_folder, "layout_dashboard.py")
     result = Run([file], do_exit=False).linter.stats
     assert result.global_note == 10, result.by_msg
 

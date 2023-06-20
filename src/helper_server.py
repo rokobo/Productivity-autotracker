@@ -30,16 +30,17 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
             continue
         category = row['category']
         total = totals.loc[totals["category"] == category, "total"].values[0]
-        title = f'{row["process_name"]} {row["method"]} '
-        chunk = row["total"] / total
-        part = f'({round(chunk * 100, 1)}%)'
         item = dbc.Card([dbc.CardBody([
             dbc.Row([
-                dbc.Col(html.H4(title), width="auto"),
                 dbc.Col(
-                    html.H4(part),
-                    style={"color": '#0080ff'},
-                    width="auto")
+                    html.H4(f'{row["process_name"]} {row["method"]} '),
+                    width="auto"
+                ),
+                dbc.Col(
+                    html.H4(f'({round(row["total"] / total * 100, 1)}%)'),
+                    style={"color": cfg["CATEGORY_CARD_PERCENTAGE_COLOR"]},
+                    width="auto"
+                )
             ], className="justify-content-center g-0"),
             dbc.Row([
                 html.H5(row['subtitle']) if row['subtitle'] else None,

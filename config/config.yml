@@ -1,38 +1,36 @@
 # Time variables ----------------------------------------------------------------------------------
-IDLE_TIME: 300  # Time without interaction before considered idle
-IDLE_CHECK_INTERVAL: 5   # Time between checking for idle
-ACTIVITY_CHECK_INTERVAL: 1  # Time between checking for interaction
-MINIMUM_ACTIVITY_TIME: 60  # Minimum time for activity to show in cards
-UNRESPONSIVE_THRESHOLD: 5  # Minimum time without backend update before server restart
-RETRY_ATTEMPS: 5  # Retry attempts for various IO operations
+IDLE_TIME: 300                   # Time without interaction before considered idle
+IDLE_CHECK_INTERVAL: 5           # Time between checking for idle
+ACTIVITY_CHECK_INTERVAL: 1       # Time between checking for interaction
+MINIMUM_ACTIVITY_TIME: 60        # Minimum time for activity to show in cards
+UNRESPONSIVE_THRESHOLD: 5        # Minimum time without backend update before server restart
+RETRY_ATTEMPS: 5                 # Retry attempts for various IO operations
 
 # Sizes -------------------------------------------------------------------------------------------
-CATEGORY_HEIGHT: 300  # Size of categories graph
-CATEGORY_FONT_SIZE: 25  # Font size of hour text
-DIVISION_PADDING: 10  # Space between sections
-SIDE_PADDING: 20  # Space between sections and the side of the page
-TROUBLESHOOTING_HEIGHT: 900  # Size of troubleshooting page's graph
+CATEGORY_HEIGHT: 300             # Size of categories graph
+CATEGORY_FONT_SIZE: 18           # Font size of hour text
+DIVISION_PADDING: 10             # Space between sections
+SIDE_PADDING: 20                 # Space between sections and the side of the page
+TROUBLESHOOTING_HEIGHT: 900      # Size of troubleshooting page's graph
 
 # Colors ------------------------------------------------------------------------------------------
-BACKGROUND: "rgb(30, 30, 30)"  # Background color of the entire website
-CARD_COLOR: "rgb(43, 43, 43)"  # Background color of activity cards
-TEXT_COLOR: "rgb(255, 255, 255)"  # Text color for all website text
-CATEGORY_CARD_PERCENTAGE_COLOR: "rgb(178, 217, 255)"  # Text color for activity time's part total
-CATEGORY_COLORS:  # The categories graph
-- "#FFCCCC"  # Neutral
-- "#AA00FF"  # Personal
-- "#AAAAFF"  # Work
+BACKGROUND: "rgb(30, 30, 30)"                           # Background color of the entire website
+CARD_COLOR: "rgb(43, 43, 43)"                           # Background color of activity cards
+TEXT_COLOR: "rgb(255, 255, 255)"                        # Text color for all website text
+CATEGORY_CARD_PERCENTAGE_COLOR: "rgb(178, 217, 255)"    # Text color for activity time's part total
+CATEGORY_COLORS:                                        # The categories graph
+- "#FFCCCC"                                             # Neutral
+- "#AA00FF"                                             # Personal
+- "#AAAAFF"                                             # Work
 
 # Path for files ----------------------------------------------------------------------------------
-URLS_PATH: "C:/Users/pedro/Downloads/EXTENSION/"  # Where the extension downloads the files
+URLS_PATH: "C:/Users/pedro/Downloads/EXTENSION/"        # Where the extension downloads the files
 
-# Process names to hide info ----------------------------------------------------------------------
-HIDDEN_APPS:
+# Activity detection configuration ----------------------------------------------------------------
+HIDDEN_APPS:            # Apps whose information should be hidden (except process name)
 - 'firefox.exe'
 - 'mpc-hc64.exe'
 - 'explorer.exe'
-
-# Process names to consider fullscreen as non-idle activity ---------------------------------------
-FULLSCREEN_APPS:
+FULLSCREEN_APPS:        # Apps that should be treated as non-idle activity when in fullscreen mode
 - 'sandrock.exe'
 - 'mpc-hc64.exe'

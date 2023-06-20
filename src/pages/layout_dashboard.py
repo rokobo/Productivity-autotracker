@@ -1,5 +1,5 @@
 """Dashboard page."""
-# pylint: disable=wrong-import-position, import-error
+# pylint: disable=wrong-import-position, import-error, global-statement
 # flake8: noqa: E402
 import os
 import sys
@@ -18,7 +18,7 @@ from helper_server import generate_cards, \
 from helper_io import save_dataframe, load_dataframe, \
     load_input_time, load_config, set_idle, load_lastest_row
 
-cfg = load_config()
+CFG = load_config()
 
 
 layout = html.Div([
@@ -40,18 +40,18 @@ layout = html.Div([
             ), class_name="d-md-flex justify-content-md-end"
         )
     ], style={
-        'margin-left': f"{cfg['SIDE_PADDING']}px",
-        'margin-right': f"{cfg['SIDE_PADDING']}px",
-        'margin-bottom': f"{cfg['DIVISION_PADDING']}px",
-        'margin-top': f"{cfg['DIVISION_PADDING']}px"
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
     dbc.Row([dbc.Card([dbc.CardBody([
         html.Div(id="info_row")
     ])])], style={
-        'margin-left': f"{cfg['SIDE_PADDING']}px",
-        'margin-right': f"{cfg['SIDE_PADDING']}px",
-        'margin-bottom': f"{cfg['DIVISION_PADDING']}px",
-        'margin-top': f"{cfg['DIVISION_PADDING']}px"
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
     dbc.Row([
         dbc.Card([dbc.CardBody([
@@ -60,28 +60,28 @@ layout = html.Div([
             ),
             dcc.Interval(
                 id='category_interval',
-                interval=30 * 1000,  # 36 seconds is 0.01 hour
+                interval=15 * 1000,  # 36 seconds is 0.01 hour
                 n_intervals=-1
             )
         ])])
     ], style={
-        'margin-left': f"{cfg['SIDE_PADDING']}px",
-        'margin-right': f"{cfg['SIDE_PADDING']}px",
-        'margin-bottom': f"{cfg['DIVISION_PADDING']}px",
-        'margin-top': f"{cfg['DIVISION_PADDING']}px"
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
     dbc.Row([
         dcc.Interval(
             id='categorized_interval',
-            interval=cfg["ACTIVITY_CHECK_INTERVAL"] * 1000,
+            interval=CFG["ACTIVITY_CHECK_INTERVAL"] * 1000,
             n_intervals=-1
         ),
         dbc.Col([
             html.Div(
                 id='categorized_list',
                 style={
-                    'margin-left': f"{cfg['SIDE_PADDING']}px",
-                    'margin-right': f"{cfg['SIDE_PADDING']}px"
+                    'margin-left': f"{CFG['SIDE_PADDING']}px",
+                    'margin-right': f"{CFG['SIDE_PADDING']}px"
                 }
             )
         ])
@@ -115,20 +115,22 @@ layout = html.Div([
     Input('category_interval', 'n_intervals'))
 def update_category(_1):
     """Makes total time by category graph."""
+    global CFG
+    CFG = load_config()
     _, data = load_dataframe('totals')
     fig = px.bar(
         data, x='category', y='total',
         category_orders={'category': ['Work', 'Personal', 'Neutral']}
     )
-    fig.update_traces(marker_color=cfg['CATEGORY_COLORS'])
+    fig.update_traces(marker_color=CFG['CATEGORY_COLORS'])
     fig.update_layout(
         plot_bgcolor='rgb(43, 43, 43)',
         paper_bgcolor='rgb(43, 43, 43)',
-        font_color=cfg['TEXT_COLOR'],
-        height=cfg['CATEGORY_HEIGHT'],
+        font_color=CFG['TEXT_COLOR'],
+        height=CFG['CATEGORY_HEIGHT'],
         legend_title_text="",
         title="",
-        title_font_color=cfg['TEXT_COLOR'],
+        title_font_color=CFG['TEXT_COLOR'],
         margin={'l': 0, 'r': 0, 't': 0, 'b': 0}
     )
     fig.update_xaxes(
@@ -150,8 +152,8 @@ def update_category(_1):
             'yanchor': 'top',
             'showarrow': False,
             'font': {
-                'color': cfg['TEXT_COLOR'],
-                'size': cfg['CATEGORY_FONT_SIZE']
+                'color': CFG['TEXT_COLOR'],
+                'size': CFG['CATEGORY_FONT_SIZE']
             }
         } for xi, yi in zip(data['category'], data['total'])
     ]

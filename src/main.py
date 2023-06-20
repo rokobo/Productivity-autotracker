@@ -33,9 +33,9 @@ if __name__ == '__main__':
             server_thread.daemon = True
             server_thread.start()
 
-            cfg = load_config()
-            threshold = cfg['UNRESPONSIVE_THRESHOLD']
-            time.sleep(cfg['IDLE_CHECK_INTERVAL'] * 5)
+            CFG = load_config()
+            threshold = CFG['UNRESPONSIVE_THRESHOLD']
+            time.sleep(CFG['IDLE_CHECK_INTERVAL'] * 5)
 
             # Restart all threads if server is unresponsive
             while (int(time.time()) - load_input_time('backend')) < threshold:

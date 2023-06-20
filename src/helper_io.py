@@ -41,9 +41,6 @@ def load_config() -> dict[str, any]:
     return config
 
 
-cfg = load_config()
-
-
 def load_categories() -> dict[str, any]:
     """
     Loads the categories configuration file.
@@ -51,6 +48,7 @@ def load_categories() -> dict[str, any]:
     Returns:
         dict[str, any]: Dictionary config file.
     """
+    cfg = load_config()
     config_path = os.path.join(cfg["WORKSPACE"], "config/categories.yml")
     categories = try_to_run(
         var='categories',
@@ -73,6 +71,7 @@ def load_lastest_row(name: str) -> tuple[bool, pd.DataFrame]:
         pd.DataFrame: Accessed dataframe.
     """
     # Check if file does not exists
+    cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
     if not os.path.exists(path):
@@ -105,6 +104,7 @@ def modify_latest_row(
         columns_to_update (list[str]): List of columns to update.
     """
     # Check if file does not exists
+    cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     if not os.path.exists(path):
         return
@@ -139,6 +139,7 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
         name (str): Name of database.
         new_row (pd.DataFrame): New row of database.
     """
+    cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     retries = cfg['RETRY_ATTEMPS']
 
@@ -170,6 +171,7 @@ def load_activity_between(
         name (str, optional): database name. Defaults to "activity".
     """
     # Check if file does not exists
+    cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
     if not os.path.exists(path):
@@ -200,6 +202,7 @@ def load_dataframe(name: str) -> tuple[bool, pd.DataFrame]:
         pd.DataFrame: Accessed dataframe.
     """
     # Check if file does not exists
+    cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
     if not os.path.exists(path):
@@ -226,6 +229,7 @@ def save_dataframe(dataframe: pd.DataFrame, name: str):
         dataframe (pd.DataFrame): Dataframe to be saved.
         path (str): Location the dataframe will be saved.
     """
+    cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     retries = cfg['RETRY_ATTEMPS']
 
@@ -260,7 +264,7 @@ def load_input_time(name: str) -> int:
 
 
 def load_urls(
-        path: str = cfg["URLS_PATH"]) -> tuple[bool, list[tuple[str, str]]]:
+        path: str = None) -> tuple[bool, list[tuple[str, str]]]:
     """
     Access the URL file provided by the browser extension\
         and returns the values in a list.
@@ -272,6 +276,9 @@ def load_urls(
         bool: False if data has been retrieved.
         list[str]: List of URLs.
     """
+    cfg = load_config()
+    if path is None:
+        path = cfg["URLS_PATH"]
     # Select the most recent file and remove all older files
     error, newest_file = clean_and_select_newest_url(path)
     if error:
@@ -296,7 +303,7 @@ def load_urls(
 
 
 def clean_and_select_newest_url(
-        path: str = cfg["URLS_PATH"]) -> tuple[bool, str]:
+        path: str = None) -> tuple[bool, str]:
     """
     Returns newest file name and removes the others
 
@@ -307,6 +314,10 @@ def clean_and_select_newest_url(
         bool: If URLS path does not exist.
         str: File name.
     """
+    cfg = load_config()
+    if path is None:
+        path = cfg["URLS_PATH"]
+
     # Check path exists
     if not os.path.exists(path):
         return True, ""
@@ -339,6 +350,7 @@ def clean_and_select_newest_url(
 def set_idle():
     """Function that sets all input databases to idle state."""
     time.sleep(1)
+    cfg = load_config()
     now = int(time.time())
     idle_time = cfg["IDLE_TIME"]
     inputs = ["mouse", "keyboard", "audio", "fullscreen"]
@@ -360,6 +372,7 @@ def send_notification(
         message (str): Message of the notification.
         audio (str): Desired audio to play.
     """
+    cfg = load_config()
     notification = cfg["NOTIFICATION"]
     notification.title = title
     notification.message = message

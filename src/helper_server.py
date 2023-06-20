@@ -8,8 +8,6 @@ from dash import html
 import dash_bootstrap_components as dbc
 from helper_io import save_dataframe, load_config, load_dataframe
 
-cfg = load_config()
-
 
 def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
     """
@@ -21,6 +19,7 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
     Returns:
         dbc.Row: Dash Row with categorized activities.
     """
+    cfg = load_config()
     totals = load_dataframe('totals')[1]
     work_list = []
     personal_list = []

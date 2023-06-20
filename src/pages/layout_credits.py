@@ -12,7 +12,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import layout_menu
 from helper_io import load_config
 
-cfg = load_config()
+CFG = load_config()
 
 
 layout = html.Div([
@@ -20,10 +20,10 @@ layout = html.Div([
         layout_menu.layout,
         dbc.Col(html.H3("Credits and attributions"), width='auto'),
     ], style={
-        'margin-left': f"{cfg['SIDE_PADDING']}px",
-        'margin-right': f"{cfg['SIDE_PADDING']}px",
-        'margin-bottom': f"{cfg['DIVISION_PADDING']}px",
-        'margin-top': f"{cfg['DIVISION_PADDING']}px"
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
     dbc.Row([
         dbc.Col(dbc.Card([dbc.Row([
@@ -64,7 +64,7 @@ layout = html.Div([
             ),], className="d-flex align-items-center",)
         ], className="mb-3"))
     ], style={
-            'margin-left': f"{cfg['SIDE_PADDING']}px",
-            'margin-right': f"{cfg['SIDE_PADDING']}px"
+            'margin-left': f"{CFG['SIDE_PADDING']}px",
+            'margin-right': f"{CFG['SIDE_PADDING']}px"
     })
 ])

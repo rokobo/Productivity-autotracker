@@ -8,7 +8,7 @@ from helper_io import save_dataframe, load_dataframe, load_input_time,\
     clean_and_select_newest_url, load_urls, load_config, load_lastest_row, \
     modify_latest_row, append_to_database, load_activity_between
 
-cfg = load_config()
+CFG = load_config()
 
 
 def test_data_integrity() -> None:
@@ -34,7 +34,7 @@ def test_data_integrity() -> None:
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     # Clean files
-    path = os.path.join(cfg["WORKSPACE"], f'data/__test1__.db')
+    path = os.path.join(CFG["WORKSPACE"], 'data/__test1__.db')
     os.remove(path)
 
 
@@ -56,7 +56,7 @@ def test_load_input_time() -> None:
     assert input_time == 84
 
     # Clean files
-    path = os.path.join(cfg["WORKSPACE"], f'data/__test2__.db')
+    path = os.path.join(CFG["WORKSPACE"], 'data/__test2__.db')
     os.remove(path)
 
 
@@ -78,7 +78,7 @@ def test_load_latest_row() -> None:
     assert dataframe.tail(1).equals(loaded_dataframe.drop('rowid', axis=1))
 
     # Clean files
-    path = os.path.join(cfg["WORKSPACE"], f'data/__test3__.db')
+    path = os.path.join(CFG["WORKSPACE"], 'data/__test3__.db')
     os.remove(path)
 
 
@@ -115,7 +115,7 @@ def test_modify_latest_row() -> None:
     assert new_dataframe.equals(loaded_dataframe)
 
     # Clean files
-    path = os.path.join(cfg["WORKSPACE"], f'data/__test4__.db')
+    path = os.path.join(CFG["WORKSPACE"], 'data/__test4__.db')
     os.remove(path)
 
 
@@ -130,7 +130,7 @@ def test_append_to_database() -> None:
     assert joined_dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     # Clean files
-    path = os.path.join(cfg["WORKSPACE"], f'data/__test5__.db')
+    path = os.path.join(CFG["WORKSPACE"], 'data/__test5__.db')
     os.remove(path)
 
 
@@ -165,7 +165,7 @@ def test_load_activity_between() -> None:
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     # Clean files
-    path = os.path.join(cfg["WORKSPACE"], f'data/__test6__.db')
+    path = os.path.join(CFG["WORKSPACE"], 'data/__test6__.db')
     os.remove(path)
 
 

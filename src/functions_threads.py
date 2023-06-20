@@ -13,10 +13,8 @@ import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, Input, Output, callback
 from functions_activity import parser
 from pages import layout_dashboard, layout_activity, layout_categories, \
-    layout_inputs, layout_credits
+    layout_inputs, layout_credits, layout_configuration
 from helper_io import save_dataframe, load_config
-
-cfg = load_config()
 
 
 def mouse_idle_detector():
@@ -26,6 +24,7 @@ def mouse_idle_detector():
     """
     last_position = position()
     while True:
+        cfg = load_config()
         new_position = position()
         if new_position != last_position:
             save_dataframe(
@@ -43,6 +42,7 @@ def keyboard_idle_detector():
         save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'keyboard')
         return False
     while True:
+        cfg = load_config()
         with keyboard.Listener(on_press=track_activity) as listener:
             listener.join()
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
@@ -54,6 +54,7 @@ def activity_detector():
     after detection to actively look for activity again.
     """
     while True:
+        cfg = load_config()
         parser()
         time.sleep(cfg['ACTIVITY_CHECK_INTERVAL'])
 
@@ -83,6 +84,7 @@ def audio_idle_detector():
     after detection to actively look for activity again.
     """
     while True:
+        cfg = load_config()
         if asyncio.run(is_media_running()):
             save_dataframe(
                 pd.DataFrame({'time': [int(time.time())]}), 'audio')
@@ -119,6 +121,8 @@ def server_supervisor():
             return layout_inputs.layout
         if pathname == "/credits":
             return layout_credits.layout
+        if pathname == "/configuration":
+            return layout_configuration.layout
         return layout_dashboard.layout
 
     log = logging.getLogger('werkzeug')

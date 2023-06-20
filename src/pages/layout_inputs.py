@@ -1,5 +1,5 @@
 """Page that shows the raw input databases."""
-# pylint: disable=wrong-import-position, import-error
+# pylint: disable=wrong-import-position, import-error, global-statement
 # flake8: noqa: F401
 import os
 import sys
@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from helper_io import load_dataframe, load_config
 
-cfg = load_config()
+CFG = load_config()
 
 
 layout = html.Div([
@@ -25,23 +25,23 @@ layout = html.Div([
                 "Update table", id='inputs_refresh_button',
                 style={
                     'width': '65%', 'border-radius': '4px',
-                    'background-color': cfg['BACKGROUND'],
-                    'margin-top': '5px', 'color': cfg['TEXT_COLOR']
+                    'background-color': CFG['BACKGROUND'],
+                    'margin-top': '5px', 'color': CFG['TEXT_COLOR']
                 }
             ),
         )
     ], style={
-        'margin-left': f"{cfg['SIDE_PADDING']}px",
-        'margin-right': f"{cfg['SIDE_PADDING']}px",
-        'margin-bottom': f"{cfg['DIVISION_PADDING']}px",
-        'margin-top': f"{cfg['DIVISION_PADDING']}px"
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
     dbc.Row([
         html.Div(id='input_tables')
     ], style={
-        'margin-left': f"{cfg['SIDE_PADDING']}px",
-        'margin-right': f"{cfg['SIDE_PADDING']}px",
-        'margin-bottom': f"{cfg['DIVISION_PADDING']}px"
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px"
     })
 ])
 
@@ -82,7 +82,8 @@ def create_table(name: str) -> go.Table:
     Input('inputs_refresh_button', 'n_clicks'))
 def update_inputs(_1):
     """Makes input graph."""
-    # dcc.Graph(id='inputs_table', style={'width': '100%'})
+    global CFG
+    CFG = load_config()
     inputs = [
         'backend', 'frontend',
         'mouse', 'keyboard',

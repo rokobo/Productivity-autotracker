@@ -1,5 +1,5 @@
 """Page that shows the raw activity database."""
-# pylint: disable=wrong-import-position, import-error
+# pylint: disable=wrong-import-position, import-error, global-statement
 # flake8: noqa: F401
 import os
 import sys
@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from helper_io import load_dataframe, load_config
 
-cfg = load_config()
+CFG = load_config()
 
 
 layout = html.Div([
@@ -26,23 +26,23 @@ layout = html.Div([
                 "Update table", id='activity_refresh_button',
                 style={
                     'width': '100%', 'border-radius': '4px',
-                    'background-color': cfg['CARD_COLOR'],
-                    'margin-top': '5px', 'color': cfg['TEXT_COLOR']
+                    'background-color': CFG['CARD_COLOR'],
+                    'margin-top': '5px', 'color': CFG['TEXT_COLOR']
                 }
             ), width=2
         )
     ], style={
-        'margin-left': f"{cfg['SIDE_PADDING']}px",
-        'margin-right': f"{cfg['SIDE_PADDING']}px",
-        'margin-bottom': f"{cfg['DIVISION_PADDING']}px",
-        'margin-top': f"{cfg['DIVISION_PADDING']}px"
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
     dbc.Row([
         dcc.Graph(id='activity_table', style={'width': '100%'})
     ], style={
-        'margin-left': f"{cfg['SIDE_PADDING']}px",
-        'margin-right': f"{cfg['SIDE_PADDING']}px",
-        'margin-bottom': f"{cfg['DIVISION_PADDING']}px"
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px"
     })
 ])
 
@@ -54,6 +54,8 @@ layout = html.Div([
     Input('activity_refresh_button', 'n_clicks'))
 def update_activity(_1):
     """Makes activity graph."""
+    global CFG
+    CFG = load_config()
     _, dataframe = load_dataframe('activity')
     dataframe = dataframe.iloc[::-1]
 
@@ -68,7 +70,7 @@ def update_activity(_1):
 
     fig = go.Figure(data=table)
     fig.update_layout(
-        height=cfg['TROUBLESHOOTING_HEIGHT'],
+        height=CFG['TROUBLESHOOTING_HEIGHT'],
         margin={'b': 0, 't': 0, 'l': 0, 'r': 0}
     )
     title = f'Last update: {datetime.now().strftime("%H:%M:%S")}'

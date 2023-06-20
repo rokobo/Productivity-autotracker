@@ -19,8 +19,6 @@ from helper_io import load_dataframe, load_input_time, append_to_database, \
     load_lastest_row, modify_latest_row, load_activity_between,\
     load_categories
 
-cfg = load_config()
-
 
 def detect_activity() -> tuple[int, str, int, int, str, str, str]:
     """
@@ -31,6 +29,7 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
             active window title, window handle, pid, \
                 process name, url and domain in case of browser.
     """
+    cfg = load_config()
     retries = cfg['RETRY_ATTEMPS']
 
     handle = try_to_run(
@@ -135,6 +134,7 @@ def detect_idle() -> tuple[int, str, int, int, str, str, str]:
     Returns:
         tuple[int, str, int, int, str, str]: Idle raw data or empty tuple.
     """
+    cfg = load_config()
     now = int(time.time())
 
     # Access all input times concurrently
@@ -191,6 +191,7 @@ def join(dataframe: pd.DataFrame) -> None:
     Args:
         pd.DataFrame: Dataframe with parsed data.
     """
+    cfg = load_config()
     accessible, activity = load_lastest_row('activity')
     if accessible:
         # Check if merge should be done

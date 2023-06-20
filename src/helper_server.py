@@ -30,6 +30,8 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
             continue
         category = row['category']
         total = totals.loc[totals["category"] == category, "total"].values[0]
+        percentage = f'({round(row["total"] / total * 100, 1)}%)'
+        percentage = percentage if row["process_name"] != "IDLE TIME" else ""
         item = dbc.Card([dbc.CardBody([
             dbc.Row([
                 dbc.Col(
@@ -37,7 +39,7 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
                     width="auto"
                 ),
                 dbc.Col(
-                    html.H4(f'({round(row["total"] / total * 100, 1)}%)'),
+                    html.H4(percentage),
                     style={"color": cfg["CATEGORY_CARD_PERCENTAGE_COLOR"]},
                     width="auto"
                 )

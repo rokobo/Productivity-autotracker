@@ -11,7 +11,7 @@ WORK_APPS:
 PERSONAL_APPS: 
 - 'signal\.exe'
 - 'discord\.exe'
-- 'steam\.exe'
+- 'steam.+\.exe'
 - 'mpc-hc64\.exe'
 - 'firefox\.exe'
 - 'sandrock\.exe'

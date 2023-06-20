@@ -34,3 +34,4 @@ HIDDEN_APPS:
 # Process names to consider fullscreen as non-idle activity
 FULLSCREEN_APPS:
 - 'sandrock.exe'
+- 'mpc-hc64.exe'

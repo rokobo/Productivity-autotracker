@@ -143,8 +143,9 @@ def update_category(_1):
     sum_annotations = [
         {
             'x': xi,
-            'y': yi + (data['total'].max() / 8),
-            'text': f"{yi:.2f} hour" + ("s" if yi >= 1 else ""),
+            'y': yi + (data['total'].max() / 9),
+            'text': f"{yi:.2f} hour" + (
+                "s" if yi >= 1 else "") + f" / {round(yi / 16 * 100, 1)}% of the day",
             'xanchor': 'center',
             'yanchor': 'top',
             'showarrow': False,

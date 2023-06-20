@@ -30,25 +30,31 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
             continue
         category = row['category']
         total = totals.loc[totals["category"] == category, "total"].values[0]
-        percentage = f'({round(row["total"] / total * 100, 1)}%)'
-        percentage = percentage if row["process_name"] != "IDLE TIME" else ""
+        percentage1 = f'{round(row["total"] / 16 * 100, 1)}% day '
+        percentage2 = f' {round(row["total"] / total * 100, 1)}% total'
+        percentage2 = percentage2 if row["process_name"] != "IDLE TIME" else ""
         item = dbc.Card([dbc.CardBody([
             dbc.Row([
+                html.H4(f'{row["process_name"]} {row["method"]}'),
+                html.H5(row['subtitle']) if row['subtitle'] else None
+            ], className="g-0", align='center'),
+            dbc.Row([
                 dbc.Col(
-                    html.H4(f'{row["process_name"]} {row["method"]} '),
+                    html.H6(percentage1),
+                    style={"color": cfg["CATEGORY_CARD_PERCENTAGE_COLOR"]},
                     width="auto"
                 ),
                 dbc.Col(
-                    html.H4(percentage),
+                    html.H6(row['duration']),
+                    width="auto"
+                ),
+                dbc.Col(
+                    html.H6(percentage2),
                     style={"color": cfg["CATEGORY_CARD_PERCENTAGE_COLOR"]},
                     width="auto"
                 )
-            ], className="justify-content-center g-0"),
-            dbc.Row([
-                html.H5(row['subtitle']) if row['subtitle'] else None,
-                html.H6(row['duration'])
-            ], className="g-0", align='center')
-        ])])
+            ], className="justify-content-center g-0")
+        ])], className='category-card')
         if category == "Work":
             work_list.append(item)
         elif category == "Personal":

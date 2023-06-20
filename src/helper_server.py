@@ -6,7 +6,7 @@ import datetime
 import pandas as pd
 from dash import html
 import dash_bootstrap_components as dbc
-from helper_io import save_dataframe, load_config
+from helper_io import save_dataframe, load_config, load_dataframe
 
 cfg = load_config()
 
@@ -21,6 +21,7 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
     Returns:
         dbc.Row: Dash Row with categorized activities.
     """
+    totals = load_dataframe('totals')[1]
     work_list = []
     personal_list = []
     neutral_list = []
@@ -28,11 +29,19 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
         if row['total'] < cfg['MINIMUM_ACTIVITY_TIME'] / 3600:
             continue
         category = row['category']
+        total = totals.loc[totals["category"] == category, "total"].values[0]
+        title = f'{row["process_name"]} {row["method"]} '
+        chunk = row["total"] / total
+        part = f'({round(chunk * 100, 1)}%)'
         item = dbc.Card([dbc.CardBody([
             dbc.Row([
-                html.H4(
-                    f'{row["process_name"]} {row["method"]}'
-                ),
+                dbc.Col(html.H4(title), width="auto"),
+                dbc.Col(
+                    html.H4(part),
+                    style={"color": '#0080ff'},
+                    width="auto")
+            ], className="justify-content-center g-0"),
+            dbc.Row([
                 html.H5(row['subtitle']) if row['subtitle'] else None,
                 html.H6(row['duration'])
             ], className="g-0", align='center')

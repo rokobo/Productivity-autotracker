@@ -50,7 +50,7 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
         var='process_name',
         code='process_name = ""\
             \nprocess_name = Process(pid).name()',
-        error_check='process_name == ""',
+        error_check='process_name == "" or not isinstance(process_name, str)',
         final_code='',
         retries=retries,
         environment=locals())

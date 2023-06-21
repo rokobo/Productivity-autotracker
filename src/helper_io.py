@@ -26,7 +26,7 @@ def load_config() -> dict[str, any]:
         var='config',
         code='with open(config_path, "r", encoding="utf-8") as file:\
             \n    config = yaml.safe_load(file)',
-        error_check='',
+        error_check='not isinstance(config, dict)',
         final_code='',
         retries=5,
         environment=locals())
@@ -54,7 +54,7 @@ def load_categories() -> dict[str, any]:
         var='categories',
         code='with open(config_path, "r", encoding="utf-8") as file:\
             \n    categories = yaml.safe_load(file)',
-        error_check='',
+        error_check='not isinstance(categories, dict)',
         final_code='',
         retries=5,
         environment=locals())
@@ -145,7 +145,7 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
         code='conn = sql.connect(path)\
             \nnew_row.to_sql(\
                 name, conn, if_exists="append", index=False)',
-        error_check='',
+        error_check='not isinstance(new_row, pd.DataFrame)',
         final_code='conn.close()',
         retries=retries,
         environment=locals())
@@ -232,7 +232,7 @@ def save_dataframe(dataframe: pd.DataFrame, name: str):
             \nconn.execute("BEGIN EXCLUSIVE")\
             \ndataframe.to_sql(\
                 name, conn, if_exists="replace", index=False)',
-        error_check='',
+        error_check='not isinstance(dataframe, pd.DataFrame)',
         final_code='conn.close()',
         retries=retries,
         environment=locals())
@@ -278,7 +278,7 @@ def load_urls(path: str = None) -> list[tuple[str, str]]:
         var='lines',
         code='with open(newest_file, "r", encoding="utf-8") as file:\
             \n    lines = file.readlines()',
-        error_check='',
+        error_check='lines != [] and not isinstance(lines, list)',
         final_code='',
         retries=retries,
         environment=locals())

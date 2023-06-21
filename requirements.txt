@@ -14,6 +14,7 @@ pytz
 pywin32
 pywinauto
 pyyaml
+ruamel.yaml
 requests
 tables
 urllib3

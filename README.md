@@ -45,6 +45,10 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 
 + **Analytics pages**:
 
++ **Customization pages**:
+  + `Configuration page` - Offers ways to modify the contents of `config.yaml`.
+  + `Categories page` - Offers ways to modify the contents of `categories.yaml`.
+
 + **Troubleshooting pages**:
   + `Activity table` - Contains a scrollable version of the `activity.db` file.
   + `Categories table` - Contains a scrollable version of the `categories.db` file.

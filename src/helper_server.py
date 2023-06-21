@@ -1,7 +1,9 @@
 """
 Collection of helper functions for website routines.
 """
+# pylint: disable=consider-using-f-string, import-error
 from typing import Optional
+import re
 import datetime
 import pandas as pd
 from dash import html
@@ -166,3 +168,99 @@ def format_short_duration(seconds: int) -> str:
         str: Readable string.
     """
     return format_duration(seconds, False)
+
+
+def make_colorpicker(id_name: str, label: str) -> dbc.Col:
+    """
+    Makes the colorpicker component with a label and id.
+
+    Args:
+        id_name (str): Component id.
+        label (str): Label on top of the color selector.
+
+    Returns:
+        dbc.Col: Colorpicker component.
+    """
+    colorpicker = dbc.Col([
+        html.H5(label, style={"textAlign": "left"}),
+        dbc.Input(
+            type="color",
+            id=id_name,
+            value="#000000",
+            style={"width": 200, "height": 50},
+        ),
+        html.H5(
+            ["Saved color is ", html.Span("", id=f'saved-{id_name}')],
+            style={"textAlign": "left"}
+        ),
+    ], className="g-0")
+    return colorpicker
+
+
+def make_valuepicker(
+        id_name: str, label: str, min_val: int, max_val: int) -> dbc.Col:
+    """
+    Makes the input component with a label, id, minimium and maximum value.
+
+    Args:
+        id_name (str): Component id.
+        label (str): Label on top of the color selector.
+        min_val (int): Maximum value of the given input.
+        max_val (int): Minimum value of the given input.
+
+    Returns:
+        dbc.Col: Input component.
+    """
+    colorpicker = dbc.Col([
+        html.H5(label, style={"textAlign": "left"}),
+        dbc.Input(
+            type="number", id=id_name,
+            min=min_val, max=max_val, step=1,
+            style={"width": 200, "height": 50},
+        ),
+        html.H5(
+            ["Saved value is ", html.Span("", id=f'saved-{id_name}')],
+            style={"textAlign": "left"}
+        ),
+    ], className="g-0")
+    return colorpicker
+
+
+def rgb_to_hex(rgb_string: str) -> str:
+    """
+    Transforms an rgb string to a hex string.
+
+    Args:
+        rgb_string (str): rgb string.
+
+    Returns:
+        str: hex string.
+    """
+    match = re.match(r'^rgb\(\d+,\s*\d+,\s*\d+\)$', rgb_string)
+    assert match is not None
+
+    values = re.findall(r'(\d+)', rgb_string)
+    hex_code = "#{:02x}{:02x}{:02x}".format(
+        int(values[0]), int(values[1]), int(values[2]))
+    return hex_code
+
+
+def hex_to_rgb(hex_string: str) -> str:
+    """
+    Transforms a rgb string to a hex string.
+
+    Args:
+        hex_string (str): hex string.
+
+    Returns:
+        str: rgb string.
+    """
+    match = re.match(r'^#[A-Fa-f0-9]{6}$', hex_string)
+    assert match is not None
+
+    rgb_code = "rgb({}, {}, {})".format(
+        int(hex_string[1:3], 16),
+        int(hex_string[3:5], 16),
+        int(hex_string[5:7], 16)
+    )
+    return rgb_code

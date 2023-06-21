@@ -43,3 +43,11 @@ body::-webkit-scrollbar {
     justify-content: center; /* Center horizontally */
     align-items: center; /* Center vertically */
 }
+.form-control {
+    background-color: rgb(43, 43, 43);
+    color: white;
+}
+.form-control:focus {
+    background-color: rgb(43, 43, 43);
+    color: white;
+}

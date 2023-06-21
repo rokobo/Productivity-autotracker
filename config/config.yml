@@ -18,19 +18,19 @@ BACKGROUND: "rgb(30, 30, 30)"                           # Background color of th
 CARD_COLOR: "rgb(43, 43, 43)"                           # Background color of activity cards
 TEXT_COLOR: "rgb(255, 255, 255)"                        # Text color for all website text
 CATEGORY_CARD_PERCENTAGE_COLOR: "rgb(178, 217, 255)"    # Text color for activity time's part total
-CATEGORY_COLORS:                                        # The categories graph
-- "#FFCCCC"                                             # Neutral
-- "#AA00FF"                                             # Personal
-- "#AAAAFF"                                             # Work
+NEUTRAL_COLOR: "rgb(255, 204, 204)"                     # Categories graph neutral color
+PERSONAL_COLOR: "rgb(170, 0, 255)"                      # Categories graph personal color
+WORK_COLOR: "rgb(170, 170, 255)"                        # Categories graph work                                                                      
 
 # Path for files ----------------------------------------------------------------------------------
 URLS_PATH: "C:/Users/pedro/Downloads/EXTENSION/"        # Where the extension downloads the files
 
 # Activity detection configuration ----------------------------------------------------------------
 HIDDEN_APPS:            # Apps whose information should be hidden (except process name)
-- 'firefox.exe'
-- 'mpc-hc64.exe'
-- 'explorer.exe'
+  - 'firefox.exe'
+  - 'mpc-hc64.exe'
+  - 'explorer.exe'
 FULLSCREEN_APPS:        # Apps that should be treated as non-idle activity when in fullscreen mode
-- 'sandrock.exe'
-- 'mpc-hc64.exe'
+  - 'sandrock.exe'
+  - 'mpc-hc64.exe'
+...

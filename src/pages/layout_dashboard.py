@@ -123,7 +123,8 @@ def update_category(_1):
         data, x='category', y='total',
         category_orders={'category': ['Work', 'Personal', 'Neutral']}
     )
-    fig.update_traces(marker_color=CFG['CATEGORY_COLORS'])
+    fig.update_traces(marker_color=[
+        CFG["NEUTRAL_COLOR"], CFG["PERSONAL_COLOR"], CFG["WORK_COLOR"]])
     fig.update_layout(
         plot_bgcolor='rgb(43, 43, 43)',
         paper_bgcolor='rgb(43, 43, 43)',

@@ -61,35 +61,34 @@ def load_categories() -> dict[str, any]:
     return categories
 
 
-def load_lastest_row(name: str) -> tuple[bool, pd.DataFrame]:
+def load_lastest_row(name: str) -> pd.DataFrame:
     """
     Check if DataFrame is empty and
     creates DataFrame if file is non-existant.
 
     Returns:
-        bool: True if dataframe is accessible and has data.
         pd.DataFrame: Accessed dataframe.
     """
     # Check if file does not exists
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
-    if not os.path.exists(path):
-        return False, dataframe
+    assert os.path.exists(path)
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
     dataframe = try_to_run(
-        var='dataframe',
+        var='data',
         code='conn = sql.connect(path)\
-            \ndataframe = pd.read_sql(\
+            \ndata = pd.read_sql(\
                 f"SELECT *, rowid FROM {name}\
                     ORDER BY rowid DESC LIMIT 1", conn)',
-        error_check='',
+        error_check='data.empty or not isinstance(data, pd.DataFrame)',
         final_code='conn.close()',
         retries=retries,
         environment=locals())
-    return not dataframe.empty, dataframe
+    assert not dataframe.empty
+    return dataframe
 
 
 def modify_latest_row(
@@ -106,8 +105,7 @@ def modify_latest_row(
     # Check if file does not exists
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
-    if not os.path.exists(path):
-        return
+    assert os.path.exists(path)
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -121,7 +119,6 @@ def modify_latest_row(
         try_to_run(
             var='',
             code='conn = sql.connect(path)\
-                \nconn.execute("BEGIN EXCLUSIVE")\
                 \ncursor = conn.cursor()\
                 \ncursor.execute(query)\
                 \nconn.commit()',
@@ -146,7 +143,6 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
     try_to_run(
         var='',
         code='conn = sql.connect(path)\
-            \nconn.execute("BEGIN EXCLUSIVE")\
             \nnew_row.to_sql(\
                 name, conn, if_exists="append", index=False)',
         error_check='',
@@ -156,8 +152,7 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
 
 
 def load_activity_between(
-        start: int, end: int, name: str = "activity"
-        ) -> tuple[bool, pd.DataFrame]:
+        start: int, end: int, name: str = "activity") -> pd.DataFrame:
     """
     Loads events in activity database between the start and end timestamp.
 
@@ -166,7 +161,6 @@ def load_activity_between(
         end (int): end timestamp.
 
     Returns:
-        bool: True if dataframe is accessible and has data.
         pd.DataFrame: Accessed dataframe.
         name (str, optional): database name. Defaults to "activity".
     """
@@ -174,51 +168,50 @@ def load_activity_between(
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
-    if not os.path.exists(path):
-        return False, dataframe
+    assert os.path.exists(path)
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
     dataframe = try_to_run(
-        var='dataframe',
+        var='data',
         code='conn = sql.connect(path)\
-            \ndataframe = pd.read_sql(\
+            \ndata = pd.read_sql(\
                 f"SELECT *, rowid FROM {name}\
                     WHERE start_time >= {start} AND end_time <= {end}", conn)',
-        error_check='',
+        error_check='data.empty or not isinstance(data, pd.DataFrame)',
         final_code='conn.close()',
         retries=retries,
         environment=locals())
-    return not dataframe.empty, dataframe
+    assert not dataframe.empty
+    return dataframe
 
 
-def load_dataframe(name: str) -> tuple[bool, pd.DataFrame]:
+def load_dataframe(name: str) -> pd.DataFrame:
     """
     Check if DataFrame is empty and
     creates DataFrame if file is non-existant.
 
     Returns:
-        bool: True if dataframe is accessible and has data.
         pd.DataFrame: Accessed dataframe.
     """
     # Check if file does not exists
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
-    if not os.path.exists(path):
-        return False, dataframe
+    assert os.path.exists(path)
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
     dataframe = try_to_run(
-        var='dataframe',
+        var='data',
         code='conn = sql.connect(path)\
-            \ndataframe = pd.read_sql(f"SELECT *, rowid FROM {name}", conn)',
-        error_check='',
+            \ndata = pd.read_sql(f"SELECT *, rowid FROM {name}", conn)',
+        error_check='data.empty or not isinstance(data, pd.DataFrame)',
         final_code='conn.close()',
         retries=retries,
         environment=locals())
-    return not dataframe.empty, dataframe
+    assert not dataframe.empty
+    return dataframe
 
 
 def save_dataframe(dataframe: pd.DataFrame, name: str):
@@ -256,15 +249,12 @@ def load_input_time(name: str) -> int:
     Returns:
         int: Time of latest input from path.
     """
-    dataframe_is_loaded, device = load_lastest_row(name)
-    recorded_time = 0
-    if dataframe_is_loaded:
-        recorded_time = device.iloc[0, 0]
+    device = load_lastest_row(name)
+    recorded_time = device.iloc[0, 0]
     return recorded_time
 
 
-def load_urls(
-        path: str = None) -> tuple[bool, list[tuple[str, str]]]:
+def load_urls(path: str = None) -> list[tuple[str, str]]:
     """
     Access the URL file provided by the browser extension\
         and returns the values in a list.
@@ -273,16 +263,14 @@ def load_urls(
         path (str, optional): Path to URLS. Defaults to cfg["URLS_PATH"].
 
     Returns:
-        bool: False if data has been retrieved.
         list[str]: List of URLs.
     """
     cfg = load_config()
     if path is None:
         path = cfg["URLS_PATH"]
+
     # Select the most recent file and remove all older files
-    error, newest_file = clean_and_select_newest_url(path)
-    if error:
-        return True, []
+    newest_file = clean_and_select_newest_url(path)
 
     # Load the file and output list of URLs
     retries = cfg['RETRY_ATTEMPS']
@@ -299,11 +287,11 @@ def load_urls(
     contents = []
     for line in lines:
         contents.append(tuple(line.strip().split("|-|")))
-    return not contents, contents
+    assert contents
+    return contents
 
 
-def clean_and_select_newest_url(
-        path: str = None) -> tuple[bool, str]:
+def clean_and_select_newest_url(path: str = None) -> str:
     """
     Returns newest file name and removes the others
 
@@ -311,7 +299,6 @@ def clean_and_select_newest_url(
         path (str, optional): Path to URLS. Defaults to cfg["URLS_PATH"].
 
     Returns:
-        bool: If URLS path does not exist.
         str: File name.
     """
     cfg = load_config()
@@ -319,8 +306,7 @@ def clean_and_select_newest_url(
         path = cfg["URLS_PATH"]
 
     # Check path exists
-    if not os.path.exists(path):
-        return True, ""
+    assert os.path.exists(path)
 
     path += "*.txt"
     files = glob.glob(path)
@@ -344,7 +330,7 @@ def clean_and_select_newest_url(
             thread.join()
     except FileNotFoundError:
         pass
-    return False, newest_file
+    return newest_file
 
 
 def set_idle():

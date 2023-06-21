@@ -20,7 +20,7 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
         dbc.Row: Dash Row with categorized activities.
     """
     cfg = load_config()
-    totals = load_dataframe('totals')[1]
+    totals = load_dataframe('totals')
     work_list = []
     personal_list = []
     neutral_list = []

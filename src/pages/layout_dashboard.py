@@ -112,12 +112,13 @@ layout = html.Div([
 
 @callback(
     Output('category_graph', 'figure'),
-    Input('category_interval', 'n_intervals'))
+    Input('category_interval', 'n_intervals')
+)
 def update_category(_1):
     """Makes total time by category graph."""
     global CFG
     CFG = load_config()
-    _, data = load_dataframe('totals')
+    data = load_dataframe('totals')
     fig = px.bar(
         data, x='category', y='total',
         category_orders={'category': ['Work', 'Personal', 'Neutral']}
@@ -163,10 +164,12 @@ def update_category(_1):
 
 @callback(
     Output('categorized_list', 'children'),
-    Input('categorized_interval', 'n_intervals'))
+    Input('categorized_interval', 'n_intervals'),
+    prevent_initial_call=True
+)
 def update_element_list(_1):
     """Generates the event cards."""
-    _, dataframe = load_dataframe('categories')
+    dataframe = load_dataframe('categories')
     save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')
     return generate_cards(dataframe)
 
@@ -196,7 +199,7 @@ def update_info_row(_1):
     ])
 
     # Modal
-    last_row = load_lastest_row('activity')[1]
+    last_row = load_lastest_row('activity')
     idle = last_row.loc[0, "process_name"] == "IDLE TIME"
     return row, idle
 

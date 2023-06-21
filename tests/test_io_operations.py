@@ -6,7 +6,8 @@ import shutil
 import pandas as pd
 from helper_io import save_dataframe, load_dataframe, load_input_time,\
     clean_and_select_newest_url, load_urls, load_config, load_lastest_row, \
-    modify_latest_row, append_to_database, load_activity_between
+    modify_latest_row, append_to_database, load_activity_between, \
+    load_categories
 
 CFG = load_config()
 
@@ -15,12 +16,12 @@ def test_data_integrity() -> None:
     """Tests if data remains the same after saving and loading."""
     dataframe = pd.DataFrame({'col1': ["1"]})
     save_dataframe(dataframe, '__test1__')
-    _, loaded_dataframe = load_dataframe('__test1__')
+    loaded_dataframe = load_dataframe('__test1__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({'col1': [1], 'col2': ["2"]})
     save_dataframe(dataframe, '__test1__')
-    _, loaded_dataframe = load_dataframe('__test1__')
+    loaded_dataframe = load_dataframe('__test1__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({
@@ -30,7 +31,7 @@ def test_data_integrity() -> None:
         'url': "test.com/test", 'domain': "test.com"
     })
     save_dataframe(dataframe, '__test1__')
-    _, loaded_dataframe = load_dataframe('__test1__')
+    loaded_dataframe = load_dataframe('__test1__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     # Clean files
@@ -64,17 +65,17 @@ def test_load_latest_row() -> None:
     """Tests load_latest_row function."""
     dataframe = pd.DataFrame({'col1': ["1"]})
     save_dataframe(dataframe, '__test3__')
-    _, loaded_dataframe = load_lastest_row('__test3__')
+    loaded_dataframe = load_lastest_row('__test3__')
     assert dataframe.tail(1).equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({'col1': [1], 'col2': ["2"]})
     save_dataframe(dataframe, '__test3__')
-    _, loaded_dataframe = load_lastest_row('__test3__')
+    loaded_dataframe = load_lastest_row('__test3__')
     assert dataframe.tail(1).equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({'col2': [5], 'col3': [3], 'col1': [7]})
     save_dataframe(dataframe, '__test3__')
-    _, loaded_dataframe = load_dataframe('__test3__')
+    loaded_dataframe = load_dataframe('__test3__')
     assert dataframe.tail(1).equals(loaded_dataframe.drop('rowid', axis=1))
 
     # Clean files
@@ -86,32 +87,32 @@ def test_modify_latest_row() -> None:
     """Tests the modify_latest_row function."""
     dataframe = pd.DataFrame({'col1': ["1"]})
     save_dataframe(dataframe, '__test4__')
-    _, new_dataframe = load_lastest_row('__test4__')
+    new_dataframe = load_lastest_row('__test4__')
     new_dataframe.loc[0, 'col1'] = "2"
     modify_latest_row('__test4__', new_dataframe, ['col1'])
-    _, loaded_dataframe = load_lastest_row('__test4__')
+    loaded_dataframe = load_lastest_row('__test4__')
     assert new_dataframe.equals(loaded_dataframe)
 
     dataframe = pd.DataFrame({'col1': [1], 'col2': ["2"]})
     save_dataframe(dataframe, '__test4__')
-    _, new_dataframe = load_lastest_row('__test4__')
+    new_dataframe = load_lastest_row('__test4__')
     new_dataframe.loc[0, 'col1'] = 5
     modify_latest_row('__test4__', new_dataframe, ['col1'])
-    _, loaded_dataframe = load_lastest_row('__test4__')
+    loaded_dataframe = load_lastest_row('__test4__')
     assert new_dataframe.equals(loaded_dataframe)
 
     dataframe = pd.DataFrame({'col1': [1], 'col2': [2], 'col3': [3]})
     save_dataframe(dataframe, '__test4__')
-    _, new_dataframe = load_lastest_row('__test4__')
+    new_dataframe = load_lastest_row('__test4__')
     new_dataframe.loc[0, 'col1'] = 4
     new_dataframe.loc[0, 'col3'] = 6
     modify_latest_row('__test4__', new_dataframe, ['col1', 'col3'])
-    _, loaded_dataframe = load_lastest_row('__test4__')
+    loaded_dataframe = load_lastest_row('__test4__')
     assert new_dataframe.equals(loaded_dataframe)
 
-    _, new_dataframe = load_lastest_row('__test4__')
+    new_dataframe = load_lastest_row('__test4__')
     modify_latest_row('__test4__', new_dataframe, ['col1', 'col3'])
-    _, loaded_dataframe = load_lastest_row('__test4__')
+    loaded_dataframe = load_lastest_row('__test4__')
     assert new_dataframe.equals(loaded_dataframe)
 
     # Clean files
@@ -126,7 +127,7 @@ def test_append_to_database() -> None:
     new_row = pd.DataFrame({'col1': ["3"]})
     append_to_database('__test5__', new_row)
     joined_dataframe = pd.concat([dataframe, new_row], ignore_index=True)
-    _, loaded_dataframe = load_dataframe('__test5__')
+    loaded_dataframe = load_dataframe('__test5__')
     assert joined_dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     # Clean files
@@ -138,30 +139,30 @@ def test_load_activity_between() -> None:
     """Tests the load_activity_between function."""
     dataframe = pd.DataFrame({'start_time': [2], 'end_time': [3]})
     save_dataframe(dataframe, '__test6__')
-    _, loaded_dataframe = load_activity_between(1, 9, '__test6__')
+    loaded_dataframe = load_activity_between(1, 9, '__test6__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
-    _, loaded_dataframe = load_activity_between(2, 9, '__test6__')
+    loaded_dataframe = load_activity_between(2, 9, '__test6__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
-    _, loaded_dataframe = load_activity_between(1, 3, '__test6__')
+    loaded_dataframe = load_activity_between(1, 3, '__test6__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
-    _, loaded_dataframe = load_activity_between(2, 3, '__test6__')
+    loaded_dataframe = load_activity_between(2, 3, '__test6__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({'start_time': [2, 4, 3], 'end_time': [3, 5, 4]})
     save_dataframe(dataframe, '__test6__')
-    _, loaded_dataframe = load_activity_between(1, 9, '__test6__')
+    loaded_dataframe = load_activity_between(1, 9, '__test6__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({'start_time': [4, 3], 'end_time': [5, 4]})
-    _, loaded_dataframe = load_activity_between(3, 9, '__test6__')
+    loaded_dataframe = load_activity_between(3, 9, '__test6__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({'start_time': [2, 3], 'end_time': [3, 4]})
-    _, loaded_dataframe = load_activity_between(2, 4, '__test6__')
+    loaded_dataframe = load_activity_between(2, 4, '__test6__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({'start_time': [4], 'end_time': [5]})
-    _, loaded_dataframe = load_activity_between(4, 9, '__test6__')
+    loaded_dataframe = load_activity_between(4, 9, '__test6__')
     assert dataframe.equals(loaded_dataframe.drop('rowid', axis=1))
 
     # Clean files
@@ -169,7 +170,7 @@ def test_load_activity_between() -> None:
     os.remove(path)
 
 
-def test_clean_and_selet() -> None:
+def test_clean_and_select() -> None:
     """Tests clean_and_select_newest_url function."""
     workspace = os.path.dirname(os.path.abspath(__file__))
     test_folder = os.path.join(workspace, "__test_dir1__/")
@@ -177,21 +178,21 @@ def test_clean_and_selet() -> None:
 
     file_path = os.path.join(test_folder, "file0.txt")
     open(file_path, 'w', encoding="utf-8").close()
-    _, newest = clean_and_select_newest_url(test_folder)
+    newest = clean_and_select_newest_url(test_folder)
     assert os.path.normpath(newest) == os.path.normpath(file_path)
 
     for i in range(1, 4):
         file_path = os.path.join(test_folder, f"file{i}.txt")
         open(file_path, 'w', encoding="utf-8").close()
         time.sleep(0.1)
-    _, newest = clean_and_select_newest_url(test_folder)
+    newest = clean_and_select_newest_url(test_folder)
     assert os.path.normpath(newest) == os.path.normpath(file_path)
 
     for i in range(10, 3, -1):
         file_path = os.path.join(test_folder, f"file{i}.txt")
         open(file_path, 'w', encoding="utf-8").close()
         time.sleep(0.1)
-    _, newest = clean_and_select_newest_url(test_folder)
+    newest = clean_and_select_newest_url(test_folder)
     assert os.path.normpath(newest) == os.path.normpath(file_path)
 
     # Clean files
@@ -207,7 +208,7 @@ def test_load_urls() -> None:
     file_path = os.path.join(test_folder, "file67.txt")
     with open(file_path, 'w', encoding="utf-8") as file:
         file.write("Test|-|test.gov" + '\n')
-    _, urls = load_urls(test_folder)
+    urls = load_urls(test_folder)
     assert urls == [("Test", "test.gov")]
 
     urls_list = ["Test title|-|test.com", "test2|-|tester.org"]
@@ -215,7 +216,7 @@ def test_load_urls() -> None:
     with open(file_path, 'w', encoding="utf-8") as file:
         for item in urls_list:
             file.write(item + '\n')
-    _, urls = load_urls(test_folder)
+    urls = load_urls(test_folder)
     assert urls == [("Test title", "test.com"), ("test2", "tester.org")]
 
     for i in range(1, 5):
@@ -226,7 +227,7 @@ def test_load_urls() -> None:
     with open(file_path, 'w', encoding="utf-8") as file:
         for item in urls_list:
             file.write(item + '\n')
-    _, urls = load_urls(test_folder)
+    urls = load_urls(test_folder)
     assert urls == [("Test title", "test.com"), ("test2", "tester.org")]
 
     # Clean files
@@ -240,3 +241,16 @@ def test_load_config() -> None:
     assert isinstance(config, dict)
     workspace = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     assert config["WORKSPACE"] == workspace
+
+
+def test_load_categories() -> None:
+    """Tests the load_categories function."""
+    categories = load_categories()
+    assert categories
+    assert isinstance(categories, dict)
+    assert "WORK_APPS" in categories
+    assert "PERSONAL_APPS" in categories
+    assert "WORK_DOMAINS" in categories
+    assert "PERSONAL_DOMAINS" in categories
+    assert "WORK_KEYWORDS" in categories
+    assert "PERSONAL_KEYWORDS" in categories

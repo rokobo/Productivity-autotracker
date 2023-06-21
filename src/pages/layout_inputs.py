@@ -56,7 +56,7 @@ def create_table(name: str) -> go.Table:
     Returns:
         go.Table: Input table from transposed database.
     """
-    _, dataframe = load_dataframe(name)
+    dataframe = load_dataframe(name)
     dataframe = dataframe.T
 
     table = go.Table(

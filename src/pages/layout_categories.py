@@ -54,7 +54,7 @@ def update_categories(_1):
     """Makes categories graph."""
     global CFG
     CFG = load_config()
-    _, dataframe = load_dataframe('categories')
+    dataframe = load_dataframe('categories')
 
     table = go.Table(
         header={

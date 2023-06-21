@@ -90,9 +90,7 @@ def match_to_url(title: str) -> tuple[str, str]:
         str: URL of the tab.
         str: Domain of the tab.
     """
-    access_error, urls = load_urls()
-    if access_error:
-        return "", ""
+    urls = load_urls()
 
     # Compare window title with list of tab titles
     for current_url in urls:
@@ -192,23 +190,22 @@ def join(dataframe: pd.DataFrame) -> None:
         pd.DataFrame: Dataframe with parsed data.
     """
     cfg = load_config()
-    accessible, activity = load_lastest_row('activity')
-    if accessible:
-        # Check if merge should be done
-        same_event = all(activity.iloc[0, 2:9] == dataframe.iloc[0, 2:9])
-        not_idle = (
-            int(time.time()) - activity.loc[0, 'end_time']) < cfg['IDLE_TIME']
-        if not_idle:
-            if same_event:  # Join to last event
-                activity.loc[0, 'end_time'] = dataframe.loc[0, 'end_time']
-                modify_latest_row('activity', activity, ['end_time'])
-            else:  # Append and connect to last event
-                new_time = activity.loc[0, 'end_time']
-                dataframe.loc[0, 'start_time'] = new_time
-                append_to_database('activity', dataframe)
-        else:  # Raw append
-            dataframe.loc[0, 'start_time'] -= 1
+    activity = load_lastest_row('activity')
+    # Check if merge should be done
+    same_event = all(activity.iloc[0, 2:9] == dataframe.iloc[0, 2:9])
+    not_idle = (
+        int(time.time()) - activity.loc[0, 'end_time']) < cfg['IDLE_TIME']
+    if not_idle:
+        if same_event:  # Join to last event
+            activity.loc[0, 'end_time'] = dataframe.loc[0, 'end_time']
+            modify_latest_row('activity', activity, ['end_time'])
+        else:  # Append and connect to last event
+            new_time = activity.loc[0, 'end_time']
+            dataframe.loc[0, 'start_time'] = new_time
             append_to_database('activity', dataframe)
+    else:  # Raw append
+        dataframe.loc[0, 'start_time'] -= 1
+        append_to_database('activity', dataframe)
 
 
 def organize_by_date() -> pd.DataFrame:
@@ -218,9 +215,9 @@ def organize_by_date() -> pd.DataFrame:
     Returns:
         pd.DataFrame: Filtered dataframe.
     """
-    _, date_range = load_dataframe('date')
+    date_range = load_dataframe('date')
     start, end = date_range.iloc[0, 0:2]
-    _, filtered_df = load_activity_between(start, end)
+    filtered_df = load_activity_between(start, end)
     return filtered_df
 
 

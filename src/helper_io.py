@@ -342,7 +342,7 @@ def set_idle():
     inputs = ["mouse", "keyboard", "audio", "fullscreen"]
 
     for input_name in inputs:
-        input_dataframe = load_lastest_row(input_name)[1]
+        input_dataframe = load_lastest_row(input_name)
         if now - input_dataframe.loc[0, 'time'] < idle_time:
             input_dataframe.loc[0, 'time'] = now - idle_time
             modify_latest_row(input_name, input_dataframe, ['time'])

@@ -98,6 +98,12 @@ layout = html.Div([
         dbc.Row([
             make_valuepicker('division-padding', "DIVISION_PADDING", 1, 50),
             make_valuepicker('side-padding', "SIDE_PADDING", 1, 50),
+            make_valuepicker('card-padding', "CARD_PADDING", 1, 10)
+        ], className="g-0"),
+        html.Hr(),
+        dbc.Row([
+            make_valuepicker('category-card-margin', "CATEGORY_CARD_MARGIN", 1, 20),
+            make_valuepicker('category-column-space', "CATEGORY_COLUMN_SPACE", 1, 100),
             dbc.Col()
         ], className="g-0")
     ], style={
@@ -122,6 +128,8 @@ layout = html.Div([
         html.Hr(),
         dbc.Row([
             make_colorpicker('card-percentage-color', 'CATEGORY_CARD_PERCENTAGE_COLOR'),
+            make_colorpicker('card-outline-color', 'CARD_OUTLINE_COLOR'),
+            dbc.Col()
         ], className="g-0")
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
@@ -136,19 +144,23 @@ input_names = [
     'idle-time', 'idle-check-interval', 'activity-check-interval',
     'minimum-activity-time', 'unresponsive-threshold', 'retry-attemps',
     'category-height', 'category-font-size', 'troubleshooting-height',
-    'division-padding', 'side-padding',
+    'division-padding', 'side-padding', 'card-padding',
+    'category-card-margin', 'category-column-space',
     'work-color', 'personal-color', 'neutral-color',
     'text-color', 'card-color', 'background',
-    'card-percentage-color'
+    'card-percentage-color', 'card-outline-color'
 ]
-variable_names = [
+vars1 = [
     "IDLE_TIME", "IDLE_CHECK_INTERVAL", "ACTIVITY_CHECK_INTERVAL",
     "MINIMUM_ACTIVITY_TIME", "UNRESPONSIVE_THRESHOLD", "RETRY_ATTEMPS",
     "CATEGORY_HEIGHT", "CATEGORY_FONT_SIZE", "TROUBLESHOOTING_HEIGHT",
-    "DIVISION_PADDING", "SIDE_PADDING",
+    "DIVISION_PADDING", "SIDE_PADDING", "CARD_PADDING",
+    "CATEGORY_CARD_MARGIN", "CATEGORY_COLUMN_SPACE"
+]
+vars2 = [
     "WORK_COLOR", "PERSONAL_COLOR", "NEUTRAL_COLOR",
     "TEXT_COLOR", "CARD_COLOR", "BACKGROUND",
-    "CATEGORY_CARD_PERCENTAGE_COLOR"
+    "CATEGORY_CARD_PERCENTAGE_COLOR", "CARD_OUTLINE_COLOR"
 ]
 
 @callback(
@@ -160,7 +172,7 @@ def update_saved_values(_1, _2):
     """Updates the saved values using the config file."""
     global CFG
     CFG = load_config()
-    return [CFG[var] for var in variable_names]
+    return [CFG[var] for var in vars1 + vars2]
 
 
 @callback(
@@ -171,8 +183,8 @@ def update_display_values(_1):
     """Updates the display values using the config file."""
     global CFG
     CFG = load_config()
-    return_value = [CFG[var] for var in variable_names[:11]]
-    return_value += [rgb_to_hex(CFG[var]) for var in variable_names[11:]]
+    return_value = [CFG[var] for var in vars1]
+    return_value += [rgb_to_hex(CFG[var]) for var in vars2]
     return return_value
 
 
@@ -204,11 +216,12 @@ def change_config(n_clicks, _2, *args):
     with open(path, 'r', encoding='utf-8') as file:
         data = yaml.load(file)
 
-    for arg, name in zip(args[0:11], variable_names[0:11]):
+    index = len(vars1)
+    for arg, name in zip(args[:index], vars1):
         assert arg is not None
         data[name] = arg
 
-    for arg, name in zip(args[11:], variable_names[11:]):
+    for arg, name in zip(args[index:], vars2):
         assert arg is not None
         data[name] = hex_to_rgb(arg)
 

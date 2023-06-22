@@ -27,6 +27,14 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
     work_list = []
     personal_list = []
     neutral_list = []
+
+    card_style = {
+        'background-color': cfg['CARD_COLOR'],
+        'border': f'1px solid {cfg["CARD_OUTLINE_COLOR"]}',
+        'margin-bottom': f'{cfg["CATEGORY_CARD_MARGIN"]}px'
+    }
+    cardbody_style = {'padding': f'{cfg["CARD_PADDING"]}px'}
+
     for _, row in dataframe.iterrows():
         if row['total'] < cfg['MINIMUM_ACTIVITY_TIME'] / 3600:
             continue
@@ -35,6 +43,7 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
         percentage1 = f'{round(row["total"] / 16 * 100, 1)}% day '
         percentage2 = f' {round(row["total"] / total * 100, 1)}% total'
         percentage2 = percentage2 if row["process_name"] != "IDLE TIME" else ""
+
         item = dbc.Card([dbc.CardBody([
             dbc.Row([
                 html.H4(f'{row["process_name"]} {row["method"]}'),
@@ -56,19 +65,23 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
                     width="auto"
                 )
             ], className="justify-content-center g-0")
-        ])], className='category-card')
+        ], style=cardbody_style)], style=card_style)
         if category == "Work":
             work_list.append(item)
         elif category == "Personal":
             personal_list.append(item)
         else:
             neutral_list.append(item)
-    row = dbc.Row([
-        dbc.Col(work_list, width=4),
-        dbc.Col(personal_list, width=4),
-        dbc.Col(neutral_list, width=4)
-    ])
-    return row
+
+    cols = [
+        dbc.Col(work_list, class_name='g-0'),
+        dbc.Col(personal_list, class_name='g-0', style={
+            'margin-left': f'{cfg["CATEGORY_COLUMN_SPACE"]}px',
+            'margin-right': f'{cfg["CATEGORY_COLUMN_SPACE"]}px'
+        }),
+        dbc.Col(neutral_list, class_name='g-0'),
+    ]
+    return cols
 
 
 def get_day_timestamps(date: str):

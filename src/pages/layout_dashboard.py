@@ -45,47 +45,15 @@ layout = html.Div([
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
-    dbc.Row([dbc.Card([dbc.CardBody([
-        html.Div(id="info_row")
-    ])])], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
-    dbc.Row([
-        dbc.Card([dbc.CardBody([
-            dcc.Graph(
-                id="category_graph"
-            ),
-            dcc.Interval(
-                id='category_interval',
-                interval=15 * 1000,  # 36 seconds is 0.01 hour
-                n_intervals=-1
-            )
-        ])])
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
-    dbc.Row([
-        dcc.Interval(
-            id='categorized_interval',
-            interval=CFG["ACTIVITY_CHECK_INTERVAL"] * 1000,
-            n_intervals=-1
-        ),
-        dbc.Col([
-            html.Div(
-                id='categorized_list',
-                style={
-                    'margin-left': f"{CFG['SIDE_PADDING']}px",
-                    'margin-right': f"{CFG['SIDE_PADDING']}px"
-                }
-            )
-        ])
-    ]),
+    dbc.Row(id="info_row"),
+    dcc.Interval(id='category_interval', interval=15 * 1000, n_intervals=-1),
+    dbc.Row(id='category_row'),
+    dcc.Interval(
+        id='categorized_interval',
+        interval=CFG["ACTIVITY_CHECK_INTERVAL"] * 1000,
+        n_intervals=-1
+    ),
+    dbc.Row(id='categorized_list'),
     dbc.Modal([
             dbc.ModalBody([
                 html.Br(),
@@ -111,7 +79,8 @@ layout = html.Div([
 
 
 @callback(
-    Output('category_graph', 'figure'),
+    Output('category_row', 'children'),
+    Output('category_row', 'style'),
     Input('category_interval', 'n_intervals')
 )
 def update_category(_1):
@@ -126,8 +95,8 @@ def update_category(_1):
     fig.update_traces(marker_color=[
         CFG["NEUTRAL_COLOR"], CFG["PERSONAL_COLOR"], CFG["WORK_COLOR"]])
     fig.update_layout(
-        plot_bgcolor='rgb(43, 43, 43)',
-        paper_bgcolor='rgb(43, 43, 43)',
+        plot_bgcolor=CFG['CARD_COLOR'],
+        paper_bgcolor=CFG['CARD_COLOR'],
         font_color=CFG['TEXT_COLOR'],
         height=CFG['CATEGORY_HEIGHT'],
         legend_title_text="",
@@ -160,11 +129,29 @@ def update_category(_1):
         } for xi, yi in zip(data['category'], data['total'])
     ]
     fig.update_layout(annotations=sum_annotations)
-    return fig
+
+    card_style = {
+        'background-color': CFG['CARD_COLOR'],
+        'border': f'1px solid {CFG["CARD_OUTLINE_COLOR"]}'
+    }
+    cardbody_style = {'padding': f'{CFG["CARD_PADDING"]}px'}
+
+    card = dbc.Card([dbc.CardBody([
+        dcc.Graph(figure=fig),
+    ], style=cardbody_style)], style=card_style)
+
+    style = {
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
+    }
+    return card, style
 
 
 @callback(
     Output('categorized_list', 'children'),
+    Output('categorized_list', 'style'),
     Input('categorized_interval', 'n_intervals'),
     prevent_initial_call=True
 )
@@ -172,11 +159,19 @@ def update_element_list(_1):
     """Generates the event cards."""
     dataframe = load_dataframe('categories')
     save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')
-    return generate_cards(dataframe)
+    cards = generate_cards(dataframe)
+    style = {
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
+    }
+    return cards, style
 
 
 @callback(
     Output('info_row', 'children'),
+    Output('info_row', 'style'),
     Output('idle_modal', 'is_open'),
     Input('categorized_interval', 'n_intervals')
 )
@@ -189,20 +184,34 @@ def update_info_row(_1):
     keyboard = format_short_duration(now - load_input_time('keyboard'))
     audio = format_short_duration(now - load_input_time('audio'))
     fullscreen = format_short_duration(now - load_input_time('fullscreen'))
+
     style = {'margin': '0px'}
-    row = dbc.Row([
+    card_style = {
+        'background-color': CFG['CARD_COLOR'],
+        'border': f'1px solid {CFG["CARD_OUTLINE_COLOR"]}'
+    }
+    cardbody_style = {'padding': f'{CFG["CARD_PADDING"]}px'}
+
+    row = dbc.Card([dbc.CardBody([dbc.Row([
         dbc.Col([html.H4("Backend"), html.H5(backend)], style=style),
         dbc.Col([html.H4("Fronent"), html.H5(frontend)], style=style),
         dbc.Col([html.H4("Mouse"), html.H5(mouse)], style=style),
         dbc.Col([html.H4("Keyboard"), html.H5(keyboard)], style=style),
         dbc.Col([html.H4("Audio"), html.H5(audio)], style=style),
         dbc.Col([html.H4("Fullscreen"), html.H5(fullscreen)], style=style)
-    ])
+    ])], style=cardbody_style)], style=card_style)
+
+    style={
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px",
+    }
 
     # Modal
     last_row = load_lastest_row('activity')
     idle = last_row.loc[0, "process_name"] == "IDLE TIME"
-    return row, idle
+    return row, style, idle
 
 
 @callback(

@@ -1,5 +1,5 @@
 # Time variables ----------------------------------------------------------------------------------
-IDLE_TIME: 300                   # Time without interaction before considered idle
+IDLE_TIME: 240                   # Time without interaction before considered idle
 IDLE_CHECK_INTERVAL: 5           # Time between checking for idle
 ACTIVITY_CHECK_INTERVAL: 1       # Time between checking for interaction
 MINIMUM_ACTIVITY_TIME: 60        # Minimum time for activity to show in cards
@@ -17,20 +17,10 @@ TROUBLESHOOTING_HEIGHT: 900      # Size of troubleshooting page's graph
 BACKGROUND: "rgb(30, 30, 30)"                           # Background color of the entire website
 CARD_COLOR: "rgb(43, 43, 43)"                           # Background color of activity cards
 TEXT_COLOR: "rgb(255, 255, 255)"                        # Text color for all website text
-CATEGORY_CARD_PERCENTAGE_COLOR: "rgb(178, 217, 255)"    # Text color for activity time's part total
+CATEGORY_CARD_PERCENTAGE_COLOR: "rgb(168, 212, 255)"    # Text color for activity time's part total
 NEUTRAL_COLOR: "rgb(255, 204, 204)"                     # Categories graph neutral color
 PERSONAL_COLOR: "rgb(170, 0, 255)"                      # Categories graph personal color
 WORK_COLOR: "rgb(170, 170, 255)"                        # Categories graph work                                                                      
 
 # Path for files ----------------------------------------------------------------------------------
 URLS_PATH: "C:/Users/pedro/Downloads/EXTENSION/"        # Where the extension downloads the files
-
-# Activity detection configuration ----------------------------------------------------------------
-HIDDEN_APPS:            # Apps whose information should be hidden (except process name)
-  - 'firefox.exe'
-  - 'mpc-hc64.exe'
-  - 'explorer.exe'
-FULLSCREEN_APPS:        # Apps that should be treated as non-idle activity when in fullscreen mode
-  - 'sandrock.exe'
-  - 'mpc-hc64.exe'
-...

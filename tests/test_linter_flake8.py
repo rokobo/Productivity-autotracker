@@ -70,6 +70,13 @@ def test_flake8_layout_configuration() -> None:
     assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))
 
 
+def test_flake8_layout_configuration2() -> None:
+    """Ensures layout_configuration2 passes flake8 specifications."""
+    file = os.path.join(pages_folder, "layout_configuration2.py")
+    result = flake8.get_style_guide().check_files([file])
+    assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))
+
+
 def test_flake8_layout_credits() -> None:
     """Ensures layout_credits passes flake8 specifications."""
     file = os.path.join(pages_folder, "layout_credits.py")

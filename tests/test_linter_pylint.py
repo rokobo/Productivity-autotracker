@@ -70,6 +70,13 @@ def test_pylint_layout_configuration() -> None:
     assert result.global_note == 10, result.by_msg
 
 
+def test_pylint_layout_configuration2() -> None:
+    """Ensures layout_configuration2 passes pylint specifications."""
+    file = os.path.join(pages_folder, "layout_configuration2.py")
+    result = Run([file], do_exit=False).linter.stats
+    assert result.global_note == 10, result.by_msg
+
+
 def test_pylint_layout_credits() -> None:
     """Ensures layout_credits passes pylint specifications."""
     file = os.path.join(pages_folder, "layout_credits.py")

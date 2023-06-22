@@ -4,6 +4,7 @@ Updates DataFrame with current activity.
 # pylint: disable=protected-access, broad-exception-caught
 # pylint: disable=c-extension-no-member, import-error, no-name-in-module
 import time
+import re
 from threading import Thread
 from ctypes import windll
 from urllib.parse import urlparse
@@ -30,6 +31,7 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
                 process name, url and domain in case of browser.
     """
     cfg = load_config()
+    cfg2 = load_categories()
     retries = cfg['RETRY_ATTEMPS']
 
     handle = try_to_run(
@@ -66,11 +68,12 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
         input_thread.start()
 
     # Hide information from apps in HIDDEN_APPS list
-    if process_name.lower() in cfg["HIDDEN_APPS"]:
+    name = process_name.lower()
+    if any(re.search(pattern, name) for pattern in cfg2['HIDDEN_APPS']):
         title = "HIDDEN APPLICATION INFO"
 
     # Detect fullscreen mode from apps in FULLSCREEN_APPS list
-    if process_name.lower() in cfg['FULLSCREEN_APPS']:
+    if any(re.search(pattern, name) for pattern in cfg2['FULLSCREEN_APPS']):
         if detect_fullscreen(handle):
             save_dataframe(
                 pd.DataFrame({'time': [int(time.time())]}), 'fullscreen')

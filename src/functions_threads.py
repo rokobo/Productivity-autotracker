@@ -13,7 +13,8 @@ import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, Input, Output, callback
 from functions_activity import parser
 from pages import layout_dashboard, layout_activity, layout_categories, \
-    layout_inputs, layout_credits, layout_configuration
+    layout_inputs, layout_credits, layout_configuration, \
+    layout_configuration2
 from helper_io import save_dataframe, load_config
 
 
@@ -113,17 +114,22 @@ def server_supervisor():
         Input('url', 'pathname'))
     def display_page(pathname):
         """Support for multi-page Dash website."""
-        if pathname == "/activity":
-            return layout_activity.layout
-        if pathname == "/categories":
-            return layout_categories.layout
-        if pathname == "/inputs":
-            return layout_inputs.layout
-        if pathname == "/credits":
-            return layout_credits.layout
-        if pathname == "/configuration":
-            return layout_configuration.layout
-        return layout_dashboard.layout
+        match pathname:
+            case "/activity":
+                layout = layout_activity.layout
+            case "/categories":
+                layout = layout_categories.layout
+            case "/inputs":
+                layout = layout_inputs.layout
+            case "/credits":
+                layout = layout_credits.layout
+            case "/configuration":
+                layout = layout_configuration.layout
+            case "/configuration2":
+                layout = layout_configuration2.layout
+            case _:
+                layout = layout_dashboard.layout
+        return layout
 
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)

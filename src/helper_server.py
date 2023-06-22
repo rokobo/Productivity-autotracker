@@ -8,7 +8,8 @@ import datetime
 import pandas as pd
 from dash import html
 import dash_bootstrap_components as dbc
-from helper_io import save_dataframe, load_config, load_dataframe
+from helper_io import save_dataframe, load_config, load_dataframe,\
+    load_categories
 
 
 def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
@@ -170,9 +171,55 @@ def format_short_duration(seconds: int) -> str:
     return format_duration(seconds, False)
 
 
+def make_listpicker(name: str) -> dbc.Tab:
+    """
+    Makes the listpicker component with config based on name variable.
+    Used to modify a list and display state.
+
+    Args:
+        name (str): String used to make labels and ids, such as:
+            input-{name}, button-{name}, checklist-{name}.
+
+    Returns:
+        dbc.Tab: Listpicker component.
+    """
+    cfg2 = load_categories()
+    names = cfg2[name]
+    listpicker = dbc.Tab([
+        html.Br(),
+        html.H3(name),
+        dbc.Row([
+            dbc.Col(
+                dbc.Input(
+                    type="text",
+                    placeholder="Enter new item",
+                    id=f'input-{name}', autocomplete='off'
+                ), className="me-3",
+            ),
+            dbc.Tooltip(
+                "This list uses regex patterns to match events into their \
+                    respective categories. Remember to escape special \
+                        characters if you want their literals.",
+                target=f'input-{name}', placement="bottom"),
+            dbc.Col(
+                dbc.Button("Submit", color="primary", id=f'button-{name}'),
+                width="auto"
+            ),
+        ], class_name='g-0'),
+        html.Hr(),
+        dbc.Checklist(
+            options=names, value=names, id=f'checklist-{name}',
+            style={'font-size': '20px', 'columns': '3'},
+            switch=True
+        )
+    ], label=name)
+    return listpicker
+
+
 def make_colorpicker(id_name: str, label: str) -> dbc.Col:
     """
     Makes the colorpicker component with a label and id.
+    Used to pick a color, and display text.
 
     Args:
         id_name (str): Component id.
@@ -201,6 +248,7 @@ def make_valuepicker(
         id_name: str, label: str, min_val: int, max_val: int) -> dbc.Col:
     """
     Makes the input component with a label, id, minimium and maximum value.
+    Used to pick a value and display text.
 
     Args:
         id_name (str): Component id.

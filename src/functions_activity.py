@@ -300,7 +300,13 @@ def total_by_category(dataframe: pd.DataFrame) -> pd.DataFrame:
     filtered_df = dataframe[dataframe['process_name'] != "IDLE TIME"]
     grouped_df = filtered_df.groupby('category').agg(
         {'total': 'sum'}).reset_index()
-    return grouped_df
+
+    rows = ['Work', 'Personal', 'Neutral']
+    values = [row for row in rows if row not in grouped_df['category'].values]
+    filled_df = pd.concat([
+        grouped_df, pd.DataFrame({'category': values, 'total': 0})
+    ]).sort_values(by='category', ascending=False)
+    return filled_df.reset_index(drop=True)
 
 
 def parser(save_files: bool = True) -> tuple[pd.DataFrame]:

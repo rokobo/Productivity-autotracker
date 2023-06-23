@@ -71,15 +71,15 @@ layout = html.Div([
     dbc.Row(html.H3('Time variables')),
     dbc.Row([
         dbc.Row([
-            make_valuepicker('idle-time', "IDLE_TIME", 15, 3600),
-            make_valuepicker('idle-check-interval', "IDLE_CHECK_INTERVAL", 1, 60),
-            make_valuepicker('activity-check-interval', "ACTIVITY_CHECK_INTERVAL", 1, 10)
+            make_valuepicker("IDLE_TIME", 15, 3600),
+            make_valuepicker("IDLE_CHECK_INTERVAL", 1, 60),
+            make_valuepicker("ACTIVITY_CHECK_INTERVAL", 1, 10)
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
-            make_valuepicker('minimum-activity-time', "MINIMUM_ACTIVITY_TIME", 1, 1800),
-            make_valuepicker('unresponsive-threshold', "UNRESPONSIVE_THRESHOLD", 3, 30),
-            make_valuepicker('retry-attemps', "RETRY_ATTEMPS", 1, 25)
+            make_valuepicker("MINIMUM_ACTIVITY_TIME", 1, 1800),
+            make_valuepicker("UNRESPONSIVE_THRESHOLD", 3, 30),
+            make_valuepicker("RETRY_ATTEMPS", 1, 25)
         ], className="g-0")
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
@@ -90,20 +90,20 @@ layout = html.Div([
     dbc.Row(html.H3('Size variables')),
     dbc.Row([
         dbc.Row([
-            make_valuepicker('category-height', "CATEGORY_HEIGHT", 100, 500),
-            make_valuepicker('category-font-size', "CATEGORY_FONT_SIZE", 1, 50),
-            make_valuepicker('troubleshooting-height', "TROUBLESHOOTING_HEIGHT", 100, 2000)
+            make_valuepicker("CATEGORY_HEIGHT", 100, 500),
+            make_valuepicker("CATEGORY_FONT_SIZE", 1, 50),
+            make_valuepicker("TROUBLESHOOTING_HEIGHT", 100, 2000)
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
-            make_valuepicker('division-padding', "DIVISION_PADDING", 1, 50),
-            make_valuepicker('side-padding', "SIDE_PADDING", 1, 50),
-            make_valuepicker('card-padding', "CARD_PADDING", 1, 10)
+            make_valuepicker("DIVISION_PADDING", 1, 50),
+            make_valuepicker("SIDE_PADDING", 1, 50),
+            make_valuepicker("CARD_PADDING", 1, 10)
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
-            make_valuepicker('category-card-margin', "CATEGORY_CARD_MARGIN", 1, 20),
-            make_valuepicker('category-column-space', "CATEGORY_COLUMN_SPACE", 1, 100),
+            make_valuepicker("CATEGORY_CARD_MARGIN", 1, 20),
+            make_valuepicker("CATEGORY_COLUMN_SPACE", 1, 100),
             dbc.Col()
         ], className="g-0")
     ], style={
@@ -115,20 +115,20 @@ layout = html.Div([
     dbc.Row(html.H3('Color variables')),
     dbc.Row([
         dbc.Row([
-            make_colorpicker('work-color', 'WORK_COLOR'),
-            make_colorpicker('personal-color', 'PERSONAL_COLOR'),
-            make_colorpicker('neutral-color', 'NEUTRAL_COLOR'),
+            make_colorpicker('WORK_COLOR'),
+            make_colorpicker('PERSONAL_COLOR'),
+            make_colorpicker('NEUTRAL_COLOR'),
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
-            make_colorpicker('text-color', 'TEXT_COLOR'),
-            make_colorpicker('card-color', 'CARD_COLOR'),
-            make_colorpicker('background', 'BACKGROUND'),
+            make_colorpicker('TEXT_COLOR'),
+            make_colorpicker('CARD_COLOR'),
+            make_colorpicker('BACKGROUND'),
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
-            make_colorpicker('card-percentage-color', 'CATEGORY_CARD_PERCENTAGE_COLOR'),
-            make_colorpicker('card-outline-color', 'CARD_OUTLINE_COLOR'),
+            make_colorpicker('CATEGORY_CARD_PERCENTAGE_COLOR'),
+            make_colorpicker('CARD_OUTLINE_COLOR'),
             dbc.Col()
         ], className="g-0")
     ], style={
@@ -140,16 +140,6 @@ layout = html.Div([
 ])
 
 
-input_names = [
-    'idle-time', 'idle-check-interval', 'activity-check-interval',
-    'minimum-activity-time', 'unresponsive-threshold', 'retry-attemps',
-    'category-height', 'category-font-size', 'troubleshooting-height',
-    'division-padding', 'side-padding', 'card-padding',
-    'category-card-margin', 'category-column-space',
-    'work-color', 'personal-color', 'neutral-color',
-    'text-color', 'card-color', 'background',
-    'card-percentage-color', 'card-outline-color'
-]
 vars1 = [
     "IDLE_TIME", "IDLE_CHECK_INTERVAL", "ACTIVITY_CHECK_INTERVAL",
     "MINIMUM_ACTIVITY_TIME", "UNRESPONSIVE_THRESHOLD", "RETRY_ATTEMPS",
@@ -164,7 +154,7 @@ vars2 = [
 ]
 
 @callback(
-    [Output(f'saved-{name}', 'children') for name in input_names],
+    [Output(f'saved-{name}', 'children') for name in vars1 + vars2],
     Input('refresh-button', 'n_clicks'),
     Input('save-button', 'n_clicks'),
 )
@@ -176,7 +166,7 @@ def update_saved_values(_1, _2):
 
 
 @callback(
-    [Output(name, 'value') for name in input_names],
+    [Output(name, 'value') for name in vars1 + vars2],
     Input('set-button', 'n_clicks'),
 )
 def update_display_values(_1):
@@ -189,11 +179,11 @@ def update_display_values(_1):
 
 
 @callback(
-    [Output(name, 'invalid') for name in input_names],
+    [Output(name, 'invalid') for name in vars1 + vars2],
     Output('save-button', 'n_clicks'),
     Input('save-button', 'n_clicks'),
     Input('check_interval', 'n_intervals'),
-    [State(name, 'value') for name in input_names],
+    [State(name, 'value') for name in vars1 + vars2],
     prevent_initial_call=True
 )
 def change_config(n_clicks, _2, *args):

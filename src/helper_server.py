@@ -229,20 +229,19 @@ def make_listpicker(name: str) -> dbc.Tab:
     return listpicker
 
 
-def make_colorpicker(id_name: str, label: str) -> dbc.Col:
+def make_colorpicker(id_name: str) -> dbc.Col:
     """
     Makes the colorpicker component with a label and id.
     Used to pick a color, and display text.
 
     Args:
         id_name (str): Component id.
-        label (str): Label on top of the color selector.
 
     Returns:
         dbc.Col: Colorpicker component.
     """
     colorpicker = dbc.Col([
-        html.H5(label, style={"textAlign": "left"}),
+        html.H5(id_name, style={"textAlign": "left"}),
         dbc.Input(
             type="color",
             id=id_name,
@@ -258,14 +257,13 @@ def make_colorpicker(id_name: str, label: str) -> dbc.Col:
 
 
 def make_valuepicker(
-        id_name: str, label: str, min_val: int, max_val: int) -> dbc.Col:
+        id_name: str, min_val: int, max_val: int) -> dbc.Col:
     """
     Makes the input component with a label, id, minimium and maximum value.
     Used to pick a value and display text.
 
     Args:
         id_name (str): Component id.
-        label (str): Label on top of the color selector.
         min_val (int): Maximum value of the given input.
         max_val (int): Minimum value of the given input.
 
@@ -273,7 +271,7 @@ def make_valuepicker(
         dbc.Col: Input component.
     """
     colorpicker = dbc.Col([
-        html.H5(label, style={"textAlign": "left"}),
+        html.H5(id_name, style={"textAlign": "left"}),
         dbc.Input(
             type="number", id=id_name,
             min=min_val, max=max_val, step=1,

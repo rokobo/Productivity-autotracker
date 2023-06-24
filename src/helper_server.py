@@ -8,8 +8,8 @@ import datetime
 import pandas as pd
 from dash import html
 import dash_bootstrap_components as dbc
-from helper_io import save_dataframe, load_config, load_dataframe,\
-    load_categories
+from helper_io import save_dataframe, load_config,\
+    load_categories, load_day_total
 
 
 def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
@@ -23,7 +23,7 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
         dbc.Row: Dash Row with categorized activities.
     """
     cfg = load_config()
-    totals = load_dataframe('totals')
+    totals = load_day_total(365)
     work_list = []
     personal_list = []
     neutral_list = []
@@ -39,7 +39,7 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
         if row['total'] < cfg['MINIMUM_ACTIVITY_TIME'] / 3600:
             continue
         category = row['category']
-        total = totals.loc[totals["category"] == category, "total"].values[0]
+        total = totals.loc[0, category]
         percentage1 = f'{round(row["total"] / 16 * 100, 1)}% day '
         percentage2 = f' {round(row["total"] / total * 100, 1)}% total'
         percentage2 = percentage2 if row["process_name"] != "IDLE TIME" else ""
@@ -104,29 +104,6 @@ def get_day_timestamps(date: str):
     end_of_day = datetime.datetime.combine(current_date, datetime.time.max)
     end_timestamp = int(end_of_day.timestamp())
     return start_timestamp, end_timestamp
-
-
-def set_date_range(start: Optional[int] = None, end: Optional[int] = None):
-    """
-    Sets the date range file to the passed values or today in case of None.
-
-    Args:
-        start (int): Start date timestamp.
-        end (int): End date timestamp.
-
-    Returns:
-        start (int): Start date timestamp.
-        end (int): End date timestamp.
-    """
-    start_today, end_today = get_day_timestamps(
-        str(datetime.datetime.now().date()))
-    if start is None:
-        start = start_today
-    if end is None:
-        end = end_today
-    save_dataframe(
-        pd.DataFrame({'start_time': [start], 'end_time': [end]}), 'date')
-    return start, end
 
 
 def format_duration(seconds: int, long: bool) -> str:

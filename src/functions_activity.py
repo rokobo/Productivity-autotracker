@@ -211,19 +211,6 @@ def join(dataframe: pd.DataFrame) -> None:
         append_to_database('activity', dataframe)
 
 
-def organize_by_date() -> pd.DataFrame:
-    """
-    Filters activity database to get events between timestamps in date.db.
-
-    Returns:
-        pd.DataFrame: Filtered dataframe.
-    """
-    date_range = load_dataframe('date')
-    start, end = date_range.iloc[0, 0:2]
-    filtered_df = load_activity_between(start, end)
-    return filtered_df
-
-
 def categories_sum(
         dataframe: pd.DataFrame, cfg2: dict[str, any]) -> pd.DataFrame:
     """
@@ -238,6 +225,8 @@ def categories_sum(
     """
     dataframe.loc[
         :, 'duration'] = dataframe['end_time'] - dataframe['start_time']
+    dataframe.loc[:, 'day'] = pd.to_datetime(
+        dataframe['start_time'], unit='s').dt.date
 
     # Choose event category and method of choosing
     conditions = [
@@ -279,10 +268,10 @@ def categories_sum(
 
     # Aggregate events to simply visualization
     df_sum = dataframe.groupby(
-        ['process_name', 'subtitle', 'category', 'method']
+        ['process_name', 'day', 'subtitle', 'category', 'method']
     ).agg({'duration': 'sum'}).reset_index()
     df_sum.loc[:, 'total'] = df_sum['duration'] / 3600
-    df_sum = df_sum.sort_values(by='duration', ascending=False)
+    df_sum = df_sum.sort_values(by=['day', 'duration'], ascending=False)
     df_sum.loc[:, 'duration'] = df_sum['duration'].apply(format_long_duration)
     return df_sum
 
@@ -297,16 +286,14 @@ def total_by_category(dataframe: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Dataframe with the category and it's total time.
     """
-    filtered_df = dataframe[dataframe['process_name'] != "IDLE TIME"]
-    grouped_df = filtered_df.groupby('category').agg(
-        {'total': 'sum'}).reset_index()
-
-    rows = ['Work', 'Personal', 'Neutral']
-    values = [row for row in rows if row not in grouped_df['category'].values]
-    filled_df = pd.concat([
-        grouped_df, pd.DataFrame({'category': values, 'total': 0})
-    ]).sort_values(by='category', ascending=False)
-    return filled_df.reset_index(drop=True)
+    filter_df = dataframe[dataframe['process_name'] != "IDLE TIME"]
+    group_df = filter_df.groupby(
+        ['day', 'category']).agg({'total': 'sum'}).reset_index()
+    pivot_df = group_df.pivot(columns='category', index='day', values='total')
+    date_range = pd.date_range(
+        end=pd.to_datetime('today').date(), periods=365, freq='D')
+    pivot_df = pivot_df.reindex(date_range, fill_value=0)
+    return pivot_df
 
 
 def parser(save_files: bool = True) -> tuple[pd.DataFrame]:
@@ -336,9 +323,9 @@ def parser(save_files: bool = True) -> tuple[pd.DataFrame]:
     join(parsed_data)
 
     # Make secondary file containing aggregated entries
-    dated_dataframe = organize_by_date()
+    act = load_dataframe('activity')
     cfg2 = load_categories()
-    categorized_dataframe = categories_sum(dated_dataframe, cfg2)
+    categorized_dataframe = categories_sum(act, cfg2)
     if save_files:
         arg = (categorized_dataframe, 'categories')
         categories_thread = Thread(target=save_dataframe, args=arg)

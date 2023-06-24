@@ -14,9 +14,9 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import layout_menu
 from helper_server import generate_cards, \
-    format_short_duration, set_date_range
+    format_short_duration
 from helper_io import save_dataframe, load_dataframe, \
-    load_input_time, load_config, set_idle, load_lastest_row
+    load_input_time, load_config, set_idle, load_lastest_row, load_day_total
 
 CFG = load_config()
 
@@ -25,11 +25,6 @@ layout = html.Div([
     dbc.Row([
         layout_menu.layout,
         dbc.Col(html.H3("Productivity Dashboard"), width='auto'),
-        dcc.Interval(
-            id='date_reset_interval',
-            interval=30 * 1000,
-            n_intervals=-1
-        ),
         dbc.Col(
             dbc.Button([
                     dbc.Spinner(html.Div(id="idle_loading"), size="sm"),
@@ -69,12 +64,7 @@ layout = html.Div([
                 html.Br(),
             ])],
         id="idle_modal", centered=True, is_open=False
-    ),
-    dcc.Interval(
-        id='idle_interval',
-        interval=4 * 1000,
-        n_intervals=-1
-    ),
+    )
 ])
 
 
@@ -87,11 +77,17 @@ def update_category(_1):
     """Makes total time by category graph."""
     global CFG
     CFG = load_config()
-    data = load_dataframe('totals')
+
+    data = load_day_total(365).transpose()
+    data.reset_index(inplace=True)
+    data.rename(columns={
+        'index': 'category', data.columns[1]: 'total'
+    }, inplace=True)
     fig = px.bar(
         data, x='category', y='total',
         category_orders={'category': ['Work', 'Personal', 'Neutral']}
     )
+
     fig.update_traces(marker_color=[
         CFG["NEUTRAL_COLOR"], CFG["PERSONAL_COLOR"], CFG["WORK_COLOR"]])
     fig.update_layout(
@@ -158,6 +154,8 @@ def update_category(_1):
 def update_element_list(_1):
     """Generates the event cards."""
     dataframe = load_dataframe('categories')
+    dataframe = dataframe[
+        dataframe['day'] == str(pd.to_datetime('today').date())]
     save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')
     cards = generate_cards(dataframe)
     style = {
@@ -212,16 +210,6 @@ def update_info_row(_1):
     last_row = load_lastest_row('activity')
     idle = last_row.loc[0, "process_name"] == "IDLE TIME"
     return row, style, idle
-
-
-@callback(
-    Output('date_reset_interval', 'n_intervals'),
-    Input('date_reset_interval', 'n_intervals')
-)
-def save_date(intevals):
-    """Sets the desired date range to file."""
-    set_date_range()
-    return intevals
 
 
 @callback(

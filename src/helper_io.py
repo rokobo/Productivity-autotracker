@@ -91,6 +91,36 @@ def load_lastest_row(name: str) -> pd.DataFrame:
     return dataframe
 
 
+def load_day_total(day: int) -> pd.DataFrame:
+    """
+    Loads the total times from the given day.
+    Today is 365 and it the same day last year is 0.
+
+    Returns:
+        pd.DataFrame: Accessed dataframe.
+    """
+    # Check if file does not exists
+    cfg = load_config()
+    path = os.path.join(cfg["WORKSPACE"], 'data/totals.db')
+    dataframe = pd.DataFrame({})
+    assert os.path.exists(path)
+
+    # Access database
+    retries = cfg['RETRY_ATTEMPS']
+    dataframe = try_to_run(
+        var='data',
+        code='conn = sql.connect(path)\
+            \ndata = pd.read_sql(\
+                f"SELECT * FROM totals\
+                    WHERE rowid = {day}", conn)',
+        error_check='data.empty or not isinstance(data, pd.DataFrame)',
+        final_code='conn.close()',
+        retries=retries,
+        environment=locals())
+    assert not dataframe.empty
+    return dataframe
+
+
 def modify_latest_row(
         name: str, new_row: pd.DataFrame,
         columns_to_update: list[str]) -> None:

@@ -17,8 +17,7 @@ from helper_server import format_long_duration
 from helper_retry import try_to_run
 from helper_io import load_dataframe, load_input_time, append_to_database, \
     save_dataframe, load_urls, clean_and_select_newest_url, load_config, \
-    load_lastest_row, modify_latest_row, load_activity_between,\
-    load_categories
+    load_lastest_row, modify_latest_row, load_categories
 
 
 def detect_activity() -> tuple[int, str, int, int, str, str, str]:

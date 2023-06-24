@@ -2,13 +2,12 @@
 Collection of helper functions for website routines.
 """
 # pylint: disable=consider-using-f-string, import-error
-from typing import Optional
 import re
 import datetime
 import pandas as pd
 from dash import html
 import dash_bootstrap_components as dbc
-from helper_io import save_dataframe, load_config,\
+from helper_io import load_config,\
     load_categories, load_day_total
 
 

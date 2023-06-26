@@ -80,6 +80,10 @@ layout = html.Div([
             make_valuepicker("MINIMUM_ACTIVITY_TIME", 1, 1800),
             make_valuepicker("UNRESPONSIVE_THRESHOLD", 3, 30),
             make_valuepicker("RETRY_ATTEMPS", 1, 25)
+        ], className="g-0"),
+        html.Hr(),
+        dbc.Row([
+            make_valuepicker("GMT_OFFSET", -12, 12),
         ], className="g-0")
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
@@ -99,6 +103,12 @@ layout = html.Div([
             make_valuepicker("DIVISION_PADDING", 1, 50),
             make_valuepicker("SIDE_PADDING", 1, 50),
             make_valuepicker("CARD_PADDING", 1, 10)
+        ], className="g-0"),
+        html.Hr(),
+        dbc.Row([
+            make_valuepicker("GOALS_HEATMAP_HEIGHT", 50, 250),
+            make_valuepicker("GOALS_HEATMAP_GAP", 1, 15),
+            make_valuepicker("GOALS_HEATMAP_DIVISION", 5, 100)
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
@@ -127,6 +137,12 @@ layout = html.Div([
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
+            make_colorpicker('HEATMAP_BASE_COLOR'),
+            make_colorpicker('HEATMAP_GOOD_COLOR'),
+            make_colorpicker('HEATMAP_BAD_COLOR'),
+        ], className="g-0"),
+        html.Hr(),
+        dbc.Row([
             make_colorpicker('CATEGORY_CARD_PERCENTAGE_COLOR'),
             make_colorpicker('CARD_OUTLINE_COLOR'),
             dbc.Col()
@@ -143,13 +159,16 @@ layout = html.Div([
 vars1 = [
     "IDLE_TIME", "IDLE_CHECK_INTERVAL", "ACTIVITY_CHECK_INTERVAL",
     "MINIMUM_ACTIVITY_TIME", "UNRESPONSIVE_THRESHOLD", "RETRY_ATTEMPS",
+    "GMT_OFFSET",
     "CATEGORY_HEIGHT", "CATEGORY_FONT_SIZE", "TROUBLESHOOTING_HEIGHT",
     "DIVISION_PADDING", "SIDE_PADDING", "CARD_PADDING",
+    "GOALS_HEATMAP_HEIGHT", "GOALS_HEATMAP_GAP", "GOALS_HEATMAP_DIVISION",
     "CATEGORY_CARD_MARGIN", "CATEGORY_COLUMN_SPACE"
 ]
 vars2 = [
     "WORK_COLOR", "PERSONAL_COLOR", "NEUTRAL_COLOR",
     "TEXT_COLOR", "CARD_COLOR", "BACKGROUND",
+    "HEATMAP_BASE_COLOR", "HEATMAP_GOOD_COLOR", "HEATMAP_BAD_COLOR",
     "CATEGORY_CARD_PERCENTAGE_COLOR", "CARD_OUTLINE_COLOR"
 ]
 

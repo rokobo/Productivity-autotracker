@@ -6,6 +6,7 @@ menu_items = [
     dbc.DropdownMenuItem("Dashboard page", href="/"),
     dbc.DropdownMenuItem(divider=True),
     dbc.DropdownMenuItem("Analytics pages", header=True),
+    dbc.DropdownMenuItem("Goals page", href="/goals"),
     dbc.DropdownMenuItem(divider=True),
     dbc.DropdownMenuItem("Customization pages", header=True),
     dbc.DropdownMenuItem("Configuration page", href="/configuration"),

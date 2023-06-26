@@ -44,6 +44,7 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
   + `Dashboard page` - Contains the categoried and aggregated events, along with a graph with the total daily time of each category.
 
 + **Analytics pages**:
+  + `Goals page` - Contains heatmaps that track progress on a number of goals defined by the user.
 
 + **Customization pages**:
   + `Configuration page` - Offers ways to modify the contents of `config.yaml`.

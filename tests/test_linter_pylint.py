@@ -98,6 +98,13 @@ def test_pylint_layout_dashboard() -> None:
     assert result.global_note == 10, result.by_msg
 
 
+def test_pylint_layout_goals() -> None:
+    """Ensures layout_goals passes pylint specifications."""
+    file = os.path.join(pages_folder, "layout_goals.py")
+    result = Run([file], do_exit=False).linter.stats
+    assert result.global_note == 10, result.by_msg
+
+
 def test_pylint_layout_menu() -> None:
     """Ensures layout_menu passes pylint specifications."""
     file = os.path.join(pages_folder, "layout_menu.py")

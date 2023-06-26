@@ -63,8 +63,7 @@ def load_categories() -> dict[str, any]:
 
 def load_lastest_row(name: str) -> pd.DataFrame:
     """
-    Check if DataFrame is empty and
-    creates DataFrame if file is non-existant.
+    Loads latest row of a given dataframe.
 
     Returns:
         pd.DataFrame: Accessed dataframe.
@@ -94,7 +93,7 @@ def load_lastest_row(name: str) -> pd.DataFrame:
 def load_day_total(day: int) -> pd.DataFrame:
     """
     Loads the total times from the given day.
-    Today is 365 and it the same day last year is 0.
+    Today is 364, yesterday is 363.
 
     Returns:
         pd.DataFrame: Accessed dataframe.
@@ -218,8 +217,7 @@ def load_activity_between(
 
 def load_dataframe(name: str) -> pd.DataFrame:
     """
-    Check if DataFrame is empty and
-    creates DataFrame if file is non-existant.
+    Loads entire database with the provided name.
 
     Returns:
         pd.DataFrame: Accessed dataframe.
@@ -246,7 +244,7 @@ def load_dataframe(name: str) -> pd.DataFrame:
 
 def save_dataframe(dataframe: pd.DataFrame, name: str):
     """
-    Saves dataframe .db file and handles errors.
+    Saves dataframe to .db file.
 
     Args:
         dataframe (pd.DataFrame): Dataframe to be saved.
@@ -270,8 +268,7 @@ def save_dataframe(dataframe: pd.DataFrame, name: str):
 
 def load_input_time(name: str) -> int:
     """
-    Will return the time of last input from path or return 0 if
-    there were any mistakes in the process.
+    Will return the time of last input from path.
 
     Args:
         path (str): Path of last input dataframe.

@@ -222,10 +222,13 @@ def categories_sum(
     Returns:
         pd.DataFrame: Aggregated categorized dataframe.
     """
+    cfg = load_config()
     dataframe.loc[
         :, 'duration'] = dataframe['end_time'] - dataframe['start_time']
-    dataframe.loc[:, 'day'] = pd.to_datetime(
-        dataframe['start_time'], unit='s').dt.date
+    dataframe.loc[:, 'day'] = (
+        pd.to_datetime(dataframe['start_time'], unit='s') +
+        pd.Timedelta(cfg["GMT_OFFSET"], unit='h')
+    ).dt.date
 
     # Choose event category and method of choosing
     conditions = [
@@ -290,8 +293,8 @@ def total_by_category(dataframe: pd.DataFrame) -> pd.DataFrame:
         ['day', 'category']).agg({'total': 'sum'}).reset_index()
     pivot_df = group_df.pivot(columns='category', index='day', values='total')
     date_range = pd.date_range(
-        end=pd.to_datetime('today').date(), periods=365, freq='D')
-    pivot_df = pivot_df.reindex(date_range, fill_value=0)
+        end=pd.to_datetime('today').date(), periods=364, freq='D')
+    pivot_df = pivot_df.reindex(date_range, fill_value=0).fillna(0)
     return pivot_df
 
 

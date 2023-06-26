@@ -78,7 +78,7 @@ def update_category(_1):
     global CFG
     CFG = load_config()
 
-    data = load_day_total(365).transpose()
+    data = load_day_total(364).transpose()
     data.reset_index(inplace=True)
     data.rename(columns={
         'index': 'category', data.columns[1]: 'total'

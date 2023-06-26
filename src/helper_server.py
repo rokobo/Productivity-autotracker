@@ -5,10 +5,11 @@ Collection of helper functions for website routines.
 import re
 import datetime
 import pandas as pd
-from dash import html
+from dash import html, dcc
 import dash_bootstrap_components as dbc
+import plotly.graph_objects as go
 from helper_io import load_config,\
-    load_categories, load_day_total
+    load_categories, load_day_total, load_dataframe
 
 
 def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
@@ -22,7 +23,7 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
         dbc.Row: Dash Row with categorized activities.
     """
     cfg = load_config()
-    totals = load_day_total(365)
+    totals = load_day_total(364)
     work_list = []
     personal_list = []
     neutral_list = []
@@ -299,3 +300,65 @@ def hex_to_rgb(hex_string: str) -> str:
         int(hex_string[5:7], 16)
     )
     return rgb_code
+
+
+def make_heatmap(
+        categories: list[str], titles: list[str],
+        colors: list[list[str]]) -> list:
+    """
+    Makes a yealy heatmap using the provided arguments.
+    The arguments are lists for multiple graphs support.
+
+    Args:
+        categories (list[str]): List of categories from totals database.
+        titles (list[str]): List of titles of the heatmaps.
+        colors (list[list[str]]): List of colors of the heatmaps.
+
+    Returns:
+        list: _description_
+    """
+    cfg = load_config()
+    row = []
+    base = [cfg["HEATMAP_BASE_COLOR"], cfg["HEATMAP_BASE_COLOR"]]
+
+    for category, title, color in zip(categories, titles, colors):
+        totals = load_dataframe("totals")[category].values
+        data = [[
+            1 if totals[day_index] >= cfg[f"{category.upper()}_DAILY_GOAL"]
+            else 0
+            for day_index in range(week * 7, (1 + week) * 7)
+        ] for week in range(52)]
+        data = list(map(list, zip(*data)))
+
+        fig = go.Figure(data=go.Heatmap(
+            z=data, x=list(range(1, 53)), y=list(range(1, 7)),
+            xgap=cfg["GOALS_HEATMAP_GAP"], ygap=cfg["GOALS_HEATMAP_GAP"],
+            colorscale=base + [color],
+            showlegend=False, showscale=False
+        ))
+        fig.update_layout(
+            plot_bgcolor=cfg["BACKGROUND"],
+            paper_bgcolor=cfg["BACKGROUND"],
+            font_color=cfg['TEXT_COLOR'],
+            height=cfg['GOALS_HEATMAP_HEIGHT'],
+            margin={'l': 0, 'r': 0, 't': 0, 'b': 0}
+        )
+        fig.update_xaxes(
+            side="top", title=None, showgrid=False,
+            color=cfg['TEXT_COLOR'], tickmode='array',
+            tickvals=[1, 10, 20, 30, 40, 50],
+            ticktext=[1, 10, 20, 30, 40, 50]
+        )
+        fig.update_yaxes(
+            side="right", title=None, showgrid=False,
+            color=cfg['TEXT_COLOR'], tickmode='array',
+            tickvals=[7], ticktext=["←"]
+        )
+        row.append(dbc.Row([
+            html.H4(
+                title +
+                f' ({cfg[f"{category.upper()}_DAILY_GOAL"]} hours)'
+            ),
+            dcc.Graph(figure=fig, style={'width': '100%'})
+        ], style={'margin-bottom': f'{cfg["GOALS_HEATMAP_DIVISION"]}px'}))
+    return row

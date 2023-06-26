@@ -25,6 +25,7 @@ layout = html.Div([
     dbc.Row([
         layout_menu.layout,
         dbc.Col(html.H3("Productivity Dashboard"), width='auto'),
+        dbc.Col(id="goals_title", width='auto'),
         dbc.Col(
             dbc.Button([
                     dbc.Spinner(html.Div(id="idle_loading"), size="sm"),
@@ -71,6 +72,7 @@ layout = html.Div([
 @callback(
     Output('category_row', 'children'),
     Output('category_row', 'style'),
+    Output('goals_title', 'children'),
     Input('category_interval', 'n_intervals')
 )
 def update_category(_1):
@@ -142,7 +144,25 @@ def update_category(_1):
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }
-    return card, style
+
+    work = data.loc[data['category'] == 'Work', 'total'].values[0]
+    goal_text = "Work: "
+    if work >= CFG['WORK_DAILY_GOAL']:
+        goal_text += "Done!"
+    else:
+        left = (CFG['WORK_DAILY_GOAL'] - work) * 60
+        goal_text += f"{int(left)} minutes left"
+    
+    personal = data.loc[data['category'] == 'Personal', 'total'].values[0]
+    goal_text += ", Personal: "
+    if personal >= CFG['WORK_DAILY_GOAL']:
+        goal_text += "Over limit!"
+    else:
+        left = (CFG['PERSONAL_DAILY_GOAL'] - personal) * 60
+        goal_text += f"{int(left)} minutes left"
+
+    goals = html.H4(goal_text)
+    return card, style, goals
 
 
 @callback(

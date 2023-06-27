@@ -17,7 +17,7 @@ from helper_server import format_long_duration
 from helper_retry import try_to_run
 from helper_io import load_dataframe, load_input_time, append_to_database, \
     save_dataframe, load_urls, clean_and_select_newest_url, load_config, \
-    load_lastest_row, modify_latest_row, load_categories
+    load_lastest_row, modify_latest_row, load_categories, timestamp_to_day
 
 
 def detect_activity() -> tuple[int, str, int, int, str, str, str]:
@@ -193,10 +193,15 @@ def join(dataframe: pd.DataFrame) -> None:
     """
     cfg = load_config()
     activity = load_lastest_row('activity')
+
     # Check if merge should be done
     same_event = all(activity.iloc[0, 2:9] == dataframe.iloc[0, 2:9])
+    same_event &= all(timestamp_to_day(  # Check if events are on the same day
+        activity["start_time"]) == timestamp_to_day(dataframe["start_time"]))
+
     not_idle = (
         int(time.time()) - activity.loc[0, 'end_time']) < cfg['IDLE_TIME']
+
     if not_idle:
         if same_event:  # Join to last event
             activity.loc[0, 'end_time'] = dataframe.loc[0, 'end_time']
@@ -222,13 +227,9 @@ def categories_sum(
     Returns:
         pd.DataFrame: Aggregated categorized dataframe.
     """
-    cfg = load_config()
     dataframe.loc[
         :, 'duration'] = dataframe['end_time'] - dataframe['start_time']
-    dataframe.loc[:, 'day'] = (
-        pd.to_datetime(dataframe['start_time'], unit='s') +
-        pd.Timedelta(cfg["GMT_OFFSET"], unit='h')
-    ).dt.date
+    dataframe.loc[:, 'day'] = timestamp_to_day(dataframe['start_time'])
 
     # Choose event category and method of choosing
     conditions = [

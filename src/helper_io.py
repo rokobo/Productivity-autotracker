@@ -375,6 +375,24 @@ def set_idle():
             modify_latest_row(input_name, input_dataframe, ['time'])
 
 
+def timestamp_to_day(values: pd.Series) -> pd.Series:
+    """
+    Converts timestamps from a pd.Series into dates yyyy-mm-dd.
+
+    Args:
+        values (pd.Series): Timestamp series.
+
+    Returns:
+        pd.Series: Dates series.
+    """
+    cfg = load_config()
+    dates = (
+        pd.to_datetime(values, unit='s') +
+        pd.Timedelta(cfg["GMT_OFFSET"], unit='h')
+    ).dt.date
+    return dates
+
+
 def send_notification(
         title: str, message: str, audio: str = "notification") -> None:
     """

@@ -155,7 +155,7 @@ def update_category(_1):
     
     personal = data.loc[data['category'] == 'Personal', 'total'].values[0]
     goal_text += ", Personal: "
-    if personal >= CFG['WORK_DAILY_GOAL']:
+    if personal >= CFG['PERSONAL_DAILY_GOAL']:
         goal_text += "Over limit!"
     else:
         left = (CFG['PERSONAL_DAILY_GOAL'] - personal) * 60

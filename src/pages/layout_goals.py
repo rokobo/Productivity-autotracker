@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import layout_menu
-from helper_io import load_config
+from helper_io import load_config, load_dataframe
 from helper_server import make_heatmap
 
 CFG = load_config()
@@ -45,11 +45,25 @@ def update_category(_1):
     global CFG
     CFG = load_config()
 
-    row = make_heatmap(
-        ["Work", "Personal"],
-        ["Daily study goal tracker", "Daily personal goal tracker"],
-        [CFG["HEATMAP_GOOD_COLOR"], CFG["HEATMAP_BAD_COLOR"]]
-    )
+    totals = load_dataframe("totals")
+
+    row = []
+    row.append(make_heatmap(
+        totals["Work"].values,
+        "Daily study goal tracker",
+        "WORK_DAILY_GOAL",
+        CFG["HEATMAP_GOOD_COLOR"]))
+    row.append(make_heatmap(
+        totals["Personal"].values,
+        "Daily personal goal tracker",
+        "PERSONAL_DAILY_GOAL",
+        CFG["HEATMAP_BAD_COLOR"]))
+    row.append(make_heatmap(
+        totals["Work"].values,
+        "Daily study consistency tracker",
+        "SMALL_WORK_DAILY_GOAL",
+        CFG["HEATMAP_GOOD_COLOR"]))
+
     style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px",

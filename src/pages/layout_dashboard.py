@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import pandas as pd
+from datetime import datetime
 from dash import html, dcc, Input, Output, callback
 import dash_bootstrap_components as dbc
 import plotly.express as px
@@ -151,7 +152,7 @@ def update_category(_1):
         goal_text += "Done!"
     else:
         left = (CFG['WORK_DAILY_GOAL'] - work) * 60
-        goal_text += f"{int(left)} minutes left"
+        goal_text += f"{int(left)} min left"
     
     personal = data.loc[data['category'] == 'Personal', 'total'].values[0]
     goal_text += ", Personal: "
@@ -159,9 +160,14 @@ def update_category(_1):
         goal_text += "Over limit!"
     else:
         left = (CFG['PERSONAL_DAILY_GOAL'] - personal) * 60
-        goal_text += f"{int(left)} minutes left"
+        goal_text += f"{int(left)} min left"
 
-    goals = html.H4(goal_text)
+    date_text = datetime.now().strftime('%B %d, %A, %H:%M')
+
+    goals = dbc.Col([
+        dbc.Row(html.H4(goal_text)),
+        dbc.Row(html.H4(date_text))
+    ])
     return card, style, goals
 
 

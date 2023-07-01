@@ -17,20 +17,5 @@ function downloadURLs() {
     chrome.downloads.setShelfEnabled(false);
 }
 
-// Event listener for tab open
-chrome.tabs.onCreated.addListener(() => {
-    downloadURLs();
-});
-
-// Event listener for tab close
-chrome.tabs.onRemoved.addListener(() => {
-    downloadURLs();
-});
-
-// Event listener for tab update (URL change)
-chrome.tabs.onUpdated.addListener(() => {
-    downloadURLs();
-});
-
-// Execute downloadURLs every 2.5 seconds
-setInterval(downloadURLs, 2500);
+// Execute downloadURLs every 1 seconds
+setInterval(downloadURLs, 1000);

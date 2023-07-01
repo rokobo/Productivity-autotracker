@@ -32,6 +32,7 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
     cfg = load_config()
     cfg2 = load_categories()
     retries = cfg['RETRY_ATTEMPS']
+    start_time = int(time.time())
 
     handle = try_to_run(
         var='window',
@@ -40,9 +41,6 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
         final_code='',
         retries=retries*10,
         environment=locals())
-
-    title = GetWindowText(handle)
-    assert isinstance(title, str)
 
     # Get process name
     pid = GetWindowThreadProcessId(handle)[1]
@@ -60,9 +58,18 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
     url = ""
     domain = ""
     if process_name == "brave.exe":
-        url, domain = match_to_url(title)
+        for _try in range(cfg["URL_MATCH_ATTEMPS"]):
+            title = GetWindowText(handle)
+            assert isinstance(title, str)
+            url, domain = match_to_url(title)
+            if url is not None:
+                break
+            time.sleep(0.3)
+        assert url is not None
     else:
         # Clean url files (clutters if this is not done)
+        title = GetWindowText(handle)
+        assert isinstance(title, str)
         input_thread = Thread(target=clean_and_select_newest_url)
         input_thread.start()
 
@@ -78,7 +85,7 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
                 pd.DataFrame({'time': [int(time.time())]}), 'fullscreen')
 
     # Wait for thread finish
-    return (int(time.time()), title, handle, pid, process_name, url, domain)
+    return (start_time, title, handle, pid, process_name, url, domain)
 
 
 def match_to_url(title: str) -> tuple[str, str]:
@@ -105,7 +112,7 @@ def match_to_url(title: str) -> tuple[str, str]:
             else:
                 domain = parsed.netloc
             return url, domain
-    return "", ""
+    return None, None
 
 
 def detect_fullscreen(window: int) -> bool:
@@ -120,10 +127,7 @@ def detect_fullscreen(window: int) -> bool:
     """
     user32 = windll.user32
     fullscreen_rect = (
-        0, 0,
-        user32.GetSystemMetrics(0),
-        user32.GetSystemMetrics(1)
-    )
+        0, 0, user32.GetSystemMetrics(0), user32.GetSystemMetrics(1))
     return GetWindowRect(window) == fullscreen_rect
 
 

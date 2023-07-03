@@ -43,7 +43,10 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
         environment=locals())
 
     # Get process name
+    title = GetWindowText(handle)
+    assert isinstance(title, str)
     pid = GetWindowThreadProcessId(handle)[1]
+    assert pid > 0, "PID lookup error, negative PID"
 
     process_name = try_to_run(
         var='process_name',
@@ -59,17 +62,15 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
     domain = ""
     if process_name == "brave.exe":
         for _try in range(cfg["URL_MATCH_ATTEMPS"]):
-            title = GetWindowText(handle)
-            assert isinstance(title, str)
             url, domain = match_to_url(title)
             if url is not None:
                 break
+            title = GetWindowText(handle)
+            assert isinstance(title, str)
             time.sleep(0.3)
         assert url is not None
     else:
         # Clean url files (clutters if this is not done)
-        title = GetWindowText(handle)
-        assert isinstance(title, str)
         input_thread = Thread(target=clean_and_select_newest_url)
         input_thread.start()
 
@@ -83,8 +84,6 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
         if detect_fullscreen(handle):
             save_dataframe(
                 pd.DataFrame({'time': [int(time.time())]}), 'fullscreen')
-
-    # Wait for thread finish
     return (start_time, title, handle, pid, process_name, url, domain)
 
 

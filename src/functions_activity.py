@@ -44,9 +44,9 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
 
     # Get process name
     title = GetWindowText(handle)
-    assert isinstance(title, str)
+    assert isinstance(title, str), "Title not found error"
     pid = GetWindowThreadProcessId(handle)[1]
-    assert pid > 0, "PID lookup error, negative PID"
+    assert pid > 0, f"PID lookup error, negative PID, title: {title}"
 
     process_name = try_to_run(
         var='process_name',
@@ -66,9 +66,9 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
             if url is not None:
                 break
             title = GetWindowText(handle)
-            assert isinstance(title, str)
+            assert isinstance(title, str), "Title not found error"
             time.sleep(0.3)
-        assert url is not None
+        assert url is not None, "URL not found error"
     else:
         # Clean url files (clutters if this is not done)
         input_thread = Thread(target=clean_and_select_newest_url)

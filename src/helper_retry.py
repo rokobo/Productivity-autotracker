@@ -52,7 +52,9 @@ def try_to_run(var: str, code: str, error_check: str, final_code: str,
     # Final verification
     if eval(error_check, globals(), environment):
         raise ValueError(
-            f"Error in '{code}' after {tries} tries ({0.01 * tries}s)")
+            f"Error in '{code}' after {tries} tries ({0.01 * tries}s)\
+            \n\nLOCAL VARIABLES: {locals()}"
+        )
 
     # Retrieve desired variable (if specified)
     if var != "":

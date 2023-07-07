@@ -32,6 +32,7 @@ def load_config() -> dict[str, any]:
         environment=locals())
 
     config["WORKSPACE"] = workspace
+    config["ASSETS"] = os.path.join(workspace, "assets/")
     app_name = "Productivity Dashboard - Schedule advisor"
     config["NOTIFICATION"] = Notify(
         default_notification_application_name=app_name,
@@ -72,7 +73,7 @@ def load_lastest_row(name: str) -> pd.DataFrame:
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
-    assert os.path.exists(path)
+    assert os.path.exists(path), "Path does not exist error"
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -86,7 +87,7 @@ def load_lastest_row(name: str) -> pd.DataFrame:
         final_code='conn.close()',
         retries=retries,
         environment=locals())
-    assert not dataframe.empty
+    assert not dataframe.empty, "Loaded dataframe is empty error"
     return dataframe
 
 
@@ -102,7 +103,7 @@ def load_day_total(day: int) -> pd.DataFrame:
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], 'data/totals.db')
     dataframe = pd.DataFrame({})
-    assert os.path.exists(path)
+    assert os.path.exists(path), "Path does not exist error"
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -116,7 +117,7 @@ def load_day_total(day: int) -> pd.DataFrame:
         final_code='conn.close()',
         retries=retries,
         environment=locals())
-    assert not dataframe.empty
+    assert not dataframe.empty, "Loaded dataframe is empty error"
     return dataframe
 
 
@@ -134,7 +135,7 @@ def modify_latest_row(
     # Check if file does not exists
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
-    assert os.path.exists(path)
+    assert os.path.exists(path), "Path does not exist error"
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -197,7 +198,7 @@ def load_activity_between(
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
-    assert os.path.exists(path)
+    assert os.path.exists(path), "Path does not exist error"
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -211,7 +212,7 @@ def load_activity_between(
         final_code='conn.close()',
         retries=retries,
         environment=locals())
-    assert not dataframe.empty
+    assert not dataframe.empty, "Loaded dataframe is empty error"
     return dataframe
 
 
@@ -226,7 +227,7 @@ def load_dataframe(name: str) -> pd.DataFrame:
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
-    assert os.path.exists(path)
+    assert os.path.exists(path), "Path does not exist error"
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -238,7 +239,7 @@ def load_dataframe(name: str) -> pd.DataFrame:
         final_code='conn.close()',
         retries=retries,
         environment=locals())
-    assert not dataframe.empty
+    assert not dataframe.empty, "Loaded dataframe is empty error"
     return dataframe
 
 
@@ -314,7 +315,7 @@ def load_urls(path: str = None) -> list[tuple[str, str]]:
     contents = []
     for line in lines:
         contents.append(tuple(line.strip().split("|-|")))
-    assert contents
+    assert contents, "URL list is empty error"
     return contents
 
 
@@ -333,7 +334,7 @@ def clean_and_select_newest_url(path: str = None) -> str:
         path = cfg["URLS_PATH"]
 
     # Check path exists
-    assert os.path.exists(path)
+    assert os.path.exists(path), "Path does not exist error"
 
     path += "*.txt"
     files = glob.glob(path)

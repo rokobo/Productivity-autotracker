@@ -214,7 +214,7 @@ def change_config(n_clicks, _2, *args):
     if ctx == 'check_interval':
         return invalid + [n_clicks]
 
-    assert not any(invalid)
+    assert not any(invalid), "Invalid data in configuration page"
 
     yaml = YAML()
     yaml.indent(mapping=4, sequence=2, offset=2)
@@ -227,11 +227,11 @@ def change_config(n_clicks, _2, *args):
 
     index = len(vars1)
     for arg, name in zip(args[:index], vars1):
-        assert arg is not None
+        assert arg is not None, "Invalid data in configuration page"
         data[name] = arg
 
     for arg, name in zip(args[index:], vars2):
-        assert arg is not None
+        assert arg is not None, "Invalid data in configuration page"
         data[name] = hex_to_rgb(arg)
 
     with open(path, 'w', encoding='utf-8') as file:

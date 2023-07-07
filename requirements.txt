@@ -12,15 +12,15 @@ pygetwindow
 pynput
 pytz
 pywin32
-pywinauto
 pyyaml
 ruamel.yaml
 requests
 tables
 urllib3
-winsdk
 pytest-flake8
 pytest-pylint
 flake8
 pytest-xdist
 notify-py
+kaleido==0.1.0.post1
+pyaudiowpatch

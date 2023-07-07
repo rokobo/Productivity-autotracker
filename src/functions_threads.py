@@ -2,12 +2,14 @@
 Creates event listeners that will be used to detect if the user
 is not idle. If the user is not idle, update data file.
 """
+# pylint: disable=unused-variable
+# flake8: noqa: F401
 import time
-import asyncio
+import struct
 import logging
+import pyaudiowpatch as pyaudio
 import pandas as pd
 from pynput import keyboard
-import winsdk.windows.media.control as wmc
 from pyautogui import position
 import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, Input, Output, callback
@@ -60,25 +62,6 @@ def activity_detector():
         time.sleep(cfg['ACTIVITY_CHECK_INTERVAL'])
 
 
-async def is_media_running() -> bool:
-    """
-    Checks if the media is playing.
-
-    Returns:
-        bool: True if the media playback status matches "PLAYING".
-    """
-    sessions = await (
-        wmc.GlobalSystemMediaTransportControlsSessionManager.request_async())
-    session = sessions.get_current_session()
-    if session is None:
-        return False
-    state = "PLAYING"
-    expected_status = int(
-        wmc.GlobalSystemMediaTransportControlsSessionPlaybackStatus[state])
-    current_status = session.get_playback_info().playback_status
-    return expected_status == current_status
-
-
 def audio_idle_detector():
     """
     Detects if audio had activity. Waits a couple of seconds
@@ -86,9 +69,41 @@ def audio_idle_detector():
     """
     while True:
         cfg = load_config()
-        if asyncio.run(is_media_running()):
-            save_dataframe(
-                pd.DataFrame({'time': [int(time.time())]}), 'audio')
+        with pyaudio.PyAudio() as audio:
+            # Get speaker info
+            wasapi_info = audio.get_host_api_info_by_type(pyaudio.paWASAPI)
+            default_speakers = audio.get_device_info_by_index(
+                wasapi_info["defaultOutputDevice"])
+
+            if not default_speakers["isLoopbackDevice"]:
+                for loopback in audio.get_loopback_device_info_generator():
+                    if default_speakers["name"] in loopback["name"]:
+                        default_speakers = loopback
+                        break
+                else:
+                    raise OSError("No device, run `python -m pyaudiowpatch`")
+
+            def stream_callback(in_data, _frame_count, _time_info, _status):
+                """Check audio intensity and save input detection if needed."""
+                intensity = max(
+                    abs(sample) for sample
+                    in struct.unpack(f"<{len(in_data) // 2}h", in_data))
+                if intensity > 1:
+                    save_dataframe(
+                        pd.DataFrame({'time': [int(time.time())]}), 'audio')
+                    return (in_data, pyaudio.paAbort)
+                return (in_data, pyaudio.paContinue)
+
+            with audio.open(
+                format=pyaudio.paInt24,
+                channels=default_speakers["maxInputChannels"],
+                rate=int(default_speakers["defaultSampleRate"]),
+                frames_per_buffer=pyaudio.get_sample_size(pyaudio.paInt24),
+                input=True,
+                input_device_index=default_speakers["index"],
+                stream_callback=stream_callback
+            ) as stream:
+                time.sleep(1)
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
 
 

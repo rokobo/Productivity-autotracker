@@ -65,3 +65,10 @@ One of the most important features of a time tracker, in my opnion, is the abili
 To match the URL, I had to create a custom browser extension that downloads the URL and title of all opened tabs. It downloads again every time there is a tab open, tab close or tab update.
 
 Naturally, having to manually accept each download would be a hassle, so unfortunately I had to disable the option: `Ask where to save each file before downloading` in my browser's settings. I have yet to find a better and more **reliable** way to get the URL.
+
+## **Audio detection problem**
+
+I could not find a good way to detect if audio was playing in windows. After messing with a lot of libraries and ending up with `winrt`, I noticed that it worked extremely well for some apps, however, did not detect anything from other apps. So I needed a better solution.
+
+After some thought, I decided to go a different direction and record the audio from from the desktop and analyze the volume of the recording later. However, in doing so, I arrived at a better solution. I decided to stream the data from the recording, but bypass the recording entirely. Therefore I simply converted the binary data that was supposed to be a recording into volume intensity, which I then used to determine if any sound was playing.
+

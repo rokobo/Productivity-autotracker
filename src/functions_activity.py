@@ -16,8 +16,8 @@ import numpy as np
 from helper_server import format_long_duration
 from helper_retry import try_to_run
 from helper_io import load_dataframe, load_input_time, append_to_database, \
-    save_dataframe, load_urls, clean_and_select_newest_url, load_config, \
-    load_lastest_row, modify_latest_row, load_categories, timestamp_to_day
+    save_dataframe, load_url, load_config, load_lastest_row, \
+    modify_latest_row, load_categories, timestamp_to_day
 
 
 def detect_activity() -> tuple[int, str, int, int, str, str, str]:
@@ -34,45 +34,46 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
     retries = cfg['RETRY_ATTEMPS']
     start_time = int(time.time())
 
-    handle = try_to_run(
-        var='window',
-        code='window = GetForegroundWindow()',
-        error_check='not isinstance(window, int)',
-        final_code='',
-        retries=retries*10,
-        environment=locals())
+    for _ in range(retries):
+        try:
+            handle = try_to_run(
+                var='window',
+                code='window = GetForegroundWindow()',
+                error_check='not isinstance(window, int)',
+                final_code='',
+                retries=retries*10,
+                environment=locals())
 
-    # Get process name
-    title = GetWindowText(handle)
-    assert isinstance(title, str), "Title not found error"
-    pid = GetWindowThreadProcessId(handle)[1]
-    assert pid > 0, f"PID lookup error, negative PID, title: {title}"
-
-    process_name = try_to_run(
-        var='process_name',
-        code='process_name = ""\
-            \nprocess_name = Process(pid).name()',
-        error_check='process_name == "" or not isinstance(process_name, str)',
-        final_code='',
-        retries=retries,
-        environment=locals())
-
-    # Obtain URL in case of browser
-    url = ""
-    domain = ""
-    if process_name == "brave.exe":
-        for _try in range(cfg["URL_MATCH_ATTEMPS"]):
-            url, domain = match_to_url(title)
-            if url is not None:
-                break
+            # Get process name
             title = GetWindowText(handle)
             assert isinstance(title, str), "Title not found error"
-            time.sleep(0.3)
-        assert url is not None, "URL not found error"
-    else:
-        # Clean url files (clutters if this is not done)
-        input_thread = Thread(target=clean_and_select_newest_url)
-        input_thread.start()
+            pid = GetWindowThreadProcessId(handle)[1]
+            assert pid > 0, f"PID lookup error, negative PID, title: {title}"
+
+            process_name = try_to_run(
+                var='process_name',
+                code='process_name = ""\
+                    \nprocess_name = Process(pid).name()',
+                error_check='process_name == "" or \
+                    not isinstance(process_name, str)',
+                final_code='',
+                retries=retries,
+                environment=locals())
+
+            # Obtain URL in case of browser
+            url = ""
+            domain = ""
+            if process_name == "brave.exe":
+                for _try in range(cfg["URL_MATCH_ATTEMPS"]):
+                    url, domain = match_to_url(title)
+                    if url is not None:
+                        break
+                    title = GetWindowText(handle)
+                    assert isinstance(title, str), "Title not found error"
+                    time.sleep(1)
+                assert url is not None, "URL not found error"
+        except AssertionError:
+            print("Assertion error in activity detection, retrying...")
 
     # Hide information from apps in HIDDEN_APPS list
     name = process_name.lower()
@@ -98,20 +99,16 @@ def match_to_url(title: str) -> tuple[str, str]:
         str: URL of the tab.
         str: Domain of the tab.
     """
-    urls = load_urls()
-
-    # Compare window title with list of tab titles
-    for current_url in urls:
-        if current_url[0] == title.removesuffix(" - Brave"):
-            # Get url and domain
-            url = current_url[1]
-            parsed = urlparse(url)
-            if parsed.scheme not in ["http", "https"]:
-                domain = parsed.scheme + "://"
-            else:
-                domain = parsed.netloc
-            return url, domain
-    return None, None
+    try:
+        url = load_url(title.removesuffix(" - Brave")).loc[0, "url"]
+    except ValueError:
+        return None, None
+    parsed = urlparse(url)
+    if parsed.scheme not in ["http", "https"]:
+        domain = parsed.scheme + "://"
+    else:
+        domain = parsed.netloc
+    return url, domain
 
 
 def detect_fullscreen(window: int) -> bool:

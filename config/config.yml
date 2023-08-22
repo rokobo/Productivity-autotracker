@@ -4,14 +4,15 @@ SMALL_WORK_DAILY_GOAL: 0.5       # Work goal for consistency sake
 PERSONAL_DAILY_GOAL: 6           # Personal activity threshold for heatmaps
 
 # Time variables ----------------------------------------------------------------------------------
-IDLE_TIME: 240                   # Time without interaction before considered idle
+IDLE_TIME: 60                    # Time without interaction before considered idle
 IDLE_CHECK_INTERVAL: 5           # Time between checking for idle
 ACTIVITY_CHECK_INTERVAL: 1       # Time between checking for interaction
-MINIMUM_ACTIVITY_TIME: 60        # Minimum time for activity to show in cards
+MINIMUM_ACTIVITY_TIME: 30        # Minimum time for activity to show in cards
 UNRESPONSIVE_THRESHOLD: 5        # Minimum time without backend update before server restart
 RETRY_ATTEMPS: 5                 # Retry attempts for various IO operations
 URL_MATCH_ATTEMPS: 10            # Retry attemps to match title to URL (at least 4 recommended) 
 GMT_OFFSET: -3                   # Your localtime GMT offset
+HEATMAP_CAROUSEL_INTERVAL: 5     # Time between carousel slide change
 
 # Sizes -------------------------------------------------------------------------------------------
 CATEGORY_HEIGHT: 250             # Size of categories graph

@@ -62,9 +62,9 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 
 One of the most important features of a time tracker, in my opnion, is the ability to match browser usage with a specific site. On this project I simplified things a bit and I organize the events based on domain (since any small update would create a new event).
 
-To match the URL, I had to create a custom browser extension that downloads the URL and title of all opened tabs. It downloads again every time there is a tab open, tab close or tab update.
+To match the URL, I initially create a browser extension that downloads the URL and title of all opened tabs. It downloads again every time there is a tab open, tab close or tab update. Naturally, having to manually accept each download would be a hassle, so unfortunately I had to disable the option: `Ask where to save each file before downloading` in my browser's settings. Which did impact the UX significantly.
 
-Naturally, having to manually accept each download would be a hassle, so unfortunately I had to disable the option: `Ask where to save each file before downloading` in my browser's settings. I have yet to find a better and more **reliable** way to get the URL.
+So I arrived at a better solution, I created a custom browser extension that sends a GET request to my dash server. The GET request sends all titles and URLs of the opened sites through the GET request parameters. This solution proved excellent, since it had negligible impact on performance and memory usage.
 
 ## **Audio detection problem**
 

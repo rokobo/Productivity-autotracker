@@ -5,11 +5,10 @@ Collection of helper functions for website routines.
 import re
 import datetime
 import pandas as pd
-from dash import html, dcc
+from dash import html
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
-from helper_io import load_config,\
-    load_categories, load_day_total, load_dataframe
+from helper_io import load_config, load_categories, load_day_total
 
 
 def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
@@ -41,7 +40,8 @@ def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
         category = row['category']
         total = totals.loc[0, category]
         percentage1 = f'{round(row["total"] / 16 * 100, 1)}% day '
-        percentage2 = f' {round(row["total"] / total * 100, 1)}% total'
+        percentage2 = 0 if total == 0 \
+            else f' {round(row["total"] / total * 100, 1)}% total'
         percentage2 = percentage2 if row["process_name"] != "IDLE TIME" else ""
 
         item = dbc.Card([dbc.CardBody([
@@ -273,7 +273,7 @@ def rgb_to_hex(rgb_string: str) -> str:
         str: hex string.
     """
     match = re.match(r'^rgb\(\d+,\s*\d+,\s*\d+\)$', rgb_string)
-    assert match is not None
+    assert match is not None, "RGB to HEX error"
 
     values = re.findall(r'(\d+)', rgb_string)
     hex_code = "#{:02x}{:02x}{:02x}".format(
@@ -292,7 +292,7 @@ def hex_to_rgb(hex_string: str) -> str:
         str: rgb string.
     """
     match = re.match(r'^#[A-Fa-f0-9]{6}$', hex_string)
-    assert match is not None
+    assert match is not None, "HEX to RGB error"
 
     rgb_code = "rgb({}, {}, {})".format(
         int(hex_string[1:3], 16),
@@ -302,23 +302,26 @@ def hex_to_rgb(hex_string: str) -> str:
     return rgb_code
 
 
-def make_heatmap(data: list[int], title: str, goal: str, color: str) -> list:
+def make_heatmap(
+        data: list[int], title: str,
+        goal: str, color: str) -> tuple[go.Figure, str]:
     """
     Makes a yealy heatmap using the provided arguments.
     The arguments are lists for multiple graphs support.
 
     Args:
         data (list[int]): Data used for the heatmap.
-        title (str): Title of the heatmaps.
+        title (str): Name of the graph.
         goal (str): Goal variable from config file.
         color (str): Color for the heatmap
 
     Returns:
-        list: _description_
+        go.Figure: Heatmap graph.
+        str: Full title.
     """
     cfg = load_config()
     base = [cfg["HEATMAP_BASE_COLOR"], cfg["HEATMAP_BASE_COLOR"]]
-    assert len(data) == 364
+    assert len(data) == 364, "Heatmap data not in correct format error"
 
     values = [[
         1 if data[day_index] >= cfg[goal]
@@ -351,11 +354,5 @@ def make_heatmap(data: list[int], title: str, goal: str, color: str) -> list:
         color=cfg['TEXT_COLOR'], tickmode='array',
         tickvals=[7], ticktext=["←"]
     )
-    row = dbc.Row([
-        html.H4(
-            title +
-            f' ({cfg[goal]} hours)'
-        ),
-        dcc.Graph(figure=fig, style={'width': '100%'})
-    ], style={'margin-bottom': f'{cfg["GOALS_HEATMAP_DIVISION"]}px'})
-    return row
+    full_title = f"{title} {cfg[goal]}h"
+    return fig, full_title

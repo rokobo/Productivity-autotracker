@@ -5,8 +5,6 @@ Collection of helper functions for input and output rountines.
 # pylint: disable=unused-argument, import-error
 import os
 import time
-import glob
-from threading import Thread
 from notifypy import Notify
 import pandas as pd
 from helper_retry import try_to_run
@@ -282,83 +280,33 @@ def load_input_time(name: str) -> int:
     return recorded_time
 
 
-def load_urls(path: str = None) -> list[tuple[str, str]]:
+def load_url(page_title: str) -> str:
     """
-    Access the URL file provided by the browser extension\
-        and returns the values in a list.
+    Access the URL by title that was provided by the browser extension.
 
     Args:
-        path (str, optional): Path to URLS. Defaults to cfg["URLS_PATH"].
+        page_title (str): Title of the page.
 
     Returns:
-        list[str]: List of URLs.
+        str: URL of the page.
     """
     cfg = load_config()
-    if path is None:
-        path = cfg["URLS_PATH"]
-
-    # Select the most recent file and remove all older files
-    newest_file = clean_and_select_newest_url(path)
+    path = os.path.join(cfg["WORKSPACE"], 'data/urls.db')
+    assert os.path.exists(path), "Path does not exist error"
 
     # Load the file and output list of URLs
     retries = cfg['RETRY_ATTEMPS']
-    lines = try_to_run(
-        var='lines',
-        code='with open(newest_file, "r", encoding="utf-8") as file:\
-            \n    lines = file.readlines()',
-        error_check='lines != [] and not isinstance(lines, list)',
-        final_code='',
+    url = try_to_run(
+        var='url',
+        code=f'''conn = sql.connect(path)\
+            \nurl = pd.read_sql(\
+                "SELECT *, rowid FROM urls \
+                    WHERE title = '{page_title}'", conn)''',
+        error_check='url.empty or not isinstance(url, pd.DataFrame)',
+        final_code='conn.close()',
         retries=retries,
         environment=locals())
-
-    # Separate the lines into a tuple containing title and URL.
-    contents = []
-    for line in lines:
-        contents.append(tuple(line.strip().split("|-|")))
-    assert contents, "URL list is empty error"
-    return contents
-
-
-def clean_and_select_newest_url(path: str = None) -> str:
-    """
-    Returns newest file name and removes the others
-
-    Args:
-        path (str, optional): Path to URLS. Defaults to cfg["URLS_PATH"].
-
-    Returns:
-        str: File name.
-    """
-    cfg = load_config()
-    if path is None:
-        path = cfg["URLS_PATH"]
-
-    # Check path exists
-    assert os.path.exists(path), "Path does not exist error"
-
-    path += "*.txt"
-    files = glob.glob(path)
-    # getctime here leads to errors, use getmtime
-    newest_file = try_to_run(
-        var='file',
-        code='file = max(files, key=os.path.getmtime)',
-        error_check='not isinstance(file, str)',
-        final_code='',
-        retries=cfg['RETRY_ATTEMPS'],
-        environment=locals())
-
-    threads = [
-        Thread(target=os.remove, args=(file,))
-        for file in files if file != newest_file]
-
-    try:
-        for thread in threads:
-            thread.start()
-        for thread in threads:
-            thread.join()
-    except FileNotFoundError:
-        pass
-    return newest_file
+    return url
 
 
 def set_idle():

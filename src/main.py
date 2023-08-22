@@ -1,11 +1,22 @@
 """
 Main runner file for the Dash app and its background processes.
 """
+# pylint: disable=broad-exception-caught
 from threading import Thread
+from multiprocessing import Process
 import time
 from helper_io import load_input_time, load_config
 from functions_threads import mouse_idle_detector, keyboard_idle_detector, \
     activity_detector, audio_idle_detector, server_supervisor
+
+
+CFG = load_config()
+THRESHOLD = CFG['UNRESPONSIVE_THRESHOLD']
+
+
+def is_backend_online():
+    """Determines if backend has been updated in a given timeframe."""
+    return (int(time.time()) - load_input_time('backend')) < THRESHOLD
 
 
 if __name__ == '__main__':
@@ -20,10 +31,12 @@ if __name__ == '__main__':
             keyboard_thread.daemon = True
             keyboard_thread.start()
 
-            audio_thread = Thread(target=audio_idle_detector)
+            # Soundcard library cannot run in thread
+            audio_thread = Process(target=audio_idle_detector)
             audio_thread.daemon = True
             audio_thread.start()
 
+            # Main activity thread
             activity_thread = Thread(target=activity_detector)
             activity_thread.daemon = True
             activity_thread.start()
@@ -33,15 +46,21 @@ if __name__ == '__main__':
             server_thread.daemon = True
             server_thread.start()
 
-            CFG = load_config()
-            threshold = CFG['UNRESPONSIVE_THRESHOLD']
             time.sleep(CFG['IDLE_CHECK_INTERVAL'] * 5)
 
-            # Restart all threads if server is unresponsive
-            while (int(time.time()) - load_input_time('backend')) < threshold:
+            # Restart all threads if backend or threads are unresponsive
+            ARE_THREADS_ONLINE = True
+            while is_backend_online() and ARE_THREADS_ONLINE:
+                ARE_THREADS_ONLINE = mouse_thread.is_alive()
+                ARE_THREADS_ONLINE &= keyboard_thread.is_alive()
+                ARE_THREADS_ONLINE &= audio_thread.is_alive()
+                ARE_THREADS_ONLINE &= activity_thread.is_alive()
+                ARE_THREADS_ONLINE &= server_thread.is_alive()
                 time.sleep(3)
             raise RuntimeError
 
         except RuntimeError:
             print("MAIN PROGRAM FAILURE, RESTARTING...")
             time.sleep(3)
+        except Exception:  # For other possible thread errors
+            print("General error caught")

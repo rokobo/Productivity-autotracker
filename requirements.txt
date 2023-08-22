@@ -23,4 +23,4 @@ flake8
 pytest-xdist
 notify-py
 kaleido==0.1.0.post1
-pyaudiowpatch
+soundcard

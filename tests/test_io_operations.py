@@ -1,11 +1,9 @@
 """Test input and output functions."""
 # pylint: disable=import-error
 import os
-import time
-import shutil
 import pandas as pd
 from helper_io import save_dataframe, load_dataframe, load_input_time,\
-    clean_and_select_newest_url, load_urls, load_config, load_lastest_row, \
+    load_config, load_lastest_row, \
     modify_latest_row, append_to_database, load_activity_between, \
     load_categories
 
@@ -168,70 +166,6 @@ def test_load_activity_between() -> None:
     # Clean files
     path = os.path.join(CFG["WORKSPACE"], 'data/__test6__.db')
     os.remove(path)
-
-
-def test_clean_and_select() -> None:
-    """Tests clean_and_select_newest_url function."""
-    workspace = os.path.dirname(os.path.abspath(__file__))
-    test_folder = os.path.join(workspace, "__test_dir1__/")
-    os.makedirs(test_folder, exist_ok=True)
-
-    file_path = os.path.join(test_folder, "file0.txt")
-    open(file_path, 'w', encoding="utf-8").close()
-    newest = clean_and_select_newest_url(test_folder)
-    assert os.path.normpath(newest) == os.path.normpath(file_path)
-
-    for i in range(1, 4):
-        file_path = os.path.join(test_folder, f"file{i}.txt")
-        open(file_path, 'w', encoding="utf-8").close()
-        time.sleep(0.1)
-    newest = clean_and_select_newest_url(test_folder)
-    assert os.path.normpath(newest) == os.path.normpath(file_path)
-
-    for i in range(10, 3, -1):
-        file_path = os.path.join(test_folder, f"file{i}.txt")
-        open(file_path, 'w', encoding="utf-8").close()
-        time.sleep(0.1)
-    newest = clean_and_select_newest_url(test_folder)
-    assert os.path.normpath(newest) == os.path.normpath(file_path)
-
-    # Clean files
-    shutil.rmtree(test_folder)
-
-
-def test_load_urls() -> None:
-    """Tests the load_urls function."""
-    workspace = os.path.dirname(os.path.abspath(__file__))
-    test_folder = os.path.join(workspace, "__test_dir2__/")
-    os.makedirs(test_folder, exist_ok=True)
-
-    file_path = os.path.join(test_folder, "file67.txt")
-    with open(file_path, 'w', encoding="utf-8") as file:
-        file.write("Test|-|test.gov" + '\n')
-    urls = load_urls(test_folder)
-    assert urls == [("Test", "test.gov")]
-
-    urls_list = ["Test title|-|test.com", "test2|-|tester.org"]
-    file_path = os.path.join(test_folder, "file0.txt")
-    with open(file_path, 'w', encoding="utf-8") as file:
-        for item in urls_list:
-            file.write(item + '\n')
-    urls = load_urls(test_folder)
-    assert urls == [("Test title", "test.com"), ("test2", "tester.org")]
-
-    for i in range(1, 5):
-        file_path = os.path.join(test_folder, f"file{i}.txt")
-        open(file_path, 'w', encoding="utf-8").close()
-        time.sleep(0.1)
-    file_path = os.path.join(test_folder, "file0.txt")
-    with open(file_path, 'w', encoding="utf-8") as file:
-        for item in urls_list:
-            file.write(item + '\n')
-    urls = load_urls(test_folder)
-    assert urls == [("Test title", "test.com"), ("test2", "tester.org")]
-
-    # Clean files
-    shutil.rmtree(test_folder)
 
 
 def test_load_config() -> None:

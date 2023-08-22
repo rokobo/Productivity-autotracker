@@ -77,7 +77,7 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
 
     assert isinstance(title, str), "Title not found error"
     assert pid > 0, f"PID lookup error, negative PID, title: {title}"
-    assert url is not None, "URL not found error"
+    assert url is not None, f"URL not found error ({url}), title: {title}"
 
     # Hide information from apps in HIDDEN_APPS list
     name = process_name.lower()
@@ -104,7 +104,7 @@ def match_to_url(title: str) -> tuple[str, str]:
         str: Domain of the tab.
     """
     url = load_url(title.removesuffix(" - Brave"))
-    if url is None or url.empty:
+    if url.empty:
         return None, None
     url = url.loc[0, "url"]
     parsed = urlparse(url)

@@ -280,7 +280,7 @@ def load_input_time(name: str) -> int:
     return recorded_time
 
 
-def load_url(page_title: str) -> str:
+def load_url(page_title: str) -> pd.DataFrame:
     """
     Access the URL by title that was provided by the browser extension.
 
@@ -296,14 +296,15 @@ def load_url(page_title: str) -> str:
 
     # Load the file and output list of URLs
     retries = cfg['RETRY_ATTEMPS']
+    query = """
+        SELECT *, rowid FROM urls
+        WHERE title = ?
+    """
     url = try_to_run(
         var='url',
-        code=f'''conn = sql.connect(path)\
-            \nurl = None
-            \nurl = pd.read_sql(\
-                "SELECT *, rowid FROM urls \
-                    WHERE title = '{page_title}'", conn)''',
-        error_check='',
+        code="conn = sql.connect(path)\
+            \nurl = pd.read_sql(query , conn, params=[page_title])",
+        error_check='not isinstance(url, pd.DataFrame)',
         final_code='conn.close()',
         retries=retries,
         environment=locals())

@@ -10,7 +10,6 @@ ACTIVITY_CHECK_INTERVAL: 1       # Time between checking for interaction
 MINIMUM_ACTIVITY_TIME: 30        # Minimum time for activity to show in cards
 UNRESPONSIVE_THRESHOLD: 5        # Minimum time without backend update before server restart
 RETRY_ATTEMPS: 5                 # Retry attempts for various IO operations
-URL_MATCH_ATTEMPS: 10            # Retry attemps to match title to URL (at least 4 recommended) 
 GMT_OFFSET: -3                   # Your localtime GMT offset
 HEATMAP_CAROUSEL_INTERVAL: 5     # Time between carousel slide change
 

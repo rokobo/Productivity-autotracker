@@ -17,7 +17,7 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 async function sendURLs()  {
     var errorStatus = false;
     while (true) {
-        await delay(3000);
+        await delay(1500);
 
         const { titles, urls } = await getTabsInfo();
         const queryParams = new URLSearchParams({ titles: titles.join('|-|'), urls: urls.join('|-|') }).toString();

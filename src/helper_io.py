@@ -299,10 +299,11 @@ def load_url(page_title: str) -> str:
     url = try_to_run(
         var='url',
         code=f'''conn = sql.connect(path)\
+            \nurl = None
             \nurl = pd.read_sql(\
                 "SELECT *, rowid FROM urls \
                     WHERE title = '{page_title}'", conn)''',
-        error_check='url.empty or not isinstance(url, pd.DataFrame)',
+        error_check='',
         final_code='conn.close()',
         retries=retries,
         environment=locals())

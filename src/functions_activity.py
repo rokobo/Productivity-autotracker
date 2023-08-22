@@ -64,16 +64,21 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
             url = ""
             domain = ""
             if process_name == "brave.exe":
-                for _try in range(cfg["URL_MATCH_ATTEMPS"]):
+                for _try in range(cfg["RETRY_ATTEMPS"]):
                     url, domain = match_to_url(title)
                     if url is not None:
                         break
                     title = GetWindowText(handle)
                     assert isinstance(title, str), "Title not found error"
-                    time.sleep(1)
+                    time.sleep(0.25)
                 assert url is not None, "URL not found error"
         except AssertionError:
             print("Assertion error in activity detection, retrying...")
+            time.sleep(0.25)
+
+    assert isinstance(title, str), "Title not found error"
+    assert pid > 0, f"PID lookup error, negative PID, title: {title}"
+    assert url is not None, "URL not found error"
 
     # Hide information from apps in HIDDEN_APPS list
     name = process_name.lower()
@@ -99,10 +104,10 @@ def match_to_url(title: str) -> tuple[str, str]:
         str: URL of the tab.
         str: Domain of the tab.
     """
-    try:
-        url = load_url(title.removesuffix(" - Brave")).loc[0, "url"]
-    except ValueError:
+    url = load_url(title.removesuffix(" - Brave"))
+    if url is None or url.empty:
         return None, None
+    url = url.loc[0, "url"]
     parsed = urlparse(url)
     if parsed.scheme not in ["http", "https"]:
         domain = parsed.scheme + "://"
@@ -252,6 +257,7 @@ def categories_sum(
         "Work(D)", "Personal(D)", "Neutral(D)",
         "Work(K)", "Personal(K)"
     ]
+
     dataframe['category'] = np.select(
         conditions, choices, default="Neutral(E)")
 

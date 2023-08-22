@@ -73,7 +73,6 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
                     time.sleep(0.25)
                 assert url is not None, "URL not found error"
         except AssertionError:
-            print("Assertion error in activity detection, retrying...")
             time.sleep(0.25)
 
     assert isinstance(title, str), "Title not found error"

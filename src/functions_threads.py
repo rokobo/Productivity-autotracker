@@ -16,7 +16,7 @@ from dash import Dash, html, dcc, Input, Output, callback
 from functions_activity import parser
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
-    layout_configuration2, layout_goals
+    layout_configuration2, layout_goals, layout_urls
 from helper_io import save_dataframe, load_config
 
 
@@ -114,6 +114,8 @@ def server_supervisor():
                 layout = layout_configuration2.layout
             case "/goals":
                 layout = layout_goals.layout
+            case "/urls":
+                layout = layout_urls.layout
             case _:
                 layout = layout_dashboard.layout
         return layout

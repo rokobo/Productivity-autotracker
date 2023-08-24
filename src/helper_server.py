@@ -370,3 +370,101 @@ def make_heatmap(
     )
     full_title = f"{title} {cfg[goal]}h"
     return fig, full_title
+
+
+def make_crown() -> dbc.Row:
+    """
+    Makes a row of three crowns representing objective completion trends.
+
+    Returns:
+        dbc.Row: Crown row.
+    """
+    cfg = load_config()
+    streaks = [0, 0, 0]
+    goals = [
+        cfg["WORK_TO_PERSONAL_MULTIPLIER"],
+        cfg["PERSONAL_DAILY_GOAL"],
+        cfg["SMALL_WORK_DAILY_GOAL"],
+        cfg["WORK_DAILY_GOAL"]
+    ]
+    is_not_done = [True, True, True]
+    for day in range(364, 0, -1):
+        values = load_day_total(day)
+        # Full work goal
+        if is_not_done[2]:
+            if values.loc[0, "Work"] >= goals[3]:
+                streaks[2] += 1
+            else:
+                is_not_done[2] = False
+
+        # Small work goal
+        if is_not_done[1]:
+            if values.loc[0, "Work"] >= goals[2]:
+                streaks[1] += 1
+            else:
+                is_not_done[1] = False
+
+        # Personal goal
+        if is_not_done[0]:
+            if values.loc[0, "Personal"] <= max(
+                goals[1], values.loc[0, "Work"] * goals[0]
+            ):
+                streaks[0] += 1
+            else:
+                is_not_done[0] = False
+
+        if set(is_not_done) == {False}:
+            break
+
+    # Determine which crown to give
+    crowns = [
+        "crown_gold.png",
+        "crown_silver.png",
+        "crown_bronze.png",
+        "crown_black.png"
+    ]
+    thresholds = [
+        cfg["GOLD_STREAK_VALUE"],
+        cfg["SILVER_STREAK_VALUE"],
+        cfg["BRONZE_STREAK_VALUE"],
+        0
+    ]
+    assets = [next(
+        result for threshold, result
+        in zip(thresholds, crowns)
+        if value >= threshold
+    ) for value in streaks]
+
+    # Make row
+    crown_row = dbc.Row([
+        dbc.Col([
+            html.Img(
+                src=f"/assets/{assets[0]}",
+                height="30px",
+                width="30px",
+                title="Personal daily goal streak"
+            ),
+            html.H5(streaks[0])
+        ], class_name="g-0", style={
+            'margin-right': '15px', 'margin-bottom': '0px'}),
+        dbc.Col([
+            html.Img(
+                src=f"/assets/{assets[1]}",
+                height="30px",
+                width="30px",
+                title="Small work daily goal streak"
+            ),
+            html.H5(streaks[1])
+        ], class_name="g-0", style={
+            'margin-right': '15px', 'margin-bottom': '0px'}),
+        dbc.Col([
+            html.Img(
+                src=f"/assets/{assets[2]}",
+                height="30px",
+                width="30px",
+                title="Work daily goal streak"
+            ),
+            html.H5(streaks[2])
+        ], class_name="g-0", style={'margin-bottom': '0px'})
+    ], class_name="g-0")
+    return crown_row

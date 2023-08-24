@@ -4,8 +4,8 @@
 import os
 import sys
 import time
-import pandas as pd
 from datetime import datetime
+import pandas as pd
 from dash import html, dcc, Input, Output, callback
 import dash_bootstrap_components as dbc
 import plotly.express as px
@@ -14,8 +14,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import layout_menu
-from helper_server import generate_cards, \
-    format_short_duration
+from helper_server import generate_cards, format_short_duration, make_crown
 from helper_io import save_dataframe, load_dataframe, \
     load_input_time, load_config, set_idle, load_lastest_row, load_day_total
 
@@ -27,6 +26,7 @@ layout = html.Div([
         layout_menu.layout,
         dbc.Col(html.H3("Productivity Dashboard"), width='auto'),
         dbc.Col(id="goals_title", width='auto'),
+        dbc.Col(id="streak_crowns", width='auto'),
         dbc.Col(
             dbc.Button([
                     dbc.Spinner(html.Div(id="idle_loading"), size="sm"),
@@ -74,6 +74,7 @@ layout = html.Div([
     Output('category_row', 'children'),
     Output('category_row', 'style'),
     Output('goals_title', 'children'),
+    Output('streak_crowns', 'children'),
     Input('category_interval', 'n_intervals')
 )
 def update_category(_1):
@@ -81,6 +82,7 @@ def update_category(_1):
     global CFG
     CFG = load_config()
 
+    # Main categories graph
     data = load_day_total(364).transpose()
     data.reset_index(inplace=True)
     data.rename(columns={
@@ -146,6 +148,7 @@ def update_category(_1):
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }
 
+    # Top info row
     work = data.loc[data['category'] == 'Work', 'total'].values[0]
     goal_text = "Work: "
     if work >= CFG['WORK_DAILY_GOAL']:
@@ -153,13 +156,17 @@ def update_category(_1):
     else:
         left = (CFG['WORK_DAILY_GOAL'] - work) * 60
         goal_text += f"{int(left)} min left"
-    
+
     personal = data.loc[data['category'] == 'Personal', 'total'].values[0]
     goal_text += ", Personal: "
-    if personal >= CFG['PERSONAL_DAILY_GOAL']:
+    personal_goal = CFG['PERSONAL_DAILY_GOAL']
+    work_multiplied = CFG['WORK_TO_PERSONAL_MULTIPLIER'] * work
+    if work_multiplied > personal_goal:
+        personal_goal = work_multiplied
+    if personal >= personal_goal:
         goal_text += "Over limit!"
     else:
-        left = (CFG['PERSONAL_DAILY_GOAL'] - personal) * 60
+        left = (personal_goal - personal) * 60
         goal_text += f"{int(left)} min left"
 
     date_text = datetime.now().strftime('%B %d, %A, %H:%M')
@@ -167,8 +174,11 @@ def update_category(_1):
     goals = dbc.Col([
         dbc.Row(html.H4(goal_text)),
         dbc.Row(html.H4(date_text))
-    ])
-    return card, style, goals
+    ], style={'padding': '0px'})
+
+    # Streak crowns
+    crowns = make_crown()
+    return card, style, goals, crowns
 
 
 @callback(

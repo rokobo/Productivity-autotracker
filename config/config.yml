@@ -4,6 +4,9 @@ SMALL_WORK_DAILY_GOAL: 0.5        # Work goal for consistency sake
 PERSONAL_DAILY_GOAL: 2            # Personal activity threshold for heatmaps
 WORK_TO_PERSONAL_MULTIPLIER: 2    # PERSONAL_DAILY_GOAL override for work done times this,
                                   # bigger value is used, set to 0 to ignore
+BRONZE_STREAK_VALUE: 2            # Days in a row of work goal streak to display bronze crown
+SILVER_STREAK_VALUE: 7            # Days in a row of work goal streak to display silver crown
+GOLD_STREAK_VALUE: 14             # Days in a row of work goal streak to display gold crown 
 
 # Time variables ----------------------------------------------------------------------------------
 IDLE_TIME: 60                    # Time without interaction before considered idle

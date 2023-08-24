@@ -31,7 +31,7 @@ def load_config() -> dict[str, any]:
 
     config["WORKSPACE"] = workspace
     config["ASSETS"] = os.path.join(workspace, "assets/")
-    app_name = "Productivity Dashboard - Schedule advisor"
+    app_name = "Productivity Dashboard - Study Advisor"
     config["NOTIFICATION"] = Notify(
         default_notification_application_name=app_name,
         default_notification_icon=os.path.join(
@@ -348,6 +348,7 @@ def send_notification(
         title: str, message: str, audio: str = "notification") -> None:
     """
     Sends a desktop notification with the title and message.
+    Waits 12 seconds for message to go away and a little more.
 
     Args:
         title (str): Title of the notification.
@@ -361,3 +362,17 @@ def send_notification(
     notification.audio = os.path.join(
         cfg["WORKSPACE"], "assets", audio + ".wav")
     notification.send(block=False)
+    time.sleep(12)
+
+
+def check_dataframe(name: str) -> bool:
+    """
+    Checks if database with the provided name exists.
+
+    Returns:
+        bool: If the dataframe exists.
+    """
+    # Check if file does not exists
+    cfg = load_config()
+    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
+    return os.path.exists(path)

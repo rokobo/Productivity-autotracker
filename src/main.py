@@ -8,6 +8,7 @@ import time
 from helper_io import load_input_time, load_config
 from functions_threads import mouse_idle_detector, keyboard_idle_detector, \
     activity_detector, audio_idle_detector, server_supervisor
+from study_advisor import study_advisor
 
 
 CFG = load_config()
@@ -36,15 +37,20 @@ if __name__ == '__main__':
             audio_thread.daemon = True
             audio_thread.start()
 
-            # Main activity thread
+            # Main activity process
             activity_thread = Process(target=activity_detector)
             activity_thread.daemon = True
             activity_thread.start()
 
-            # Dash server thread
+            # Dash server process
             server_thread = Process(target=server_supervisor)
             server_thread.daemon = True
             server_thread.start()
+
+            # Study advisor process
+            advisor_thread = Process(target=study_advisor)
+            advisor_thread.daemon = True
+            advisor_thread.start()
 
             time.sleep(CFG['IDLE_CHECK_INTERVAL'] * 5)
 
@@ -56,6 +62,7 @@ if __name__ == '__main__':
                 ARE_THREADS_ONLINE &= audio_thread.is_alive()
                 ARE_THREADS_ONLINE &= activity_thread.is_alive()
                 ARE_THREADS_ONLINE &= server_thread.is_alive()
+                ARE_THREADS_ONLINE &= advisor_thread.is_alive()
                 time.sleep(3)
             raise RuntimeError
 

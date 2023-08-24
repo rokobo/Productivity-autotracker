@@ -17,6 +17,7 @@ UNRESPONSIVE_THRESHOLD: 5        # Minimum time without backend update before se
 RETRY_ATTEMPS: 5                 # Retry attempts for various IO operations
 GMT_OFFSET: -3                   # Your localtime GMT offset
 HEATMAP_CAROUSEL_INTERVAL: 5     # Time between carousel slide change
+STUDY_ADVISOR_INTERVAL: 30       # Time between study advisor checks
 
 # Sizes -------------------------------------------------------------------------------------------
 CATEGORY_HEIGHT: 250             # Size of categories graph

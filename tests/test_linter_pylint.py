@@ -110,3 +110,10 @@ def test_pylint_layout_menu() -> None:
     file = os.path.join(pages_folder, "layout_menu.py")
     result = Run([file], do_exit=False).linter.stats
     assert result.global_note == 10, result.by_msg
+
+
+def test_pylint_study_advisor() -> None:
+    """Ensures study_advisor passes pylint specifications."""
+    file = os.path.join(src_folder, "study_advisor.py")
+    result = Run([file], do_exit=False).linter.stats
+    assert result.global_note == 10, result.by_msg

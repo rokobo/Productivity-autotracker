@@ -110,3 +110,10 @@ def test_flake8_layout_menu() -> None:
     file = os.path.join(pages_folder, "layout_menu.py")
     result = flake8.get_style_guide().check_files([file])
     assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))
+
+
+def test_flake8_study_advisor() -> None:
+    """Ensures study_advisor passes flake8 specifications."""
+    file = os.path.join(src_folder, "study_advisor.py")
+    result = flake8.get_style_guide().check_files([file])
+    assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))

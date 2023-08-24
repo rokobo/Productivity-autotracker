@@ -68,7 +68,24 @@ layout = html.Div([
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
-    dbc.Row(html.H3('Time variables')),
+    dbc.Row(html.H3('Goal variables (hours)')),
+    dbc.Row([
+        dbc.Row([
+            make_valuepicker("WORK_DAILY_GOAL", 0, 24, 0.1),
+            make_valuepicker("SMALL_WORK_DAILY_GOAL", 0, 24, 0.1),
+            make_valuepicker("PERSONAL_DAILY_GOAL", 0, 24, 0.1)
+        ], className="g-0"),
+        html.Hr(),
+        dbc.Row([
+            make_valuepicker("WORK_TO_PERSONAL_MULTIPLIER", 0, 48, 0.1),
+        ], className="g-0"),
+    ], style={
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
+    }),
+    dbc.Row(html.H3('Time variables (seconds)')),
     dbc.Row([
         dbc.Row([
             make_valuepicker("IDLE_TIME", 15, 3600),
@@ -91,7 +108,7 @@ layout = html.Div([
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
-    dbc.Row(html.H3('Size variables')),
+    dbc.Row(html.H3('Size variables (pixels)')),
     dbc.Row([
         dbc.Row([
             make_valuepicker("CATEGORY_HEIGHT", 100, 500),
@@ -157,6 +174,8 @@ layout = html.Div([
 
 
 vars1 = [
+    "WORK_DAILY_GOAL", "SMALL_WORK_DAILY_GOAL", "PERSONAL_DAILY_GOAL",
+    "WORK_TO_PERSONAL_MULTIPLIER",
     "IDLE_TIME", "IDLE_CHECK_INTERVAL", "ACTIVITY_CHECK_INTERVAL",
     "MINIMUM_ACTIVITY_TIME", "UNRESPONSIVE_THRESHOLD", "RETRY_ATTEMPS",
     "GMT_OFFSET",

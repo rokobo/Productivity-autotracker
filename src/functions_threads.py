@@ -14,10 +14,10 @@ from pyautogui import position
 import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, Input, Output, callback
 from functions_activity import parser
+from helper_io import save_dataframe, load_config
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
     layout_configuration2, layout_goals, layout_urls
-from helper_io import save_dataframe, load_config
 
 
 def mouse_idle_detector():

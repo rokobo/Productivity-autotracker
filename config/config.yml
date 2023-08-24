@@ -1,13 +1,15 @@
 # Goal variables ----------------------------------------------------------------------------------
-WORK_DAILY_GOAL: 2               # Work goal for heatmaps
-SMALL_WORK_DAILY_GOAL: 0.5       # Work goal for consistency sake
-PERSONAL_DAILY_GOAL: 6           # Personal activity threshold for heatmaps
+WORK_DAILY_GOAL: 2                # Work goal for heatmaps
+SMALL_WORK_DAILY_GOAL: 0.5        # Work goal for consistency sake
+PERSONAL_DAILY_GOAL: 2            # Personal activity threshold for heatmaps
+WORK_TO_PERSONAL_MULTIPLIER: 2    # PERSONAL_DAILY_GOAL override for work done times this,
+                                  # bigger value is used, set to 0 to ignore
 
 # Time variables ----------------------------------------------------------------------------------
 IDLE_TIME: 60                    # Time without interaction before considered idle
 IDLE_CHECK_INTERVAL: 5           # Time between checking for idle
 ACTIVITY_CHECK_INTERVAL: 1       # Time between checking for interaction
-MINIMUM_ACTIVITY_TIME: 30        # Minimum time for activity to show in cards
+MINIMUM_ACTIVITY_TIME: 60        # Minimum time for activity to show in cards
 UNRESPONSIVE_THRESHOLD: 5        # Minimum time without backend update before server restart
 RETRY_ATTEMPS: 5                 # Retry attempts for various IO operations
 GMT_OFFSET: -3                   # Your localtime GMT offset

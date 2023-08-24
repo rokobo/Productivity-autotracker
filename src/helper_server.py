@@ -234,7 +234,7 @@ def make_colorpicker(id_name: str) -> dbc.Col:
 
 
 def make_valuepicker(
-        id_name: str, min_val: int, max_val: int) -> dbc.Col:
+        id_name: str, min_val: int, max_val: int, step=1.0) -> dbc.Col:
     """
     Makes the input component with a label, id, minimium and maximum value.
     Used to pick a value and display text.
@@ -243,6 +243,7 @@ def make_valuepicker(
         id_name (str): Component id.
         min_val (int): Maximum value of the given input.
         max_val (int): Minimum value of the given input.
+        step (float, optional): Step in value. Defaults to 1.0
 
     Returns:
         dbc.Col: Input component.
@@ -251,7 +252,7 @@ def make_valuepicker(
         html.H5(id_name, style={"textAlign": "left"}),
         dbc.Input(
             type="number", id=id_name,
-            min=min_val, max=max_val, step=1,
+            min=min_val, max=max_val, step=step,
             style={"width": 200, "height": 50},
         ),
         html.H5(
@@ -303,14 +304,15 @@ def hex_to_rgb(hex_string: str) -> str:
 
 
 def make_heatmap(
-        data: list[int], title: str,
-        goal: str, color: str) -> tuple[go.Figure, str]:
+        dataframe: pd.DataFrame, dataframe_accessor: str,
+        title: str, goal: str, color: str) -> tuple[go.Figure, str]:
     """
     Makes a yealy heatmap using the provided arguments.
     The arguments are lists for multiple graphs support.
 
     Args:
-        data (list[int]): Data used for the heatmap.
+        data (pd.DataFrame): Data used for the heatmap.
+        dataframe_accessor (str): Column name.
         title (str): Name of the graph.
         goal (str): Goal variable from config file.
         color (str): Color for the heatmap
@@ -320,14 +322,26 @@ def make_heatmap(
         str: Full title.
     """
     cfg = load_config()
+    data = dataframe[dataframe_accessor].values
     base = [cfg["HEATMAP_BASE_COLOR"], cfg["HEATMAP_BASE_COLOR"]]
     assert len(data) == 364, "Heatmap data not in correct format error"
 
-    values = [[
-        1 if data[day_index] >= cfg[goal]
-        else 0
-        for day_index in range(week * 7, (1 + week) * 7)
-    ] for week in range(52)]
+    if dataframe_accessor != "Personal":
+        values = [[
+            1 if data[day_index] >= cfg[goal]
+            else 0
+            for day_index in range(week * 7, (1 + week) * 7)
+        ] for week in range(52)]
+    else:
+        work_data = dataframe["Work"].values
+        values = [[
+            1 if data[day_index] >= max(
+                cfg[goal],
+                work_data[day_index] * cfg["WORK_TO_PERSONAL_MULTIPLIER"]
+            )
+            else 0
+            for day_index in range(week * 7, (1 + week) * 7)
+        ] for week in range(52)]
     values = list(map(list, zip(*values)))
 
     fig = go.Figure(data=go.Heatmap(

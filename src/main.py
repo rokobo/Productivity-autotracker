@@ -37,12 +37,12 @@ if __name__ == '__main__':
             audio_thread.start()
 
             # Main activity thread
-            activity_thread = Thread(target=activity_detector)
+            activity_thread = Process(target=activity_detector)
             activity_thread.daemon = True
             activity_thread.start()
 
             # Dash server thread
-            server_thread = Thread(target=server_supervisor)
+            server_thread = Process(target=server_supervisor)
             server_thread.daemon = True
             server_thread.start()
 

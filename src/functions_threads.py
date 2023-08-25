@@ -17,7 +17,7 @@ from functions_activity import parser
 from helper_io import save_dataframe, load_config
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
-    layout_configuration2, layout_goals, layout_urls
+    layout_configuration2, layout_goals, layout_urls, layout_milestones
 
 
 def mouse_idle_detector():
@@ -116,6 +116,8 @@ def server_supervisor():
                 layout = layout_goals.layout
             case "/urls":
                 layout = layout_urls.layout
+            case "/milestones":
+                layout = layout_milestones.layout
             case _:
                 layout = layout_dashboard.layout
         return layout

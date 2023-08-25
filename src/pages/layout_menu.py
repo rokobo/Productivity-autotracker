@@ -17,6 +17,7 @@ menu_items = [
     dbc.DropdownMenuItem("Categories table", href="/categories"),
     dbc.DropdownMenuItem("URLs table", href="/urls"),
     dbc.DropdownMenuItem("Input tables", href="/inputs"),
+    dbc.DropdownMenuItem("Milestones table", href="/milestones"),
     dbc.DropdownMenuItem(divider=True),
     dbc.DropdownMenuItem("Credits", header=True),
     dbc.DropdownMenuItem("Attributions page", href="/credits"),

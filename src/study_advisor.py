@@ -33,14 +33,16 @@ def fix_milestones() -> pd.DataFrame:
     if not check_dataframe("milestones"):
         save_dataframe(dataframe, "milestones")
 
-    milestones = load_dataframe("milestones")
+    milestones = load_dataframe("milestones").drop("rowid", axis=1)
 
     # Check day change
     if milestones.loc[0, "day"] != day:
+        milestones = dataframe
         save_dataframe(dataframe, "milestones")
 
     # Check columns
     if not milestones.columns.equals(dataframe.columns):
+        milestones = dataframe
         save_dataframe(dataframe, "milestones")
     return milestones
 

@@ -387,8 +387,18 @@ def make_crown() -> dbc.Row:
         cfg["SMALL_WORK_DAILY_GOAL"],
         cfg["WORK_DAILY_GOAL"]
     ]
+
+    # Get goals met for today
+    today = load_day_total(364)
+    streaks[2] += 1 if today.loc[0, "Work"] >= goals[3] else 0
+    streaks[1] += 1 if today.loc[0, "Work"] >= goals[2] else 0
+    streaks[0] += 1 if today.loc[0, "Personal"] <= max(
+        goals[1], today.loc[0, "Work"] * goals[0]
+    ) else 0
+
+    # Get goals streak for previous days
     is_not_done = [True, True, True]
-    for day in range(364, 0, -1):
+    for day in range(363, 0, -1):
         values = load_day_total(day)
         # Full work goal
         if is_not_done[2]:

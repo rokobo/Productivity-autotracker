@@ -228,7 +228,7 @@ def update_info_row(_1):
 
     row = dbc.Card([dbc.CardBody([dbc.Row([
         dbc.Col([html.H4("Backend"), html.H5(backend)], style=style),
-        dbc.Col([html.H4("Fronent"), html.H5(frontend)], style=style),
+        dbc.Col([html.H4("Frontend"), html.H5(frontend)], style=style),
         dbc.Col([html.H4("Mouse"), html.H5(mouse)], style=style),
         dbc.Col([html.H4("Keyboard"), html.H5(keyboard)], style=style),
         dbc.Col([html.H4("Audio"), html.H5(audio)], style=style),

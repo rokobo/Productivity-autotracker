@@ -4,7 +4,6 @@
 import os
 import sys
 import time
-from datetime import datetime
 import pandas as pd
 from dash import html, dcc, Input, Output, callback
 import dash_bootstrap_components as dbc
@@ -14,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import layout_menu
 from helper_server import generate_cards, format_short_duration, make_crown, \
-    make_totals_graph
+    make_totals_graph, make_info_row
 from helper_io import save_dataframe, load_dataframe, \
     load_input_time, load_config, set_idle, load_lastest_row, load_day_total
 
@@ -112,38 +111,7 @@ def update_category(_1):
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }
-
-    # Top info row
-    work = data.loc[data['category'] == 'Work', 'total'].values[0]
-    goal_text = "Work: "
-    if work >= CFG['WORK_DAILY_GOAL']:
-        goal_text += "Done!"
-    else:
-        left = (CFG['WORK_DAILY_GOAL'] - work) * 60
-        goal_text += f"{int(left)} min left"
-
-    personal = data.loc[data['category'] == 'Personal', 'total'].values[0]
-    goal_text += ", Personal: "
-    personal_goal = CFG['PERSONAL_DAILY_GOAL']
-    work_multiplied = CFG['WORK_TO_PERSONAL_MULTIPLIER'] * work
-    if work_multiplied > personal_goal:
-        personal_goal = work_multiplied
-    if personal >= personal_goal:
-        goal_text += "Over limit!"
-    else:
-        left = (personal_goal - personal) * 60
-        goal_text += f"{int(left)} min left"
-
-    date_text = datetime.now().strftime('%B %d, %A, %H:%M')
-
-    goals = dbc.Col([
-        dbc.Row(html.H4(goal_text)),
-        dbc.Row(html.H4(date_text))
-    ], style={'padding': '0px'})
-
-    # Streak crowns
-    crowns = make_crown()
-    return card, style, goals, crowns
+    return card, style, make_info_row(data), make_crown()
 
 
 @callback(

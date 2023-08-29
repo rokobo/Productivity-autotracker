@@ -537,3 +537,56 @@ def make_totals_graph(data: pd.DataFrame):
     } for xi, yi in zip(data['category'], data['total'])]
     fig.update_layout(annotations=sum_annotations)
     return fig
+
+
+def make_info_row(data: pd.DataFrame) -> dbc.Col:
+    """
+    Makes the top info row of the main page.
+
+    Args:
+        data (pd.DataFrame): Daily progress data.
+
+    Returns:
+        dbc.Col: Info row column.
+    """
+    cfg = load_config()
+    work = data.loc[data['category'] == 'Work', 'total'].values[0]
+    work_goal = cfg['WORK_DAILY_GOAL']
+
+    # Make first row
+    first_row = "Work: "
+    if work >= work_goal:
+        first_row += "Done!"
+    else:
+        first_row += f"{int((work_goal - work) * 60)} min left"
+
+    personal = data.loc[data['category'] == 'Personal', 'total'].values[0]
+    first_row += ", Personal: "
+    personal_goal = cfg['PERSONAL_DAILY_GOAL']
+    work_multiplied = cfg['WORK_TO_PERSONAL_MULTIPLIER'] * work
+    if work_multiplied > personal_goal:
+        personal_goal = work_multiplied
+    if personal >= personal_goal:
+        first_row += "Over limit!"
+    else:
+        first_row += f"{int((personal_goal - personal) * 60)} min left"
+
+    # Make second row
+    second_row = datetime.datetime.now().strftime('%B %d, %A, %H:%M')
+    thresholds = [
+        work_goal * 0.25, work_goal * 0.50,
+        work_goal * 0.75, work_goal]
+    if work >= work_goal:
+        second_row += ", 💯: Done!"
+    else:
+        objetive = next(
+            (result, threshold) for threshold, result
+            in zip(thresholds, ["¼", "½", "¾", "💯"])
+            if work <= threshold)
+        second_row += f", {objetive[0]}: {round(objetive[1], 2)}h"
+
+    column = dbc.Col([
+        dbc.Row(html.H4(first_row)),
+        dbc.Row(html.H4(second_row))
+    ], style={'padding': '0px'})
+    return column

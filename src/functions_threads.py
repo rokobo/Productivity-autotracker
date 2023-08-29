@@ -3,6 +3,7 @@ Creates event listeners that will be used to detect if the user
 is not idle. If the user is not idle, update data file.
 """
 # pylint: disable=unused-variable, bare-except, broad-exception-caught
+# pylint: disable=too-few-public-methods
 # flake8: noqa: F401
 import time
 import logging

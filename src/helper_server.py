@@ -8,6 +8,7 @@ import pandas as pd
 from dash import html
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
+import plotly.express as px
 from helper_io import load_config, load_categories, load_day_total
 
 
@@ -429,12 +430,16 @@ def make_crown() -> dbc.Row:
     # Determine which crown to give
     crowns = [
         "crown_gold.png",
+        "crown_gold.png",
+        "crown_red.png",
         "crown_silver.png",
         "crown_bronze.png",
         "crown_black.png"
     ]
     thresholds = [
+        cfg["ENCHANTED_GOLD_STREAK_VALUE"],
         cfg["GOLD_STREAK_VALUE"],
+        cfg["RED_STREAK_VALUE"],
         cfg["SILVER_STREAK_VALUE"],
         cfg["BRONZE_STREAK_VALUE"],
         0
@@ -478,3 +483,57 @@ def make_crown() -> dbc.Row:
         ], class_name="g-0", style={'margin-bottom': '0px'})
     ], class_name="g-0")
     return crown_row
+
+
+def make_totals_graph(data: pd.DataFrame):
+    """
+    Makes the totals graph for the main page.
+
+    Args:
+        data (pd.DataFrame): Daily totals dataframe.
+
+    Returns:
+        _type_: Graph.
+    """
+    cfg = load_config()
+    fig = px.bar(
+        data, x='category', y='total',
+        category_orders={'category': ['Work', 'Personal', 'Neutral']}
+    )
+
+    fig.update_traces(marker_color=[
+        cfg["NEUTRAL_COLOR"], cfg["PERSONAL_COLOR"], cfg["WORK_COLOR"]])
+    fig.update_layout(
+        plot_bgcolor=cfg['CARD_COLOR'],
+        paper_bgcolor=cfg['CARD_COLOR'],
+        font_color=cfg['TEXT_COLOR'],
+        height=cfg['CATEGORY_HEIGHT'],
+        legend_title_text="",
+        title="",
+        title_font_color=cfg['TEXT_COLOR'],
+        margin={'l': 0, 'r': 0, 't': 0, 'b': 0}
+    )
+    fig.update_xaxes(
+        title=None,
+        showgrid=False
+    )
+    fig.update_yaxes(
+        title=None,
+        showgrid=False,
+        showticklabels=False
+    )
+    sum_annotations = [{
+        'x': xi,
+        'y': yi + (data['total'].max() / 9),
+        'text': f"{yi:.2f} hour" + (
+            "s" if yi >= 1 else "") + f" / {round(yi/16*100, 1)}% of the day",
+        'xanchor': 'center',
+        'yanchor': 'top',
+        'showarrow': False,
+        'font': {
+            'color': cfg['TEXT_COLOR'],
+            'size': cfg['CATEGORY_FONT_SIZE']
+        }
+    } for xi, yi in zip(data['category'], data['total'])]
+    fig.update_layout(annotations=sum_annotations)
+    return fig

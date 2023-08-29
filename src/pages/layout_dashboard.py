@@ -8,13 +8,13 @@ from datetime import datetime
 import pandas as pd
 from dash import html, dcc, Input, Output, callback
 import dash_bootstrap_components as dbc
-import plotly.express as px
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import layout_menu
-from helper_server import generate_cards, format_short_duration, make_crown
+from helper_server import generate_cards, format_short_duration, make_crown, \
+    make_totals_graph
 from helper_io import save_dataframe, load_dataframe, \
     load_input_time, load_config, set_idle, load_lastest_row, load_day_total
 
@@ -30,12 +30,17 @@ layout = html.Div([
         dbc.Col(
             dbc.Button([
                     dbc.Spinner(html.Div(id="idle_loading"), size="sm"),
-                    "Set state to idle"
+                    "Set idle"
                 ],
                 id="set_idle_button",
                 color="warning", outline=True
             ), class_name="d-md-flex justify-content-md-end"
-        )
+        ),
+        dbc.Tooltip(
+                "Sets your state to idle. \
+                    Just press the button and stop moving your mouse.",
+                target='set_idle_button', placement="bottom"
+        ),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px",
@@ -88,48 +93,8 @@ def update_category(_1):
     data.rename(columns={
         'index': 'category', data.columns[1]: 'total'
     }, inplace=True)
-    fig = px.bar(
-        data, x='category', y='total',
-        category_orders={'category': ['Work', 'Personal', 'Neutral']}
-    )
 
-    fig.update_traces(marker_color=[
-        CFG["NEUTRAL_COLOR"], CFG["PERSONAL_COLOR"], CFG["WORK_COLOR"]])
-    fig.update_layout(
-        plot_bgcolor=CFG['CARD_COLOR'],
-        paper_bgcolor=CFG['CARD_COLOR'],
-        font_color=CFG['TEXT_COLOR'],
-        height=CFG['CATEGORY_HEIGHT'],
-        legend_title_text="",
-        title="",
-        title_font_color=CFG['TEXT_COLOR'],
-        margin={'l': 0, 'r': 0, 't': 0, 'b': 0}
-    )
-    fig.update_xaxes(
-        title=None,
-        showgrid=False
-    )
-    fig.update_yaxes(
-        title=None,
-        showgrid=False,
-        showticklabels=False
-    )
-    sum_annotations = [
-        {
-            'x': xi,
-            'y': yi + (data['total'].max() / 9),
-            'text': f"{yi:.2f} hour" + (
-                "s" if yi >= 1 else "") + f" / {round(yi / 16 * 100, 1)}% of the day",
-            'xanchor': 'center',
-            'yanchor': 'top',
-            'showarrow': False,
-            'font': {
-                'color': CFG['TEXT_COLOR'],
-                'size': CFG['CATEGORY_FONT_SIZE']
-            }
-        } for xi, yi in zip(data['category'], data['total'])
-    ]
-    fig.update_layout(annotations=sum_annotations)
+    fig = make_totals_graph(data)
 
     card_style = {
         'background-color': CFG['CARD_COLOR'],

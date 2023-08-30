@@ -5,11 +5,12 @@ Collection of helper functions for website routines.
 import re
 import datetime
 import pandas as pd
-from dash import html
+from dash import html, dcc
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import plotly.express as px
-from helper_io import load_config, load_categories, load_day_total
+from helper_io import load_config, load_categories, load_day_total, \
+    load_dataframe
 
 
 def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
@@ -590,3 +591,46 @@ def make_info_row(data: pd.DataFrame) -> dbc.Col:
         dbc.Row(html.H4(second_row))
     ], style={'padding': '0px'})
     return column
+
+
+def make_trend_graph() -> dbc.Col:
+    """
+    Makes trend graphs for trends page.
+
+    Returns:
+        dbc.Col: Column of graphs.
+    """
+    cfg = load_config()
+    row = []
+    totals = load_dataframe("totals")
+    colors = [cfg["WORK_COLOR"], cfg["PERSONAL_COLOR"]]
+    types = ["Work", "Personal"]
+    intervals = [30, 90, 364]
+    style = {
+        'margin-left': f"{cfg['SIDE_PADDING']}px",
+        'margin-right': f"{cfg['SIDE_PADDING']}px",
+        'margin-bottom': f"{cfg['DIVISION_PADDING']}px"
+    }
+    for selected, color in zip(types, colors):
+        for interval in intervals:
+            fig = px.bar(
+                totals.iloc[-interval:, :],
+                x="rowid",
+                y=selected,
+                labels={"rowid": "day"},
+                color_discrete_sequence=[color]
+            )
+            fig.update_layout(
+                plot_bgcolor=cfg['CARD_COLOR'],
+                paper_bgcolor=cfg['CARD_COLOR'],
+                font_color=cfg['TEXT_COLOR'],
+                height=cfg['CATEGORY_HEIGHT'],
+                title="",
+                margin={'l': 0, 'r': 0, 't': 0, 'b': 0}
+            )
+            row.append(dbc.Row([
+                html.H3(f"{selected} {interval}-day trend"),
+                dcc.Graph(figure=fig)
+            ], style=style))
+        row.append(html.Br())
+    return dbc.Col(row)

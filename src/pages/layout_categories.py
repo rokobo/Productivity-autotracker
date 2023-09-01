@@ -20,6 +20,7 @@ layout = html.Div([
     dbc.Row([
         layout_menu.layout,
         dbc.Col(id='categories_update_time'),
+        dbc.Col(id='categories_data'),
         dbc.Col(
             html.Button(
                 "Update table", id='categories_refresh_button',
@@ -49,6 +50,7 @@ layout = html.Div([
 @callback(
     Output('categories_table', 'figure'),
     Output('categories_update_time', 'children'),
+    Output('categories_data', 'children'),
     Input('categories_refresh_button', 'n_clicks'))
 def update_categories(_1):
     """Makes categories graph."""
@@ -71,4 +73,6 @@ def update_categories(_1):
         margin={'b': 0, 't': 0, 'l': 0, 'r': 0}
     )
     title = f'Last update: {datetime.now().strftime("%H:%M:%S")}'
-    return fig, html.H3(title)
+    info = f'Rows: {dataframe.shape[0]}, '
+    info += f'Columns: {dataframe.shape[1]}'
+    return fig, html.H3(title), html.H4(info)

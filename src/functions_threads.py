@@ -19,7 +19,7 @@ from helper_io import save_dataframe, load_config
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
     layout_configuration2, layout_goals, layout_urls, layout_milestones, \
-    layout_trends
+    layout_trends, layout_all
 
 
 def mouse_idle_detector():
@@ -79,6 +79,18 @@ def audio_idle_detector():
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
 
 
+# def backups():
+#     """
+#     Does backup for the activity database, which is the one
+#     that generates all other databases.
+#     """
+#     # TODO
+#     while True:
+#         cfg = load_config()
+#         # Check if backup is needed
+#         cfg["BACKUP_INTERVAL"]
+
+
 def server_supervisor():
     """Server runner function."""
     external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -118,6 +130,8 @@ def server_supervisor():
                 layout = layout_goals.layout
             case "/trends":
                 layout = layout_trends.layout
+            case "/all":
+                layout = layout_all.layout
             case "/urls":
                 layout = layout_urls.layout
             case "/milestones":

@@ -2,7 +2,7 @@
 Collection of helper functions for input and output rountines.
 """
 # pylint: disable=broad-exception-caught, possibly-unused-variable
-# pylint: disable=unused-argument, import-error
+# pylint: disable=unused-argument
 import os
 import time
 from notifypy import Notify

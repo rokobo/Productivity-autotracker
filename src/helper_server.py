@@ -13,18 +13,22 @@ from helper_io import load_config, load_categories, load_day_total, \
     load_dataframe
 
 
-def generate_cards(dataframe: pd.DataFrame) -> dbc.Row:
+def generate_cards(
+        dataframe: pd.DataFrame,
+        totals=None) -> dbc.Row:
     """
     Generates categorized list of activities in a given timeframe.
 
     Args:
-        dataframe2 (pd.DataFrame): _description_
+        dataframe (pd.DataFrame): Dataframe with categories.
+        totals (pd.DataFrame): Total time of three categories for comparison.
 
     Returns:
         dbc.Row: Dash Row with categorized activities.
     """
+    if totals is None:
+        totals = load_day_total(364)
     cfg = load_config()
-    totals = load_day_total(364)
     work_list = []
     personal_list = []
     neutral_list = []

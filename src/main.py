@@ -1,13 +1,14 @@
 """
 Main runner file for the Dash app and its background processes.
 """
-# pylint: disable=broad-exception-caught
+# pylint: disable=broad-exception-caught, used-before-assignment, import-error
+# flake8: noqa: F821
 from threading import Thread
 from multiprocessing import Process
 import time
 from helper_io import load_input_time, load_config
 from functions_threads import mouse_idle_detector, keyboard_idle_detector, \
-    activity_detector, audio_idle_detector, server_supervisor
+    activity_detector, audio_idle_detector, server_supervisor#, backups
 from study_advisor import study_advisor
 
 
@@ -15,7 +16,7 @@ CFG = load_config()
 THRESHOLD = CFG['UNRESPONSIVE_THRESHOLD']
 
 
-def is_backend_online():
+def did_backend_update_recently():
     """Determines if backend has been updated in a given timeframe."""
     return (int(time.time()) - load_input_time('backend')) < THRESHOLD
 
@@ -23,51 +24,64 @@ def is_backend_online():
 if __name__ == '__main__':
     while True:
         try:
-            # Background detection threads
-            mouse_thread = Thread(target=mouse_idle_detector)
-            mouse_thread.daemon = True
-            mouse_thread.start()
+            try:  # Main activity process
+                assert activity_process.is_alive()
+                assert did_backend_update_recently()
+            except Exception:
+                print("Problem in activity_process, restarting process...")
+                activity_process = Process(target=activity_detector)
+                activity_process.daemon = True
+                activity_process.start()
 
-            keyboard_thread = Thread(target=keyboard_idle_detector)
-            keyboard_thread.daemon = True
-            keyboard_thread.start()
+            try:  # Mouse detection thread
+                assert mouse_thread.is_alive()
+            except Exception:
+                print("Problem in mouse_thread, restarting thread...")
+                mouse_thread = Thread(target=mouse_idle_detector)
+                mouse_thread.daemon = True
+                mouse_thread.start()
 
-            # Soundcard library cannot run in thread
-            audio_thread = Process(target=audio_idle_detector)
-            audio_thread.daemon = True
-            audio_thread.start()
+            try:  # Keyboard detection thread
+                assert keyboard_thread.is_alive()
+            except Exception:
+                print("Problem in keyboard_thread, restarting thread...")
+                keyboard_thread = Thread(target=keyboard_idle_detector)
+                keyboard_thread.daemon = True
+                keyboard_thread.start()
 
-            # Main activity process
-            activity_thread = Process(target=activity_detector)
-            activity_thread.daemon = True
-            activity_thread.start()
+            try:  # Soundcard library cannot run in thread
+                assert audio_process.is_alive()
+            except Exception:
+                print("Problem in audio_process, restarting process...")
+                audio_process = Process(target=audio_idle_detector)
+                audio_process.daemon = True
+                audio_process.start()
 
-            # Dash server process
-            server_thread = Process(target=server_supervisor)
-            server_thread.daemon = True
-            server_thread.start()
+            try:  # Study advisor process
+                assert advisor_process.is_alive()
+            except Exception:
+                print("Problem in advisor_process, restarting process...")
+                advisor_process = Process(target=study_advisor)
+                advisor_process.daemon = True
+                advisor_process.start()
 
-            # Study advisor process
-            advisor_thread = Process(target=study_advisor)
-            advisor_thread.daemon = True
-            advisor_thread.start()
+            try:  # Dash server process
+                assert server_process.is_alive()
+            except Exception:
+                print("Problem in server_process, restarting process...")
+                server_process = Process(target=server_supervisor)
+                server_process.daemon = True
+                server_process.start()
+
+            # try:  # Backup process TODO
+            #     assert backup_process.is_alive()
+            # except Exception:
+            #     print("Problem in backup_process, restarting process...")
+            #     backup_process = Process(target=backups)
+            #     backup_process.daemon = True
+            #     backup_process.start()
 
             time.sleep(CFG['IDLE_CHECK_INTERVAL'] * 5)
 
-            # Restart all threads if backend or threads are unresponsive
-            ARE_THREADS_ONLINE = True
-            while is_backend_online() and ARE_THREADS_ONLINE:
-                ARE_THREADS_ONLINE = mouse_thread.is_alive()
-                ARE_THREADS_ONLINE &= keyboard_thread.is_alive()
-                ARE_THREADS_ONLINE &= audio_thread.is_alive()
-                ARE_THREADS_ONLINE &= activity_thread.is_alive()
-                ARE_THREADS_ONLINE &= server_thread.is_alive()
-                ARE_THREADS_ONLINE &= advisor_thread.is_alive()
-                time.sleep(3)
-            raise RuntimeError
-
-        except RuntimeError:
+        except Exception:
             print("MAIN PROGRAM FAILURE, RESTARTING...")
-            time.sleep(3)
-        except Exception:  # For other possible thread errors
-            print("General error caught")

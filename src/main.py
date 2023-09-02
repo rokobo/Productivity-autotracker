@@ -8,7 +8,7 @@ from multiprocessing import Process
 import time
 from helper_io import load_input_time, load_config
 from functions_threads import mouse_idle_detector, keyboard_idle_detector, \
-    activity_detector, audio_idle_detector, server_supervisor#, backups
+    activity_detector, audio_idle_detector, server_supervisor, backups
 from study_advisor import study_advisor
 
 
@@ -73,13 +73,13 @@ if __name__ == '__main__':
                 server_process.daemon = True
                 server_process.start()
 
-            # try:  # Backup process TODO
-            #     assert backup_process.is_alive()
-            # except Exception:
-            #     print("Problem in backup_process, restarting process...")
-            #     backup_process = Process(target=backups)
-            #     backup_process.daemon = True
-            #     backup_process.start()
+            try:  # Backup process
+                assert backup_process.is_alive()
+            except Exception:
+                print("Problem in backup_process, restarting process...")
+                backup_process = Process(target=backups)
+                backup_process.daemon = True
+                backup_process.start()
 
             time.sleep(CFG['IDLE_CHECK_INTERVAL'] * 5)
 

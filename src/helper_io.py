@@ -31,6 +31,7 @@ def load_config() -> dict[str, any]:
 
     config["WORKSPACE"] = workspace
     config["ASSETS"] = os.path.join(workspace, "assets/")
+    config["BACKUP"] = os.path.join(workspace, "backup/")
     app_name = "Productivity Dashboard - Study Advisor"
     config["NOTIFICATION"] = Notify(
         default_notification_application_name=app_name,

@@ -6,7 +6,10 @@ is not idle. If the user is not idle, update data file.
 # pylint: disable=too-few-public-methods
 # flake8: noqa: F401
 import time
+import os
 import logging
+import shutil
+from datetime import datetime, timedelta
 from flask import request
 import soundcard as sc
 import pandas as pd
@@ -79,16 +82,47 @@ def audio_idle_detector():
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
 
 
-# def backups():
-#     """
-#     Does backup for the activity database, which is the one
-#     that generates all other databases.
-#     """
-#     # TODO
-#     while True:
-#         cfg = load_config()
-#         # Check if backup is needed
-#         cfg["BACKUP_INTERVAL"]
+def backups():
+    """
+    Does backup for the activity database, which is the one
+    that generates all other databases.
+    """
+    while True:
+        cfg = load_config()
+        time.sleep(cfg["IDLE_CHECK_INTERVAL"])
+        need_backup = False
+        now = datetime.now()
+        date_format = "%Y-%m-%d-%H-%M"
+
+        # Check if folder exists
+        if not os.path.exists(cfg["BACKUP"]):
+            os.makedirs(cfg["BACKUP"])
+
+        # Check if backup is needed
+        files = os.listdir(cfg["BACKUP"])
+        files.sort()
+        if not files:
+            need_backup = True
+        else:
+            last_backup = now - datetime.strptime(files[-1][:-3], date_format)
+            if last_backup > timedelta(minutes=cfg["BACKUP_INTERVAL"]):
+                need_backup = True
+
+        if not need_backup:
+            continue
+
+        # Copy activity database to backup folder
+        src = os.path.join(cfg["WORKSPACE"], 'data/activity.db')
+        dest = os.path.join(cfg["BACKUP"], f'{now.strftime(date_format)}.db')
+        shutil.copy2(src, dest)
+
+        # Delete oldest backup if there are more backups than desired
+        files = os.listdir(cfg["BACKUP"])
+        files.sort()
+        while cfg["NUMBER_OF_BACKUPS"] < len(files):
+            os.remove(os.path.join(cfg["BACKUP"], files[0]))
+            files = os.listdir(cfg["BACKUP"])
+            files.sort()
 
 
 def server_supervisor():

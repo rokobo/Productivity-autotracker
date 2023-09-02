@@ -5,6 +5,8 @@ This project began with a desire to have a time tracking software with the autom
 + [How it works](#how-it-works)
   + [Configuration files](#configuration-files)
   + [Idle detection](#idle-detection)
++ [Crowns and study advisor](#crowns-and-study-advisor)
++ [Backup system](#backup-system)
 + [Pages](#pages)
 + [Browser URL problem](#browser-url-problem)
 
@@ -31,7 +33,7 @@ Having the window information, the program will try to classify it using the rul
 If the program detects you are idle, it will display a warning modal like this:
 
 <p align="center">
-  <img src="https://github.com/rokobo/Productivity-autotracker/blob/main/images/idle_warning.png?raw=true" width="300"/>
+  <img src="https://github.com/rokobo/Productivity-autotracker/blob/main/images/idle_warning.png?raw=true" width="200"/>
 </p>
 
 You also have the option to set your status as idle with the top-right button of the main page. Do note that the idle detection uses multiple sources of activity detection, specifically: audio, keyboard, mouse and specific fullscreen apps. If you press the button and move your mouse or forget to pause music, the idle status will be reverted.
@@ -45,6 +47,8 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 
 + **Analytics pages**:
   + `Goals page` - Contains heatmaps that track progress on a number of goals defined by the user.
+  + `Trends page` - Contains bar graphs for work and personal activity in three different time ranges.
+  + `All events page` - Contains all recorded events separated into categories and sorted by time. Can help see what you spend most time on and serves to see if there are any neutral events that should be categorized.
 
 + **Customization pages**:
   + `Configuration page` - Offers ways to modify the contents of `config.yaml`.
@@ -53,10 +57,24 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 + **Troubleshooting pages**:
   + `Activity table` - Contains a scrollable version of the `activity.db` file.
   + `Categories table` - Contains a scrollable version of the `categories.db` file.
+  + `URLs table` - Contains a scrollable version of the `urls.db` file.
   + `Input tables` - Contains a scrollable version of the `audio.db`, `backend.db`, `frontend.db`, `mouse.db`, `keyboard.db`, `fullscreen.db` and `date.db` files.
+  + `Milestones table` - Contains a scrollable version of the `milestones.db` file.
 
 + **Credits**:
   + `Attributions page` - Contains image attributions for assets used in this project.
+
+## **Crowns and study advisor**
+
+On the background, the study advisor routine is running. It sends desktop notifications when you reach certain goals or pass the daily personal activity limit.
+
+Additionally, the main dashboard pages has three crowns that represent a streak of achievements. The three crowns are: Personal activity under limit, small daily work goal and full work goal. Depending on how many days in a row you have done, a different crown will appear. Settings changes how long each interval should be.
+
+## **Backup system**
+
+To prevent possible data deletion, the `activity.db` file is periodically backed up in the `backup` folder. Interval between backups and number of stored backups can be changed in settings.
+
+This program was done in such a way that the only fundamental database is the activity database. All other databases can be deleted and no data loss will occur.
 
 ## **Browser URL problem**
 
@@ -71,4 +89,3 @@ So I arrived at a better solution, I created a custom browser extension that sen
 I could not find a good way to detect if audio was playing in windows. After messing with a lot of libraries and ending up with `winrt`, I noticed that it worked extremely well for some apps, however, did not detect anything from other apps. So I needed a better solution.
 
 After some thought, I decided to go a different direction and record the audio from from the desktop and analyze the volume of the recording later. However, in doing so, I arrived at a better solution. I decided to stream the data from the recording, but bypass the recording entirely. Therefore I simply converted the binary data that was supposed to be a recording into volume intensity, which I then used to determine if any sound was playing.
-

@@ -18,11 +18,12 @@ from pyautogui import position
 import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, Input, Output, callback
 from functions_activity import parser
-from helper_io import save_dataframe, load_config
+from helper_io import save_dataframe, load_config, load_dataframe, \
+    load_day_total, append_to_database, delete_from_dataframe
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
     layout_configuration2, layout_goals, layout_urls, layout_milestones, \
-    layout_trends, layout_all
+    layout_trends, layout_all, layout_breaks
 
 
 def mouse_idle_detector():
@@ -87,42 +88,81 @@ def backups():
     Does backup for the activity database, which is the one
     that generates all other databases.
     """
+    cfg = load_config()
+    need_backup = False
+    now = datetime.now()
+    date_format = "%Y-%m-%d-%H-%M"
+
+    # Check if folder exists
+    if not os.path.exists(cfg["BACKUP"]):
+        os.makedirs(cfg["BACKUP"])
+
+    # Check if backup is needed
+    files = os.listdir(cfg["BACKUP"])
+    files.sort()
+    if not files:
+        need_backup = True
+    else:
+        last_backup = now - datetime.strptime(files[-1][:-3], date_format)
+        if last_backup > timedelta(minutes=cfg["BACKUP_INTERVAL"]):
+            need_backup = True
+
+    if not need_backup:
+        return
+
+    # Copy activity database to backup folder
+    src = os.path.join(cfg["WORKSPACE"], 'data/activity.db')
+    dest = os.path.join(cfg["BACKUP"], f'{now.strftime(date_format)}.db')
+    shutil.copy2(src, dest)
+
+    # Delete oldest backup if there are more backups than desired
+    files = os.listdir(cfg["BACKUP"])
+    files.sort()
+    while cfg["NUMBER_OF_BACKUPS"] < len(files):
+        os.remove(os.path.join(cfg["BACKUP"], files[0]))
+        files = os.listdir(cfg["BACKUP"])
+        files.sort()
+
+
+def break_days():
+    """
+    Adds break event to break days.
+    """
+    cfg = load_config()
+    breaks = load_dataframe("breaks", True)
+    date_format = "%Y-%m-%d"
+    if breaks.empty:
+        return
+    for day in breaks["day"].to_list():
+        start = datetime.strptime(day, date_format)
+        time_difference = datetime.now().date() - start.date()
+        if time_difference.days <= 0:
+            continue
+        start = int(start.timestamp() + 1)
+        work_done = load_day_total(364 - time_difference.days).loc[0, "Work"]
+        if work_done >= cfg["WORK_DAILY_GOAL"]:
+            continue
+        end = int(start + ((cfg["WORK_DAILY_GOAL"] - work_done) * 3600))
+        new_row = pd.DataFrame({
+            'start_time': [start], 'end_time': [end], 'app': ["BREAK TIME"],
+            'info': [""], 'handle': [-1], 'pid': [-1],
+            'process_name': ["BREAK TIME"], 'url': [""], 'domain': [""]
+        })
+        append_to_database("activity", new_row)
+        delete_from_dataframe("breaks", "day", [day])
+        print(f"Auxiliary notification: Break day {day} added successfully")
+
+
+def auxiliary_work():
+    """
+    Does auxiliary work for the program.
+    Backup, break days.
+    """
     while True:
         cfg = load_config()
         time.sleep(cfg["IDLE_CHECK_INTERVAL"])
-        need_backup = False
-        now = datetime.now()
-        date_format = "%Y-%m-%d-%H-%M"
-
-        # Check if folder exists
-        if not os.path.exists(cfg["BACKUP"]):
-            os.makedirs(cfg["BACKUP"])
-
-        # Check if backup is needed
-        files = os.listdir(cfg["BACKUP"])
-        files.sort()
-        if not files:
-            need_backup = True
-        else:
-            last_backup = now - datetime.strptime(files[-1][:-3], date_format)
-            if last_backup > timedelta(minutes=cfg["BACKUP_INTERVAL"]):
-                need_backup = True
-
-        if not need_backup:
-            continue
-
-        # Copy activity database to backup folder
-        src = os.path.join(cfg["WORKSPACE"], 'data/activity.db')
-        dest = os.path.join(cfg["BACKUP"], f'{now.strftime(date_format)}.db')
-        shutil.copy2(src, dest)
-
-        # Delete oldest backup if there are more backups than desired
-        files = os.listdir(cfg["BACKUP"])
-        files.sort()
-        while cfg["NUMBER_OF_BACKUPS"] < len(files):
-            os.remove(os.path.join(cfg["BACKUP"], files[0]))
-            files = os.listdir(cfg["BACKUP"])
-            files.sort()
+        backups()
+        break_days()
 
 
 def server_supervisor():
@@ -160,6 +200,8 @@ def server_supervisor():
                 layout = layout_configuration.layout
             case "/configuration2":
                 layout = layout_configuration2.layout
+            case "/breaks":
+                layout = layout_breaks.layout
             case "/goals":
                 layout = layout_goals.layout
             case "/trends":

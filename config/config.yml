@@ -14,8 +14,8 @@ ENCHANTED_GOLD_STREAK_VALUE: 75       # Daily goal streak to display enchanted g
 IDLE_TIME: 60                    # Time without interaction before considered idle
 IDLE_CHECK_INTERVAL: 5           # Time between checking for idle
 ACTIVITY_CHECK_INTERVAL: 1       # Time between checking for interaction
-BACKUP_INTERVAL: 30              # Time between backups of main activity database (in minutes)
-NUMBER_OF_BACKUPS: 10            # How many backups you wish to have
+BACKUP_INTERVAL: 15              # Time between backups of main activity database (in minutes)
+NUMBER_OF_BACKUPS: 20            # How many backups you wish to have
 MINIMUM_ACTIVITY_TIME: 60        # Minimum time for activity to show in cards
 UNRESPONSIVE_THRESHOLD: 5        # Minimum time without backend update before server restart
 RETRY_ATTEMPS: 5                 # Retry attempts for various IO operations

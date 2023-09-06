@@ -53,6 +53,7 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 + **Customization pages**:
   + `Configuration page` - Offers ways to modify the contents of `config.yaml`.
   + `Categories page` - Offers ways to modify the contents of `categories.yaml`.
+  + `Breaks page` - Offers ways to add break days without damaging streaks or achievements.
 
 + **Troubleshooting pages**:
   + `Activity table` - Contains a scrollable version of the `activity.db` file.

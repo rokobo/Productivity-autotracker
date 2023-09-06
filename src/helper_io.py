@@ -215,9 +215,13 @@ def load_activity_between(
     return dataframe
 
 
-def load_dataframe(name: str) -> pd.DataFrame:
+def load_dataframe(name: str, can_be_empty=False) -> pd.DataFrame:
     """
     Loads entire database with the provided name.
+
+    Args:
+        name (str): Database name.
+        can_be_empty (bool, optional): If df can be empty. Defaults to False.
 
     Returns:
         pd.DataFrame: Accessed dataframe.
@@ -227,6 +231,10 @@ def load_dataframe(name: str) -> pd.DataFrame:
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
     assert os.path.exists(path), "Path does not exist error"
+    if can_be_empty:
+        error_check = 'not isinstance(data, pd.DataFrame)'
+    else:
+        error_check = 'data.empty or not isinstance(data, pd.DataFrame)'
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -234,11 +242,12 @@ def load_dataframe(name: str) -> pd.DataFrame:
         var='data',
         code='conn = sql.connect(path)\
             \ndata = pd.read_sql(f"SELECT *, rowid FROM {name}", conn)',
-        error_check='data.empty or not isinstance(data, pd.DataFrame)',
+        error_check=error_check,
         final_code='conn.close()',
         retries=retries,
         environment=locals())
-    assert not dataframe.empty, "Loaded dataframe is empty error"
+    if not can_be_empty:
+        assert not dataframe.empty, "Loaded dataframe is empty error"
     return dataframe
 
 
@@ -377,3 +386,33 @@ def check_dataframe(name: str) -> bool:
     cfg = load_config()
     path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
     return os.path.exists(path)
+
+
+def delete_from_dataframe(name: str, column: str, values: list) -> None:
+    """
+    Deletes values from database by checking matches in the provided column.
+
+    Args:
+        name (str): Name of database.
+        column (str): Column of database.
+        values (list): List of values to delete.
+    """
+    cfg = load_config()
+    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
+    retries = cfg['RETRY_ATTEMPS']
+    assert os.path.exists(path), "Path does not exist error"
+
+    query = f"DELETE FROM {name} \
+        WHERE {column} \
+            IN ({', '.join('?' for _ in values)})"
+
+    try_to_run(
+        var='',
+        code='conn = sql.connect(path)\
+            \ncursor = conn.cursor()\
+            \ncursor.execute(query, values)\
+            \nconn.commit()',
+        error_check='',
+        final_code='conn.close()',
+        retries=retries,
+        environment=locals())

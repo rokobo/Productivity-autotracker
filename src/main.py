@@ -8,7 +8,7 @@ from multiprocessing import Process
 import time
 from helper_io import load_input_time, load_config
 from functions_threads import mouse_idle_detector, keyboard_idle_detector, \
-    activity_detector, audio_idle_detector, server_supervisor, backups
+    activity_detector, audio_idle_detector, server_supervisor, auxiliary_work
 from study_advisor import study_advisor
 
 
@@ -28,58 +28,65 @@ if __name__ == '__main__':
                 assert activity_process.is_alive()
                 assert did_backend_update_recently()
             except Exception:
-                print("Problem in activity_process, restarting process...")
+                print("Error in activity_process...  ", end="")
                 activity_process = Process(target=activity_detector)
                 activity_process.daemon = True
                 activity_process.start()
+                print("Restarted!")
 
             try:  # Mouse detection thread
                 assert mouse_thread.is_alive()
             except Exception:
-                print("Problem in mouse_thread, restarting thread...")
+                print("Error in mouse_thread... ", end="")
                 mouse_thread = Thread(target=mouse_idle_detector)
                 mouse_thread.daemon = True
                 mouse_thread.start()
+                print("Restarted!")
 
             try:  # Keyboard detection thread
                 assert keyboard_thread.is_alive()
             except Exception:
-                print("Problem in keyboard_thread, restarting thread...")
+                print("Error in keyboard_thread... ", end="")
                 keyboard_thread = Thread(target=keyboard_idle_detector)
                 keyboard_thread.daemon = True
                 keyboard_thread.start()
+                print("Restarted!")
 
             try:  # Soundcard library cannot run in thread
                 assert audio_process.is_alive()
             except Exception:
-                print("Problem in audio_process, restarting process...")
+                print("Error in audio_process... ", end="")
                 audio_process = Process(target=audio_idle_detector)
                 audio_process.daemon = True
                 audio_process.start()
+                print("Restarted!")
 
             try:  # Study advisor process
                 assert advisor_process.is_alive()
             except Exception:
-                print("Problem in advisor_process, restarting process...")
+                print("Error in advisor_process... ", end="")
                 advisor_process = Process(target=study_advisor)
                 advisor_process.daemon = True
                 advisor_process.start()
+                print("Restarted!")
 
             try:  # Dash server process
                 assert server_process.is_alive()
             except Exception:
-                print("Problem in server_process, restarting process...")
+                print("Error in server_process... ", end="")
                 server_process = Process(target=server_supervisor)
                 server_process.daemon = True
                 server_process.start()
+                print("Restarted!")
 
             try:  # Backup process
-                assert backup_process.is_alive()
+                assert auxiliary_process.is_alive()
             except Exception:
-                print("Problem in backup_process, restarting process...")
-                backup_process = Process(target=backups)
-                backup_process.daemon = True
-                backup_process.start()
+                print("Error in auxiliary_process... ", end="")
+                auxiliary_process = Process(target=auxiliary_work)
+                auxiliary_process.daemon = True
+                auxiliary_process.start()
+                print("Restarted!")
 
             time.sleep(CFG['IDLE_CHECK_INTERVAL'] * 5)
 

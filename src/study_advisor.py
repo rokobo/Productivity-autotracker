@@ -168,4 +168,4 @@ def study_advisor():
         load_messages()
         check_milestones()
 
-        time.sleep(cfg["STUDY_ADVISOR_INTERVAL"])
+        time.sleep(cfg["ADVISOR_CHECK_INTERVAL"])

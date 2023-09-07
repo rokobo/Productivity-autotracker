@@ -78,6 +78,14 @@ layout = html.Div([
         html.Hr(),
         dbc.Row([
             make_valuepicker("WORK_TO_PERSONAL_MULTIPLIER", 0, 48, 0.1),
+            make_valuepicker("BRONZE_STREAK_VALUE", 1, 360),
+            make_valuepicker("SILVER_STREAK_VALUE", 1, 360)
+        ], className="g-0"),
+        html.Hr(),
+        dbc.Row([
+            make_valuepicker("RED_STREAK_VALUE", 1, 360),
+            make_valuepicker("GOLD_STREAK_VALUE", 1, 360),
+            make_valuepicker("ENCHANTED_GOLD_STREAK_VALUE", 1, 360)
         ], className="g-0"),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
@@ -101,7 +109,16 @@ layout = html.Div([
         html.Hr(),
         dbc.Row([
             make_valuepicker("GMT_OFFSET", -12, 12),
-        ], className="g-0")
+            make_valuepicker("ADVISOR_CHECK_INTERVAL", 1, 60),
+            make_valuepicker("BACKUP_INTERVAL", 1, 3600),
+        ], className="g-0"),
+        dbc.Tooltip(
+            "This interval is in minutes.",
+            target="BACKUP_INTERVAL", placement="bottom"),
+        html.Hr(),
+        dbc.Row([
+            make_valuepicker("NUMBER_OF_BACKUPS", 1, 100),
+        ], className="g-0"),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px",
@@ -175,10 +192,12 @@ layout = html.Div([
 
 vars1 = [
     "WORK_DAILY_GOAL", "SMALL_WORK_DAILY_GOAL", "PERSONAL_DAILY_GOAL",
-    "WORK_TO_PERSONAL_MULTIPLIER",
+    "WORK_TO_PERSONAL_MULTIPLIER", "BRONZE_STREAK_VALUE", "SILVER_STREAK_VALUE",
+    "RED_STREAK_VALUE", "GOLD_STREAK_VALUE", "ENCHANTED_GOLD_STREAK_VALUE",
     "IDLE_TIME", "IDLE_CHECK_INTERVAL", "ACTIVITY_CHECK_INTERVAL",
     "MINIMUM_ACTIVITY_TIME", "UNRESPONSIVE_THRESHOLD", "RETRY_ATTEMPS",
-    "GMT_OFFSET",
+    "GMT_OFFSET", "ADVISOR_CHECK_INTERVAL", "BACKUP_INTERVAL",
+    "NUMBER_OF_BACKUPS",
     "CATEGORY_HEIGHT", "CATEGORY_FONT_SIZE", "TROUBLESHOOTING_HEIGHT",
     "DIVISION_PADDING", "SIDE_PADDING", "CARD_PADDING",
     "GOALS_HEATMAP_HEIGHT", "GOALS_HEATMAP_GAP", "GOALS_HEATMAP_DIVISION",

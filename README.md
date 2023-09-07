@@ -24,8 +24,6 @@ Having the window information, the program will try to classify it using the rul
 
 2. `config/config.yml`:
     + This file has some values that can be personalized, including color, intervals, spacings and others.
-    + The `URLS_PATH` variable is your standard download location, which is where the custom  browser extension will save the URLs file.
-    + The `HIDDEN_APPS` list is used to define processes that should have their title information hidden (E.g. `explorer.exe` shows which folder you are currently on, this may be undesirable).
     + The `FULLSCREEN_APPS` list is used to detect non-idle activity when the process is in fullscreen (if a process that is not on this list is fullscreen and the program has not detected activity for some time, it will consider the state as idle).
 
 ### **Idle detection**

@@ -49,6 +49,4 @@ HEATMAP_BASE_COLOR: "rgb(36, 41, 40)"                  # Color indicating a base
 HEATMAP_GOOD_COLOR: "rgb(22, 102, 52)"                 # Color indicating a good value
 HEATMAP_BAD_COLOR: "rgb(102, 22, 52)"                  # Color indicating a bad value
 
-# Path for files ----------------------------------------------------------------------------------
-URLS_PATH: "C:/Users/pedro/Downloads/EXTENSION/"        # Where the extension downloads the files
 ...

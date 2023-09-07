@@ -150,7 +150,8 @@ def break_days():
         })
         append_to_database("activity", new_row)
         delete_from_dataframe("breaks", "day", [day])
-        print(f"Auxiliary notification: Break day {day} added successfully")
+        print(f"\033[96mAuxiliary notification: \
+            Break day {day} added successfully\033[00m")
 
 
 def auxiliary_work():

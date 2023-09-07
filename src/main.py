@@ -28,67 +28,67 @@ if __name__ == '__main__':
                 assert activity_process.is_alive()
                 assert did_backend_update_recently()
             except Exception:
-                print("Error in activity_process...  ", end="")
+                print("\033[91mError in activity_process... \033[00m ", end="")
                 activity_process = Process(target=activity_detector)
                 activity_process.daemon = True
                 activity_process.start()
-                print("Restarted!")
+                print("\033[92mRestarted!\033[00m")
 
             try:  # Mouse detection thread
                 assert mouse_thread.is_alive()
             except Exception:
-                print("Error in mouse_thread... ", end="")
+                print("\033[91mError in mouse_thread... \033[00m", end="")
                 mouse_thread = Thread(target=mouse_idle_detector)
                 mouse_thread.daemon = True
                 mouse_thread.start()
-                print("Restarted!")
+                print("\033[92mRestarted!\033[00m")
 
             try:  # Keyboard detection thread
                 assert keyboard_thread.is_alive()
             except Exception:
-                print("Error in keyboard_thread... ", end="")
+                print("\033[91mError in keyboard_thread... \033[00m", end="")
                 keyboard_thread = Thread(target=keyboard_idle_detector)
                 keyboard_thread.daemon = True
                 keyboard_thread.start()
-                print("Restarted!")
+                print("\033[92mRestarted!\033[00m")
 
             try:  # Soundcard library cannot run in thread
                 assert audio_process.is_alive()
             except Exception:
-                print("Error in audio_process... ", end="")
+                print("\033[91mError in audio_process... \033[00m", end="")
                 audio_process = Process(target=audio_idle_detector)
                 audio_process.daemon = True
                 audio_process.start()
-                print("Restarted!")
+                print("\033[92mRestarted!\033[00m")
 
             try:  # Study advisor process
                 assert advisor_process.is_alive()
             except Exception:
-                print("Error in advisor_process... ", end="")
+                print("\033[91mError in advisor_process... \033[00m", end="")
                 advisor_process = Process(target=study_advisor)
                 advisor_process.daemon = True
                 advisor_process.start()
-                print("Restarted!")
+                print("\033[92mRestarted!\033[00m")
 
             try:  # Dash server process
                 assert server_process.is_alive()
             except Exception:
-                print("Error in server_process... ", end="")
+                print("\033[91mError in server_process... \033[00m", end="")
                 server_process = Process(target=server_supervisor)
                 server_process.daemon = True
                 server_process.start()
-                print("Restarted!")
+                print("\033[92mRestarted!\033[00m")
 
             try:  # Backup process
                 assert auxiliary_process.is_alive()
             except Exception:
-                print("Error in auxiliary_process... ", end="")
+                print("\033[91mError in auxiliary_process... \033[00m", end="")
                 auxiliary_process = Process(target=auxiliary_work)
                 auxiliary_process.daemon = True
                 auxiliary_process.start()
-                print("Restarted!")
+                print("\033[92mRestarted!\033[00m")
 
             time.sleep(CFG['IDLE_CHECK_INTERVAL'] * 5)
 
         except Exception:
-            print("MAIN PROGRAM FAILURE, RESTARTING...")
+            print("\033[101mMAIN PROGRAM FAILURE, RESTARTING...\033[00m")

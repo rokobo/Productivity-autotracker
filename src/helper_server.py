@@ -10,12 +10,10 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import plotly.express as px
 from helper_io import load_config, load_categories, load_day_total, \
-    load_dataframe
+    load_dataframe, get_break_days
 
 
-def generate_cards(
-        dataframe: pd.DataFrame,
-        totals=None) -> dbc.Row:
+def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
     """
     Generates categorized list of activities in a given timeframe.
 
@@ -387,6 +385,7 @@ def make_crown() -> dbc.Row:
     """
     cfg = load_config()
     streaks = [0, 0, 0]
+    breaks = get_break_days()
     goals = [
         cfg["WORK_TO_PERSONAL_MULTIPLIER"],
         cfg["PERSONAL_DAILY_GOAL"],
@@ -405,29 +404,33 @@ def make_crown() -> dbc.Row:
     # Get goals streak for previous days
     is_not_done = [True, True, True]
     for day in range(363, 0, -1):
+        day_break = breaks.loc[breaks["difference"] == 364 - day]
+        day_break = 0 if day_break.empty else day_break.iloc[0, 1]
         values = load_day_total(day)
+        work = values.loc[0, "Work"]
+        work_with_break = work - day_break
+        personal = values.loc[0, "Personal"]
+
         # Full work goal
-        if is_not_done[2]:
-            if values.loc[0, "Work"] >= goals[3]:
+        if is_not_done[2] and work >= goals[3]:
+            if work_with_break >= goals[3]:
                 streaks[2] += 1
-            else:
-                is_not_done[2] = False
+        else:
+            is_not_done[2] = False
 
         # Small work goal
-        if is_not_done[1]:
-            if values.loc[0, "Work"] >= goals[2]:
+        if is_not_done[1] and work >= goals[2]:
+            if work_with_break >= goals[2]:
                 streaks[1] += 1
-            else:
-                is_not_done[1] = False
+        else:
+            is_not_done[1] = False
 
         # Personal goal
-        if is_not_done[0]:
-            if values.loc[0, "Personal"] <= max(
-                goals[1], values.loc[0, "Work"] * goals[0]
-            ):
+        if is_not_done[0] and personal <= max(goals[1], work * goals[0]):
+            if personal <= max(goals[1], work_with_break * goals[0]):
                 streaks[0] += 1
-            else:
-                is_not_done[0] = False
+        else:
+            is_not_done[0] = False
 
         if set(is_not_done) == {False}:
             break
@@ -455,8 +458,8 @@ def make_crown() -> dbc.Row:
         if value >= threshold
     ) for value in streaks]
 
-    # Make row
-    crown_row = dbc.Row([
+    # Return row
+    return dbc.Row([
         dbc.Col([
             html.Img(
                 src=f"/assets/{assets[0]}",
@@ -487,7 +490,6 @@ def make_crown() -> dbc.Row:
             html.H5(streaks[2])
         ], class_name="g-0", style={'margin-bottom': '0px'})
     ], class_name="g-0")
-    return crown_row
 
 
 def make_totals_graph(data: pd.DataFrame):

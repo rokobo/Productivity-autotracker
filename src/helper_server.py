@@ -437,7 +437,7 @@ def make_crown() -> dbc.Row:
 
     # Determine which crown to give
     crowns = [
-        "crown_gold.png",
+        "crown_enchanted_gold.gif",
         "crown_gold.png",
         "crown_red.png",
         "crown_silver.png",

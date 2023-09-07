@@ -23,7 +23,7 @@ from helper_io import save_dataframe, load_config, load_dataframe, \
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
     layout_configuration2, layout_goals, layout_urls, layout_milestones, \
-    layout_trends, layout_all, layout_breaks
+    layout_trends, layout_all, layout_breaks, layout_conflicts
 
 
 def mouse_idle_detector():
@@ -213,6 +213,8 @@ def server_supervisor():
                 layout = layout_urls.layout
             case "/milestones":
                 layout = layout_milestones.layout
+            case "/conflicts":
+                layout = layout_conflicts.layout
             case _:
                 layout = layout_dashboard.layout
         return layout

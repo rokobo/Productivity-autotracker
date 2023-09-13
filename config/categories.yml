@@ -1,72 +1,51 @@
 HIDDEN_APPS:
   - firefox\.exe
-  - mpc-hc64\.exe
   - explorer\.exe
+  - photos\.uwp
 FULLSCREEN_APPS:
   - sandrock\.exe
   - mpc-hc64\.exe
 WORK_APPS:
+  - BREAK\ TIME
   - terminal\.exe
   - code\.exe
-  - notion\.exe
   - windowsterminal\.exe
   - githubdesktop\.exe
-  - notepad\.exe
-  - photo\.exe
-  - seccenter\.exe
+  - calculator\.uwp
+  - camera\.uwp
+  - taskmgr\.exe
 PERSONAL_APPS:
   - signal\.exe
   - discord\.exe
   - steam.+\.exe
-  - mpc-hc64\.exe
   - firefox\.exe
-  - sandrock\.exe
-  - digikam\.exe
-  - cheatengine
+  - photos\.uwp
+  - minecraft\.exe
 WORK_DOMAINS:
   - localhost:\d+
-  - \d+\.\d+\.\d+\.\d+
-  - openai
-  - dash-bootstrap-components
+  - mail\.google
+  - w3resource
+  - mathway\.com
+  - linkedin\.com
+  - vscode\.dev
+  - drive\.google
   - file:\/\/
   - stackoverflow
-  - huggingface\.co
   - edx\.org
   - coursera\.org
   - desmos\.com
-  - support\.google
   - github
+  - codepen\.io
+  - mega\.nz
   - pytest\.org
-  - visualstudio\.com
-  - .*\.pycqa\.org
-  - regex
-  - plotly
   - pandas\.pydata
-  - w3schools
-  - python\.
-  - sql
-  - geeksforgeeks
-  - gitguardian
-  - ubuntu
-  - learn
-  - microsoft
-  - python
-  - docs
-  - dash-
-  - flaticon
   - pypi\.org
-  - mixkit
-  - wiki
-  - physic
-  - translate
-  - bitdefender
-  - khanacademy
-  - programiz
+  - calendar\.google\.com
+  - chrome.*\:\/\/
 PERSONAL_DOMAINS:
   - youtube
-  - reddit
-  - mercadolivre
-  - hbomax
+  - steamcommunity\.com
+  - instagram\.com
   - tv\.apple
 WORK_KEYWORDS:
   - pandas
@@ -81,6 +60,5 @@ WORK_KEYWORDS:
   - debug
 PERSONAL_KEYWORDS:
   - episode
-  - whatsapp
-  - photos
+  - playthrough
 ...

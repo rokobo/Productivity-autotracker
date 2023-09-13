@@ -62,7 +62,7 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
 
             # Set title as process name for UWP apps
             if process_name == "ApplicationFrameHost.exe":
-                process_name, title = title, process_name
+                process_name = title.split("-")[-1].strip()
                 process_name += ".UWP"
 
             # Obtain URL in case of browser

@@ -21,6 +21,7 @@ Having the window information, the program will try to classify it using the rul
 1. `config/categories.yml`:
     + This file has regex patterns used to match your current activity to either the personal or work category.
     + Any activity that does not match is considered neutral.
+    + Univeral windows platform (UWP) apps will have their process names ending with .UWP for simplicity and organization.
 
 2. `config/config.yml`:
     + This file has some values that can be personalized, including color, intervals, spacings and others.

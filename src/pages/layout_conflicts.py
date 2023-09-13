@@ -76,12 +76,8 @@ def update_conflicts(_1):
     activity = activity[activity["personal_match"] & activity["work_match"]]
 
     table = go.Table(
-        header={
-            'values': activity.columns
-        },
-        cells={
-            'values': [activity[col] for col in activity.columns],
-        }
+        header={'values': activity.columns},
+        cells={'values': [activity[col] for col in activity.columns]}
     )
 
     fig = go.Figure(data=table)
@@ -90,6 +86,5 @@ def update_conflicts(_1):
         margin={'b': 0, 't': 0, 'l': 0, 'r': 0}
     )
     title = f'Last update: {datetime.now().strftime("%H:%M:%S")}'
-    info = f'Rows: {activity.shape[0]}, '
-    info += f'Columns: {activity.shape[1]}'
+    info = f'{activity.shape[0]} conflict{"" if activity.shape[0] == 1 else "s"}'
     return fig, html.H3(title), html.H4(info)

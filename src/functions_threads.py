@@ -239,4 +239,4 @@ def server_supervisor():
         save_dataframe(dataframe, "urls")
         return "OK"
 
-    server.run(host="0.0.0.0", port="8050")
+    server.run(port="8050")

@@ -141,6 +141,7 @@ def break_days():
         start = int(start.timestamp() + 1)
         work_done = load_day_total(364 - time_difference.days).loc[0, "Work"]
         if work_done >= cfg["WORK_DAILY_GOAL"]:
+            delete_from_dataframe("breaks", "day", [day])
             continue
         end = int(start + ((cfg["WORK_DAILY_GOAL"] - work_done) * 3600))
         new_row = pd.DataFrame({

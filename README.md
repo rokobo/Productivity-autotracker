@@ -1,5 +1,9 @@
 # **Productivity autotracker**
 
+<p align="center">
+  <img src="https://github.com/rokobo/Productivity-autotracker/blob/main/thumbnail.png?raw=true"/>
+</p>
+
 This project began with a desire to have a time tracking software with the automatic nature of Rescuetime, the flexibility of Toggl and a custom-made data analysis.
 
 + [How it works](#how-it-works)

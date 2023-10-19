@@ -114,6 +114,8 @@ def backups():
     src = os.path.join(cfg["WORKSPACE"], 'data/activity.db')
     dest = os.path.join(cfg["BACKUP"], f'{now.strftime(date_format)}.db')
     shutil.copy2(src, dest)
+    print("\033[96mBackend: " +
+            f"Backup {now.strftime(date_format)} done successfully\033[00m")
 
     # Delete oldest backup if there are more backups than desired
     files = os.listdir(cfg["BACKUP"])
@@ -151,8 +153,8 @@ def break_days():
         })
         append_to_database("activity", new_row)
         delete_from_dataframe("breaks", "day", [day])
-        print("\033[96mAuxiliary notification: " +
-            f"Break day {day} added successfully to event database\033[00m")
+        print("\033[96mBackend: " +
+            f"Break day {day} added to database\033[00m")
 
 
 def auxiliary_work():

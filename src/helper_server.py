@@ -492,7 +492,7 @@ def make_crown() -> dbc.Row:
     ], class_name="g-0")
 
 
-def make_totals_graph(data: pd.DataFrame):
+def make_totals_graph(graph_data: pd.DataFrame):
     """
     Makes the totals graph for the main page.
 
@@ -503,9 +503,17 @@ def make_totals_graph(data: pd.DataFrame):
         _type_: Graph.
     """
     cfg = load_config()
+
+    # Scale personal bar by work to personal multiplier
+    data = graph_data.copy()
+    personal = "Personal, scaled down by " + \
+        f"{cfg['WORK_TO_PERSONAL_MULTIPLIER']}x"
+    data.loc[1, "category"] = personal
+    data.loc[1, "total"] /= 2
+
     fig = px.bar(
         data, x='category', y='total',
-        category_orders={'category': ['Work', 'Personal', 'Neutral']}
+        category_orders={'category': ['Work', personal, 'Neutral']}
     )
 
     fig.update_traces(marker_color=[
@@ -529,9 +537,12 @@ def make_totals_graph(data: pd.DataFrame):
         showgrid=False,
         showticklabels=False
     )
+
+    # Anotate bars
+    data.loc[1, "total"] *= 2
     sum_annotations = [{
         'x': xi,
-        'y': yi + (data['total'].max() / 9),
+        'y': (0.5 if xi == personal else 1) * yi + (data['total'].max() / 9),
         'text': f"{yi:.2f} hour" + (
             "s" if yi >= 1 else "") + f" / {round(yi/16*100, 1)}% of the day",
         'xanchor': 'center',

@@ -10,7 +10,7 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import plotly.express as px
 from helper_io import load_config, load_categories, load_day_total, \
-    load_dataframe, get_break_days
+    load_dataframe
 
 
 def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
@@ -378,79 +378,30 @@ def make_heatmap(
 
 def make_crown() -> dbc.Row:
     """
-    Makes a row of three crowns representing objective completion trends.
+    Makes a row of three crowns representing work completion trends.
 
     Returns:
         dbc.Row: Crown row.
     """
     cfg = load_config()
-    streaks = [0, 0, 0]
-    breaks = get_break_days()
-    goals = [
-        cfg["WORK_TO_PERSONAL_MULTIPLIER"],
-        cfg["PERSONAL_DAILY_GOAL"],
-        cfg["SMALL_WORK_DAILY_GOAL"],
-        cfg["WORK_DAILY_GOAL"]
+    data = load_dataframe("totals")
+    intervals = [7, 30, 90, 180, 364]
+    streaks = [
+        round((data.loc[364 - interval:, "Work"] >= cfg[
+            "WORK_DAILY_GOAL"]).sum() / interval * 100, 1)
+        for interval in intervals
     ]
-
-    # Get goals met for today
-    today = load_day_total(364)
-    streaks[2] += 1 if today.loc[0, "Work"] >= goals[3] else 0
-    streaks[1] += 1 if today.loc[0, "Work"] >= goals[2] else 0
-    streaks[0] += 1 if today.loc[0, "Personal"] <= max(
-        goals[1], today.loc[0, "Work"] * goals[0]
-    ) else 0
-
-    # Get goals streak for previous days
-    is_not_done = [True, True, True]
-    for day in range(363, 0, -1):
-        day_break = breaks.loc[breaks["difference"] == 364 - day]
-        day_break = 0 if day_break.empty else day_break.iloc[0, 1]
-        values = load_day_total(day)
-        work = values.loc[0, "Work"]
-        work_with_break = work - day_break
-        personal = values.loc[0, "Personal"]
-
-        # Full work goal
-        if is_not_done[2] and work >= goals[3]:
-            if work_with_break >= goals[3]:
-                streaks[2] += 1
-        else:
-            is_not_done[2] = False
-
-        # Small work goal
-        if is_not_done[1] and work >= goals[2]:
-            if work_with_break >= goals[2]:
-                streaks[1] += 1
-        else:
-            is_not_done[1] = False
-
-        # Personal goal
-        if is_not_done[0] and personal <= max(goals[1], work * goals[0]):
-            if personal <= max(goals[1], work_with_break * goals[0]):
-                streaks[0] += 1
-        else:
-            is_not_done[0] = False
-
-        if set(is_not_done) == {False}:
-            break
 
     # Determine which crown to give
     crowns = [
-        "crown_enchanted_gold.gif",
-        "crown_gold.png",
-        "crown_red.png",
-        "crown_silver.png",
-        "crown_bronze.png",
-        "crown_black.png"
+        "crown_enchanted_gold.gif", "crown_gold.png",
+        "crown_red.png", "crown_silver.png",
+        "crown_bronze.png", "crown_black.png"
     ]
     thresholds = [
-        cfg["ENCHANTED_GOLD_STREAK_VALUE"],
-        cfg["GOLD_STREAK_VALUE"],
-        cfg["RED_STREAK_VALUE"],
-        cfg["SILVER_STREAK_VALUE"],
-        cfg["BRONZE_STREAK_VALUE"],
-        0
+        cfg["ENCHANTED_GOLD_STREAK_VALUE"], cfg["GOLD_STREAK_VALUE"],
+        cfg["RED_STREAK_VALUE"], cfg["SILVER_STREAK_VALUE"],
+        cfg["BRONZE_STREAK_VALUE"], 0
     ]
     assets = [next(
         result for threshold, result
@@ -458,38 +409,24 @@ def make_crown() -> dbc.Row:
         if value >= threshold
     ) for value in streaks]
 
-    # Return row
-    return dbc.Row([
+    row = dbc.Row([
         dbc.Col([
             html.Img(
-                src=f"/assets/{assets[0]}",
-                height="30px",
-                width="30px",
-                title="Personal daily goal streak"
+                src=f"/assets/{asset}",
+                height="32px",
+                width="32px",
+                title=(
+                    f"{intervals[i]}-day work goal percentage: "
+                    f"{int(streaks[i]*intervals[i]/100)} / {intervals[i]}"
+                )
             ),
-            html.H5(streaks[0])
+            html.H5(f"{streaks[i]}%")
         ], class_name="g-0", style={
-            'margin-right': '15px', 'margin-bottom': '0px'}),
-        dbc.Col([
-            html.Img(
-                src=f"/assets/{assets[1]}",
-                height="30px",
-                width="30px",
-                title="Small work daily goal streak"
-            ),
-            html.H5(streaks[1])
-        ], class_name="g-0", style={
-            'margin-right': '15px', 'margin-bottom': '0px'}),
-        dbc.Col([
-            html.Img(
-                src=f"/assets/{assets[2]}",
-                height="30px",
-                width="30px",
-                title="Work daily goal streak"
-            ),
-            html.H5(streaks[2])
-        ], class_name="g-0", style={'margin-bottom': '0px'})
+            'margin-right': '15px', 'margin-bottom': '0px'})
+        for i, asset in enumerate(assets)
     ], class_name="g-0")
+
+    return row
 
 
 def make_totals_graph(graph_data: pd.DataFrame):
@@ -539,12 +476,12 @@ def make_totals_graph(graph_data: pd.DataFrame):
     )
 
     # Anotate bars
+    max_val = data['total'].max()
     data.loc[1, "total"] *= 2
     sum_annotations = [{
         'x': xi,
-        'y': (0.5 if xi == personal else 1) * yi + (data['total'].max() / 9),
-        'text': f"{yi:.2f} hour" + (
-            "s" if yi >= 1 else "") + f" / {round(yi/16*100, 1)}% of the day",
+        'y': (0.5 if xi == personal else 1) * yi + (max_val / 9),
+        'text': f"{yi:.2f} hours / {round(yi/16*100, 1)}% of the day",
         'xanchor': 'center',
         'yanchor': 'top',
         'showarrow': False,

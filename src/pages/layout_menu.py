@@ -13,7 +13,6 @@ menu_items = [
     dbc.DropdownMenuItem("Customization pages", header=True),
     dbc.DropdownMenuItem("Configuration page", href="/configuration"),
     dbc.DropdownMenuItem("Categories page", href="/configuration2"),
-    dbc.DropdownMenuItem("Breaks page", href="/breaks"),
     dbc.DropdownMenuItem(divider=True),
     dbc.DropdownMenuItem("Troubleshooting pages", header=True),
     dbc.DropdownMenuItem("Activity table", href="/activity"),

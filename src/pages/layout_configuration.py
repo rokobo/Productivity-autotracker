@@ -78,14 +78,14 @@ layout = html.Div([
         html.Hr(),
         dbc.Row([
             make_valuepicker("WORK_TO_PERSONAL_MULTIPLIER", 0, 48, 0.1),
-            make_valuepicker("BRONZE_STREAK_VALUE", 1, 360),
-            make_valuepicker("SILVER_STREAK_VALUE", 1, 360)
+            make_valuepicker("BRONZE_STREAK_VALUE", 1, 100, 0.1),
+            make_valuepicker("SILVER_STREAK_VALUE", 1, 100, 0.1)
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
-            make_valuepicker("RED_STREAK_VALUE", 1, 360),
-            make_valuepicker("GOLD_STREAK_VALUE", 1, 360),
-            make_valuepicker("ENCHANTED_GOLD_STREAK_VALUE", 1, 360)
+            make_valuepicker("RED_STREAK_VALUE", 1, 100, 0.1),
+            make_valuepicker("GOLD_STREAK_VALUE", 1, 100, 0.1),
+            make_valuepicker("ENCHANTED_GOLD_STREAK_VALUE", 1, 100, 0.1)
         ], className="g-0"),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",

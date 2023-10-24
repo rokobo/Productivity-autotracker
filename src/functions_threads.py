@@ -18,12 +18,11 @@ from pyautogui import position
 import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, Input, Output, callback
 from functions_activity import parser
-from helper_io import save_dataframe, load_config, load_dataframe, \
-    load_day_total, append_to_database, delete_from_dataframe
+from helper_io import save_dataframe, load_config
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
     layout_configuration2, layout_goals, layout_urls, layout_milestones, \
-    layout_trends, layout_all, layout_breaks, layout_conflicts
+    layout_trends, layout_all, layout_conflicts
 
 
 def mouse_idle_detector():
@@ -126,47 +125,15 @@ def backups():
         files.sort()
 
 
-def break_days():
-    """
-    Adds break event to break days.
-    """
-    cfg = load_config()
-    breaks = load_dataframe("breaks", True)
-    date_format = "%Y-%m-%d"
-    if breaks.empty:
-        return
-    for day in breaks["day"].to_list():
-        start = datetime.strptime(day, date_format)
-        time_difference = datetime.now().date() - start.date()
-        if time_difference.days <= 0:
-            continue
-        start = int(start.timestamp() + 1)
-        work_done = load_day_total(364 - time_difference.days).loc[0, "Work"]
-        if work_done >= cfg["WORK_DAILY_GOAL"]:
-            delete_from_dataframe("breaks", "day", [day])
-            continue
-        end = int(start + ((cfg["WORK_DAILY_GOAL"] - work_done) * 3600))
-        new_row = pd.DataFrame({
-            'start_time': [start], 'end_time': [end], 'app': ["BREAK TIME"],
-            'info': [""], 'handle': [-1], 'pid': [-1],
-            'process_name': ["BREAK TIME"], 'url': [""], 'domain': [""]
-        })
-        append_to_database("activity", new_row)
-        delete_from_dataframe("breaks", "day", [day])
-        print("\033[96mBackend: " +
-            f"Break day {day} added to database\033[00m")
-
-
 def auxiliary_work():
     """
     Does auxiliary work for the program.
-    Backup, break days.
+    Backup.
     """
     while True:
         cfg = load_config()
         time.sleep(cfg["IDLE_CHECK_INTERVAL"])
         backups()
-        break_days()
 
 
 def server_supervisor():
@@ -204,8 +171,6 @@ def server_supervisor():
                 layout = layout_configuration.layout
             case "/configuration2":
                 layout = layout_configuration2.layout
-            case "/breaks":
-                layout = layout_breaks.layout
             case "/goals":
                 layout = layout_goals.layout
             case "/trends":
@@ -225,6 +190,7 @@ def server_supervisor():
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.WARNING)
 
+    # Use the extension GET requests to create the URLS database
     class HideSpecificGetRequest(logging.Filter):
         """Hides GET requests from extension (too long)."""
         def filter(self, record):
@@ -242,4 +208,5 @@ def server_supervisor():
         save_dataframe(dataframe, "urls")
         return "OK"
 
+    # Run the server
     server.run(port="8050")

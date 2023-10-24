@@ -72,7 +72,7 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 
 On the background, the study advisor routine is running. It sends desktop notifications when you reach certain goals or pass the daily personal activity limit.
 
-Additionally, the main dashboard pages has three crowns that represent a streak of achievements. The three crowns are: Personal activity under limit, small daily work goal and full work goal. Depending on how many days in a row you have done, a different crown will appear. Settings changes how long each interval should be.
+Additionally, the main dashboard pages has crowns that represent the percentage of days you achieved the study goal over different intervals. Depending on how many days in an interval you have studied, a different crown will appear. Settings changes the percentage values for each crown.
 
 ## **Backup system**
 

@@ -416,34 +416,3 @@ def delete_from_dataframe(name: str, column: str, values: list) -> None:
         final_code='conn.close()',
         retries=retries,
         environment=locals())
-
-
-def get_break_days() -> pd.DataFrame:
-    """
-    Returns break days in usable format.
-
-    Returns:
-        pd.DataFrame: Dataframe for all break days.
-    """
-    cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], 'data/activity.db')
-    retries = cfg['RETRY_ATTEMPS']
-    query = """
-        SELECT * FROM activity
-        WHERE process_name = 'BREAK TIME'
-    """
-    break_days = try_to_run(
-        var='breaks',
-        code="conn = sql.connect(path)\
-            \nbreaks = pd.read_sql(query , conn)",
-        error_check='not isinstance(breaks, pd.DataFrame)',
-        final_code='conn.close()',
-        retries=retries,
-        environment=locals())
-
-    break_days.loc[:, 'day'] = timestamp_to_day(break_days['start_time'])
-    break_days.loc[:, 'value'] = (
-        break_days['end_time'] - break_days['start_time']) / 3600
-    break_days.loc[:, 'difference'] = (
-        pd.to_datetime('today') - pd.to_datetime(break_days['day'])).dt.days
-    return break_days.loc[:, ["day", "value", "difference"]]

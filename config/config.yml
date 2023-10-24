@@ -4,11 +4,11 @@ SMALL_WORK_DAILY_GOAL: 0.5          # Work goal for consistency sake
 PERSONAL_DAILY_GOAL: 2              # Personal activity threshold for heatmaps
 WORK_TO_PERSONAL_MULTIPLIER: 2      # PERSONAL_DAILY_GOAL override for work done times this,
                                     # bigger value is used, set to 0 to ignore
-BRONZE_STREAK_VALUE: 3              # Daily goal streak to display bronze crown
-SILVER_STREAK_VALUE: 10             # Daily goal streak to display silver crown
-RED_STREAK_VALUE: 20                # Daily goal streak to display red crown
-GOLD_STREAK_VALUE: 40               # Daily goal streak to display gold crown 
-ENCHANTED_GOLD_STREAK_VALUE: 75     # Daily goal streak to display enchanted gold crown 
+BRONZE_STREAK_VALUE: 10             # Percentage of goal streak to display bronze crown
+SILVER_STREAK_VALUE: 25             # Percentage of goal streak to display silver crown
+RED_STREAK_VALUE: 50                # Percentage of goal streak to display red crown
+GOLD_STREAK_VALUE: 75               # Percentage of goal streak to display gold crown 
+ENCHANTED_GOLD_STREAK_VALUE: 90     # Percentage of goal streak to display enchanted gold crown 
 
 # Time variables ----------------------------------------------------------------------------------
 IDLE_TIME: 60                    # Time without interaction before considered idle

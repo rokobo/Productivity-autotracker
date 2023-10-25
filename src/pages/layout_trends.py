@@ -19,7 +19,7 @@ CFG = load_config()
 layout = html.Div([
     dbc.Row([
         layout_menu.layout,
-        dbc.Col(html.H3("User trends"), width='auto'),
+        dbc.Col(html.H2("User trends"), width='auto'),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px",

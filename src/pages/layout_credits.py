@@ -23,7 +23,7 @@ card_style = {
 layout = html.Div([
     dbc.Row([
         layout_menu.layout,
-        dbc.Col(html.H3("Credits and attributions"), width='auto'),
+        dbc.Col(html.H2("Credits and attributions"), width='auto'),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px",
@@ -40,7 +40,7 @@ layout = html.Div([
             ),
             dbc.Col(
                 dbc.CardBody([
-                    html.H4("Application favicon", className="card-title"),
+                    html.H3("Application favicon", className="card-title"),
                     html.P(
                         "Grow icons created by Freepik at\
                             https://www.flaticon.com/free-icons/grow",
@@ -59,7 +59,7 @@ layout = html.Div([
             ),
             dbc.Col(
                 dbc.CardBody([
-                    html.H4("Desktop notification icon", className="card-title"),
+                    html.H3("Desktop notification icon", className="card-title"),
                     html.P(
                         "Sprout icons created by Freepik at\
                             https://www.flaticon.com/free-icons/sprout",
@@ -82,7 +82,7 @@ layout = html.Div([
             ),
             dbc.Col(
                 dbc.CardBody([
-                    html.H4("Dashboard goal streak icon", className="card-title"),
+                    html.H3("Dashboard goal streak icon", className="card-title"),
                     html.P(
                         "Crown icon by Icons8 at\
                             https://icons8.com/icon/13728/crown",

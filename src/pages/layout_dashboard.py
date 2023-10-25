@@ -23,7 +23,7 @@ CFG = load_config()
 layout = html.Div([
     dbc.Row([
         layout_menu.layout,
-        dbc.Col(html.H3("Dashboard"), width='auto'),
+        dbc.Col(html.H2("Dashboard"), width='auto'),
         dbc.Col(id="goals_title", width='auto'),
         dbc.Col(id="streak_crowns", width='auto'),
         dbc.Col(
@@ -57,7 +57,7 @@ layout = html.Div([
     dbc.Modal([
             dbc.ModalBody([
                 html.Br(),
-                html.H2("Attention, you are currently idle!"),
+                html.H1("Attention, you are currently idle!"),
                 html.Br(),
                 html.Img(
                     src='/assets/warning.gif',
@@ -65,7 +65,7 @@ layout = html.Div([
                     style={"display": "block", "margin": "0 auto"}
                 ),
                 html.Br(),
-                html.H2("Attention, you are currently idle!"),
+                html.H1("Attention, you are currently idle!"),
                 html.Br(),
             ])],
         id="idle_modal", centered=True, is_open=False

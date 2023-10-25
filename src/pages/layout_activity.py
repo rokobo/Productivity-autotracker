@@ -77,4 +77,4 @@ def update_activity(_1):
     info = f'Rows: {dataframe.shape[0]}, '
     info += f'Columns: {dataframe.shape[1]}, '
     info += f'Process_names: {dataframe["process_name"].nunique()}'
-    return fig, html.H3(title), html.H4(info)
+    return fig, html.H2(title), html.H3(info)

@@ -87,4 +87,4 @@ def update_conflicts(_1):
     )
     title = f'Last update: {datetime.now().strftime("%H:%M:%S")}'
     info = f'{activity.shape[0]} conflict{"" if activity.shape[0] == 1 else "s"}'
-    return fig, html.H3(title), html.H4(info)
+    return fig, html.H2(title), html.H3(info)

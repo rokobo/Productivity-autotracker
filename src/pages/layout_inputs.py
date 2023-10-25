@@ -94,17 +94,17 @@ def update_inputs(_1):
         table1 = create_table(database1)
         table2 = create_table(database2)
         rows.append(dbc.Row([
-            dbc.Col([html.H4(database1), dcc.Graph(figure=table1)]),
-            dbc.Col([html.H4(database2), dcc.Graph(figure=table2)])
+            dbc.Col([html.H3(database1), dcc.Graph(figure=table1)]),
+            dbc.Col([html.H3(database2), dcc.Graph(figure=table2)])
         ]))
 
     if len(inputs) % 2 ==1:
         database3 = inputs[-1]
         table3 = create_table(database3)
         rows.append(dbc.Row([
-            dbc.Col([html.H4(database3), dcc.Graph(figure=table3)]),
+            dbc.Col([html.H3(database3), dcc.Graph(figure=table3)]),
             dbc.Col([])
         ]))
 
     title = f'Last update: {datetime.now().strftime("%H:%M:%S")}'
-    return dbc.Row(rows), html.H3(title)
+    return dbc.Row(rows), html.H2(title)

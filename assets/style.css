@@ -1,7 +1,27 @@
 body {
-    background-color: rgb(30, 30, 30);
     color: rgb(203, 203, 203);
-} 
+    z-index: 1;
+    overflow-x: clip !important;
+	background: linear-gradient(
+        -45deg,
+        rgb(30, 30, 30) 0%,
+        rgb(30, 30, 30) 45%,
+        rgb(45, 45, 45) 50%,
+        rgb(30, 30, 30) 55%,
+        rgb(30, 30, 30) 100%
+    );
+	background-size: 500% 400%;
+	animation: background-gradient 3s ease infinite;
+}
+@keyframes background-gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	100% {
+		background-position: 100% 50%;
+	}
+}
+
 h1, h2, h3, h4, h5, h6 {
     text-align: center;
 }

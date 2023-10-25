@@ -181,7 +181,7 @@ def make_listpicker(name: str) -> dbc.Tab:
     names = cfg2[name]
     listpicker = dbc.Tab([
         html.Br(),
-        html.H3(name),
+        html.H2(name),
         dbc.Row([
             dbc.Col(
                 dbc.Input(
@@ -391,6 +391,11 @@ def make_crown() -> dbc.Row:
             "WORK_DAILY_GOAL"]).sum() / interval * 100, 1)
         for interval in intervals
     ]
+    streaks2 = [
+        round((data.loc[364 - interval:, "Work"] >= cfg[
+            "SMALL_WORK_DAILY_GOAL"]).sum() / interval * 100, 1)
+        for interval in intervals
+    ]
 
     # Determine which crown to give
     crowns = [
@@ -417,10 +422,12 @@ def make_crown() -> dbc.Row:
                 width="32px",
                 title=(
                     f"{intervals[i]}-day work goal percentage: "
-                    f"{int(streaks[i]*intervals[i]/100)} / {intervals[i]}"
+                    f"{int(streaks[i]*intervals[i]/100)} / {intervals[i]}\n"
+                    f"{intervals[i]}-day small work goal percentage: "
+                    f"{int(streaks2[i]*intervals[i]/100)} / {intervals[i]}"
                 )
             ),
-            html.H5(f"{streaks[i]}%")
+            html.H5([f"{streaks[i]}%", html.Br(), f"{streaks2[i]}%"]),
         ], class_name="g-0", style={
             'margin-right': '15px', 'margin-bottom': '0px'})
         for i, asset in enumerate(assets)
@@ -540,9 +547,13 @@ def make_info_row(data: pd.DataFrame) -> dbc.Col:
             if work <= threshold)
         second_row += f", {objetive[0]}: {round(objetive[1], 2)}h"
 
+    # Make third row TODO
+    third_row = ""
+
     column = dbc.Col([
-        dbc.Row(html.H4(first_row)),
-        dbc.Row(html.H4(second_row))
+        dbc.Row(html.H5(first_row)),
+        dbc.Row(html.H5(second_row)),
+        dbc.Row(html.H5(third_row))
     ], style={'padding': '0px'})
     return column
 
@@ -583,7 +594,7 @@ def make_trend_graph() -> dbc.Col:
                 margin={'l': 0, 'r': 0, 't': 0, 'b': 0}
             )
             row.append(dbc.Row([
-                html.H3(f"{selected} {interval}-day trend"),
+                html.H2(f"{selected} {interval}-day trend"),
                 dcc.Graph(figure=fig)
             ], style=style))
         row.append(html.Br())

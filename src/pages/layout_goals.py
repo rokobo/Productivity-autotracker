@@ -19,7 +19,7 @@ CFG = load_config()
 layout = html.Div([
     dbc.Row([
         layout_menu.layout,
-        dbc.Col(html.H3("Goals tracking"), width='auto'),
+        dbc.Col(html.H2("Goals tracking"), width='auto'),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px",
@@ -71,17 +71,17 @@ def update_category(_1):
 
     cards = dbc.Row([
         dbc.Row([
-            html.H3(title1),
+            html.H2(title1),
             dcc.Graph(figure=fig1)
         ], style=style),
         dbc.Row([
-            html.H3(title2),
+            html.H2(title2),
             html.H5(f"or work to personal override \
                     ({CFG['WORK_TO_PERSONAL_MULTIPLIER']}x multiplier)"),
             dcc.Graph(figure=fig2)
         ], style=style),
         dbc.Row([
-            html.H3(title3),
+            html.H2(title3),
             dcc.Graph(figure=fig3)
         ], style=style),
     ])

@@ -76,4 +76,4 @@ def update_milestones(_1):
     title = f'Last update: {datetime.now().strftime("%H:%M:%S")}'
     info = f'Rows: {dataframe.shape[0]}, '
     info += f'Columns: {dataframe.shape[1]}, '
-    return fig, html.H3(title), html.H4(info)
+    return fig, html.H2(title), html.H3(info)

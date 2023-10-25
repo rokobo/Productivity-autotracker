@@ -21,7 +21,7 @@ CFG = load_config()
 layout = html.Div([
     dbc.Row([
         layout_menu.layout,
-        dbc.Col(html.H3("Configuration page"), width='auto'),
+        dbc.Col(html.H2("Configuration page"), width='auto'),
         dbc.Col([
             dbc.Col(
                 dbc.Button(
@@ -68,7 +68,7 @@ layout = html.Div([
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
-    dbc.Row(html.H3('Goal variables (hours)')),
+    dbc.Row(html.H2('Goal variables (hours)')),
     dbc.Row([
         dbc.Row([
             make_valuepicker("WORK_DAILY_GOAL", 0, 24, 0.1),
@@ -93,7 +93,7 @@ layout = html.Div([
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
-    dbc.Row(html.H3('Time variables (seconds)')),
+    dbc.Row(html.H2('Time variables (seconds)')),
     dbc.Row([
         dbc.Row([
             make_valuepicker("IDLE_TIME", 15, 3600),
@@ -125,7 +125,7 @@ layout = html.Div([
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
-    dbc.Row(html.H3('Size variables (pixels)')),
+    dbc.Row(html.H2('Size variables (pixels)')),
     dbc.Row([
         dbc.Row([
             make_valuepicker("CATEGORY_HEIGHT", 100, 500),
@@ -156,7 +156,7 @@ layout = html.Div([
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
-    dbc.Row(html.H3('Color variables')),
+    dbc.Row(html.H2('Color variables')),
     dbc.Row([
         dbc.Row([
             make_colorpicker('WORK_COLOR'),

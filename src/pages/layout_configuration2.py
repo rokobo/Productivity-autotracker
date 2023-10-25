@@ -21,7 +21,7 @@ NAMES = list(CFG2.keys())
 layout = html.Div([
     dbc.Row([
         layout_menu.layout,
-        dbc.Col(html.H3("Categories page"), width='auto'),
+        dbc.Col(html.H2("Categories page"), width='auto'),
         dbc.Col([
             dbc.Col(
                 dbc.Button(

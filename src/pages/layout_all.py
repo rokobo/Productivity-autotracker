@@ -19,7 +19,7 @@ CFG = load_config()
 layout = html.Div([
     dbc.Row([
         layout_menu.layout,
-        dbc.Col(html.H3("All events categorized"), width='auto'),
+        dbc.Col(html.H2("All events categorized"), width='auto'),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px",
@@ -27,9 +27,9 @@ layout = html.Div([
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
     dbc.Row([
-        dbc.Col(html.H4("Work")),
-        dbc.Col(html.H4("Personal")),
-        dbc.Col(html.H4("Neutral"))
+        dbc.Col(html.H3("Work")),
+        dbc.Col(html.H3("Personal")),
+        dbc.Col(html.H3("Neutral"))
     ]),
     dbc.Row(id='all_list'),
     dcc.Interval(

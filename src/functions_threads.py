@@ -3,7 +3,7 @@ Creates event listeners that will be used to detect if the user
 is not idle. If the user is not idle, update data file.
 """
 # pylint: disable=unused-variable, bare-except, broad-exception-caught
-# pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods, import-error
 # flake8: noqa: F401
 import time
 import os
@@ -75,8 +75,9 @@ def audio_idle_detector():
         cfg = load_config()
         with sc.get_microphone(
             id=str(sc.default_speaker().name), include_loopback=True
-        ).recorder(samplerate=48000) as mic:
-            data = mic.record(10)
+        ).recorder(samplerate=148000) as mic:
+            data = mic.record(numframes=10000)
+            time.sleep(1)
         if any(x.any() != 0 for x in data):
             save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'audio')
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])

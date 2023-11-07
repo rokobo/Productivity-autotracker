@@ -1,16 +1,13 @@
 """
 Updates DataFrame with current activity.
 """
-# pylint: disable=protected-access, broad-exception-caught
+# pylint: disable=protected-access, broad-exception-caught, unused-argument
 # pylint: disable=c-extension-no-member, import-error, no-name-in-module
 import time
 import re
 from threading import Thread
-from ctypes import windll
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, wait
-from win32gui import GetWindowText, GetWindowRect
-from win32process import GetWindowThreadProcessId
 import pandas as pd
 import numpy as np
 from helper_server import format_long_duration
@@ -18,6 +15,13 @@ from helper_retry import try_to_run
 from helper_io import load_dataframe, load_input_time, append_to_database, \
     save_dataframe, load_url, load_config, load_lastest_row, \
     modify_latest_row, load_categories, timestamp_to_day
+
+CFG = load_config()
+if CFG["SYSTEM"] == "Windows":
+    from win32gui import GetWindowText
+    from win32process import GetWindowThreadProcessId
+elif CFG["SYSTEM"] == "Linux":
+    import subprocess
 
 
 def detect_activity() -> tuple[int, str, int, int, str, str, str]:
@@ -36,6 +40,52 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
 
     for _ in range(retries):
         try:
+            if CFG["SYSTEM"] == "Windows":
+                handle, title, pid = detect_windows()
+            else:
+                handle, title, pid = detect_linux()
+            assert isinstance(handle, int)
+            assert isinstance(title, str)
+            assert isinstance(pid, int)
+            assert pid > 0
+
+            process_name = get_process_name(pid, title)
+            assert isinstance(process_name, str)
+
+            if process_name not in ["brave.exe", "brave"]:
+                url, domain = "", ""
+            else:
+                url, domain = get_url(title, handle)
+            assert url is not None
+        except AssertionError:
+            time.sleep(0.25)
+        else:
+            break
+
+    assert isinstance(handle, int), "Handle not found error"
+    assert isinstance(title, str), "Title not found error"
+    assert pid > 0, f"PID lookup error, negative PID, title: {title}"
+    assert url is not None, f"URL not found error ({url}), title: {title}"
+
+    # Hide information from apps in HIDDEN_APPS list
+    name = process_name.lower()
+    if any(re.search(pattern, name) for pattern in cfg2['HIDDEN_APPS']):
+        title = "HIDDEN APPLICATION INFO"
+    return (start_time, title, handle, pid, process_name, url, domain)
+
+
+def detect_windows() -> tuple[int, str, int]:
+    """
+    Obtains handle, title, pid from windows system.
+
+    Returns:
+        tuple[int, str, int]: Handle, Title, Pid.
+    """
+    cfg = load_config()
+    retries = cfg['RETRY_ATTEMPS']
+
+    for _ in range(retries):
+        try:
             handle = try_to_run(
                 var='window',
                 code='window = GetForegroundWindow()',
@@ -43,13 +93,65 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
                 final_code='',
                 retries=retries*10,
                 environment=locals())
-
-            # Get process name
             title = GetWindowText(handle)
-            assert isinstance(title, str), "Title not found error"
             pid = GetWindowThreadProcessId(handle)[1]
-            assert pid > 0, f"PID lookup error, negative PID, title: {title}"
+            assert isinstance(handle, int)
+            assert isinstance(title, str)
+            assert isinstance(pid, int)
+            assert pid > 0
+        except Exception:
+            time.sleep(0.25)
+        else:
+            break
+    return handle, title, pid
 
+
+def detect_linux() -> tuple[int, str, int]:
+    """
+    Obtains handle, title, pid from linux system.
+
+    Returns:
+        tuple[int, str, int]: Handle, Title, Pid.
+    """
+    cfg = load_config()
+    retries = cfg['RETRY_ATTEMPS']
+
+    for _ in range(retries):
+        try:
+            handle = int(subprocess.check_output(
+                ["xdotool", "getactivewindow"]).decode("utf-8").strip())
+            title = subprocess.check_output(
+                ["xprop", "-id", str(handle), "_NET_WM_NAME"]
+            ).decode("utf-8").strip().split('"')[-2]
+            pid = int(subprocess.check_output(
+                ["xdotool", "getactivewindow", "getwindowpid"]
+            ).decode("utf-8").strip())
+            assert isinstance(handle, int)
+            assert isinstance(title, str)
+            assert isinstance(pid, int)
+            assert pid > 0
+        except Exception:
+            time.sleep(0.25)
+        else:
+            break
+    return handle, title, pid
+
+
+def get_process_name(pid: str, title: str) -> str:
+    """
+    Gets process name using pid.
+
+    Args:
+        pid (str): Window pid.
+        title (str): Window title.
+
+    Returns:
+        str: Process name.
+    """
+    cfg = load_config()
+    retries = cfg['RETRY_ATTEMPS']
+    for _ in range(retries):
+        try:
             process_name = try_to_run(
                 var='process_name',
                 code='process_name = ""\
@@ -64,37 +166,54 @@ def detect_activity() -> tuple[int, str, int, int, str, str, str]:
             if process_name == "ApplicationFrameHost.exe":
                 process_name = title.split("-")[-1].strip()
                 process_name += ".UWP"
+            assert isinstance(process_name, str)
+        except AssertionError:
+            time.sleep(0.25)
+        else:
+            break
+    return process_name
 
+
+def get_url(title: str, handle: int) -> tuple[str, str]:
+    """
+    Gets url from browser window.
+
+    Args:
+        title (str): Window title.
+        handle (int): Window handle.
+
+    Returns:
+        tuple[str, str]: Url, domain.
+    """
+    cfg = load_config()
+    retries = cfg['RETRY_ATTEMPS']
+    for _ in range(retries):
+        try:
             # Obtain URL in case of browser
             url = ""
             domain = ""
-            if process_name == "brave.exe":
-                for _try in range(cfg["RETRY_ATTEMPS"]):
+            for _ in range(cfg["RETRY_ATTEMPS"]):
+                try:
                     url, domain = match_to_url(title)
                     if url is not None:
                         break
-                    title = GetWindowText(handle)
-                    assert isinstance(title, str), "Title not found error"
+                    if cfg["SYSTEM"] == "Windows":
+                        title = GetWindowText(handle)
+                    else:
+                        title = subprocess.check_output(
+                            ["xprop", "-id", str(handle), "WM_CLASS"]
+                        ).decode("utf-8").strip().split('"')[-2]
+                    assert isinstance(title, str)
+                except AssertionError:
                     time.sleep(0.25)
-                assert url is not None, "URL not found error"
+                else:
+                    break
+            assert url is not None
         except AssertionError:
             time.sleep(0.25)
-
-    assert isinstance(title, str), "Title not found error"
-    assert pid > 0, f"PID lookup error, negative PID, title: {title}"
-    assert url is not None, f"URL not found error ({url}), title: {title}"
-
-    # Hide information from apps in HIDDEN_APPS list
-    name = process_name.lower()
-    if any(re.search(pattern, name) for pattern in cfg2['HIDDEN_APPS']):
-        title = "HIDDEN APPLICATION INFO"
-
-    # Detect fullscreen mode from apps in FULLSCREEN_APPS list
-    if any(re.search(pattern, name) for pattern in cfg2['FULLSCREEN_APPS']):
-        if detect_fullscreen(handle):
-            save_dataframe(
-                pd.DataFrame({'time': [int(time.time())]}), 'fullscreen')
-    return (start_time, title, handle, pid, process_name, url, domain)
+        else:
+            break
+    return url, domain
 
 
 def match_to_url(title: str) -> tuple[str, str]:
@@ -120,22 +239,6 @@ def match_to_url(title: str) -> tuple[str, str]:
     return url, domain
 
 
-def detect_fullscreen(window: int) -> bool:
-    """
-    Detects if a window is fullscreen.
-
-    Args:
-        window (int): Window handle
-
-    Returns:
-        bool: True if window is fullscreen.
-    """
-    user32 = windll.user32
-    fullscreen_rect = (
-        0, 0, user32.GetSystemMetrics(0), user32.GetSystemMetrics(1))
-    return GetWindowRect(window) == fullscreen_rect
-
-
 def detect_idle() -> tuple[int, str, int, int, str, str, str]:
     """
     if idle, return a tuple representing raw data of idle activity.
@@ -151,15 +254,13 @@ def detect_idle() -> tuple[int, str, int, int, str, str, str]:
     mouse_time = executor.submit(load_input_time, 'mouse')
     keyboard_time = executor.submit(load_input_time, 'keyboard')
     audio_time = executor.submit(load_input_time, 'audio')
-    fullscreen_time = executor.submit(load_input_time, 'fullscreen')
 
-    wait([mouse_time, keyboard_time, audio_time, fullscreen_time])
+    wait([mouse_time, keyboard_time, audio_time])
 
     idle_time = min(
         now - mouse_time.result(),
         now - keyboard_time.result(),
-        now - audio_time.result(),
-        now - fullscreen_time.result())
+        now - audio_time.result())
 
     if idle_time > cfg['IDLE_TIME']:
         return (now, "Time not counted", -1, -1, "IDLE TIME", "", "")

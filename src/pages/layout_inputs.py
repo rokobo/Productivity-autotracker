@@ -84,11 +84,7 @@ def update_inputs(_1):
     """Makes input graph."""
     global CFG
     CFG = load_config()
-    inputs = [
-        'backend', 'frontend',
-        'mouse', 'keyboard',
-        'audio', 'fullscreen'
-    ]
+    inputs = ['backend', 'frontend', 'mouse', 'keyboard', 'audio']
     rows = []
     for database1, database2 in zip(inputs[::2], inputs[1::2]):
         table1 = create_table(database1)

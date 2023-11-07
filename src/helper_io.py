@@ -3,7 +3,8 @@ Collection of helper functions for input and output rountines.
 """
 # pylint: disable=broad-exception-caught, possibly-unused-variable
 # pylint: disable=unused-argument
-import os
+import platform
+from os.path import dirname, exists, join, abspath
 import time
 from notifypy import Notify
 import pandas as pd
@@ -17,8 +18,8 @@ def load_config() -> dict[str, any]:
     Returns:
         dict[str, any]: Dictionary config file.
     """
-    workspace = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    config_path = os.path.join(workspace, "config/config.yml")
+    workspace = dirname(dirname(abspath(__file__)))
+    config_path = join(workspace, "config/config.yml")
 
     config = try_to_run(
         var='config',
@@ -29,14 +30,17 @@ def load_config() -> dict[str, any]:
         retries=5,
         environment=locals())
 
+    config["SYSTEM"] = platform.system()
+    if config["SYSTEM"] not in ["Windows", "Linux"]:
+        raise OSError("App only supported in Windows and Linux")
     config["WORKSPACE"] = workspace
-    config["ASSETS"] = os.path.join(workspace, "assets/")
-    config["BACKUP"] = os.path.join(workspace, "backup/")
+    config["ASSETS"] = join(workspace, "assets/")
+    config["BACKUP"] = join(workspace, "backup/")
     app_name = "Productivity Dashboard - Study Advisor"
     config["NOTIFICATION"] = Notify(
         default_notification_application_name=app_name,
-        default_notification_icon=os.path.join(
-            workspace, "assets\\sprout.gif"),
+        default_notification_icon=join(
+            workspace, join(workspace, "assets/sprout.gif")),
     )
     return config
 
@@ -49,7 +53,7 @@ def load_categories() -> dict[str, any]:
         dict[str, any]: Dictionary config file.
     """
     cfg = load_config()
-    config_path = os.path.join(cfg["WORKSPACE"], "config/categories.yml")
+    config_path = join(cfg["WORKSPACE"], "config/categories.yml")
     categories = try_to_run(
         var='categories',
         code='with open(config_path, "r", encoding="utf-8") as file:\
@@ -70,9 +74,9 @@ def load_lastest_row(name: str) -> pd.DataFrame:
     """
     # Check if file does not exists
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
+    path = join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
-    assert os.path.exists(path), "Path does not exist error"
+    assert exists(path), "Path does not exist error"
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -100,9 +104,9 @@ def load_day_total(day: int) -> pd.DataFrame:
     """
     # Check if file does not exists
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], 'data/totals.db')
+    path = join(cfg["WORKSPACE"], 'data/totals.db')
     dataframe = pd.DataFrame({})
-    assert os.path.exists(path), "Path does not exist error"
+    assert exists(path), "Path does not exist error"
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -133,8 +137,8 @@ def modify_latest_row(
     """
     # Check if file does not exists
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
-    assert os.path.exists(path), "Path does not exist error"
+    path = join(cfg["WORKSPACE"], f'data/{name}.db')
+    assert exists(path), "Path does not exist error"
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -166,7 +170,7 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
         new_row (pd.DataFrame): New row of database.
     """
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
+    path = join(cfg["WORKSPACE"], f'data/{name}.db')
     retries = cfg['RETRY_ATTEMPS']
 
     try_to_run(
@@ -195,9 +199,9 @@ def load_activity_between(
     """
     # Check if file does not exists
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
+    path = join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
-    assert os.path.exists(path), "Path does not exist error"
+    assert exists(path), "Path does not exist error"
 
     # Access database
     retries = cfg['RETRY_ATTEMPS']
@@ -228,9 +232,9 @@ def load_dataframe(name: str, can_be_empty=False) -> pd.DataFrame:
     """
     # Check if file does not exists
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
+    path = join(cfg["WORKSPACE"], f'data/{name}.db')
     dataframe = pd.DataFrame({})
-    assert os.path.exists(path), "Path does not exist error"
+    assert exists(path), "Path does not exist error"
     if can_be_empty:
         error_check = 'not isinstance(data, pd.DataFrame)'
     else:
@@ -260,7 +264,7 @@ def save_dataframe(dataframe: pd.DataFrame, name: str):
         path (str): Location the dataframe will be saved.
     """
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
+    path = join(cfg["WORKSPACE"], f'data/{name}.db')
     retries = cfg['RETRY_ATTEMPS']
 
     try_to_run(
@@ -301,8 +305,8 @@ def load_url(page_title: str) -> pd.DataFrame:
         str: URL of the page.
     """
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], 'data/urls.db')
-    assert os.path.exists(path), "Path does not exist error"
+    path = join(cfg["WORKSPACE"], 'data/urls.db')
+    assert exists(path), "Path does not exist error"
 
     # Load the file and output list of URLs
     retries = cfg['RETRY_ATTEMPS']
@@ -327,7 +331,7 @@ def set_idle():
     cfg = load_config()
     now = int(time.time())
     idle_time = cfg["IDLE_TIME"]
-    inputs = ["mouse", "keyboard", "audio", "fullscreen"]
+    inputs = ["mouse", "keyboard", "audio"]
 
     for input_name in inputs:
         input_dataframe = load_lastest_row(input_name)
@@ -369,7 +373,7 @@ def send_notification(
     notification = cfg["NOTIFICATION"]
     notification.title = title
     notification.message = message
-    notification.audio = os.path.join(
+    notification.audio = join(
         cfg["WORKSPACE"], "assets", audio + ".wav")
     notification.send(block=False)
     time.sleep(12)
@@ -384,8 +388,8 @@ def check_dataframe(name: str) -> bool:
     """
     # Check if file does not exists
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
-    return os.path.exists(path)
+    path = join(cfg["WORKSPACE"], f'data/{name}.db')
+    return exists(path)
 
 
 def delete_from_dataframe(name: str, column: str, values: list) -> None:
@@ -398,9 +402,9 @@ def delete_from_dataframe(name: str, column: str, values: list) -> None:
         values (list): List of values to delete.
     """
     cfg = load_config()
-    path = os.path.join(cfg["WORKSPACE"], f'data/{name}.db')
+    path = join(cfg["WORKSPACE"], f'data/{name}.db')
     retries = cfg['RETRY_ATTEMPS']
-    assert os.path.exists(path), "Path does not exist error"
+    assert exists(path), "Path does not exist error"
 
     query = f"DELETE FROM {name} \
         WHERE {column} \

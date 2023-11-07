@@ -3,6 +3,7 @@ Collection of helper functions for website routines.
 """
 # pylint: disable=consider-using-f-string, import-error
 import re
+import time
 import datetime
 import pandas as pd
 from dash import html, dcc
@@ -10,7 +11,7 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import plotly.express as px
 from helper_io import load_config, load_categories, load_day_total, \
-    load_dataframe
+    load_dataframe, load_input_time
 
 
 def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
@@ -51,8 +52,11 @@ def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
         item = dbc.Card([dbc.CardBody([
             dbc.Row([
                 html.H4(f'{row["process_name"]} {row["method"]}'),
-                html.H5(row['subtitle']) if row['subtitle'] else None
-            ], className="g-0", align='center'),
+                html.H5(row['subtitle']) if row['subtitle'] else None],
+                className="g-0",
+                align='center',
+                style={"color": cfg["TEXT_COLOR"]}
+            ),
             dbc.Row([
                 dbc.Col(
                     html.H6(percentage1),
@@ -61,6 +65,7 @@ def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
                 ),
                 dbc.Col(
                     html.H6(row['duration']),
+                    style={"color": cfg["TEXT_COLOR"]},
                     width="auto"
                 ),
                 dbc.Col(
@@ -547,15 +552,21 @@ def make_info_row(data: pd.DataFrame) -> dbc.Col:
             if work <= threshold)
         second_row += f", {objetive[0]}: {round(objetive[1], 2)}h"
 
-    # Make third row TODO
-    third_row = ""
+    # Make third row
+    now = int(time.time())
+    last_input = now - max(
+        load_input_time('mouse'),
+        load_input_time('audio'),
+        load_input_time('keyboard')
+    )
+    last_backend = now - load_input_time('backend')
+    third_row = f"Last input: {last_input}s, Last backend: {last_backend}s"
 
-    column = dbc.Col([
+    return dbc.Col([
         dbc.Row(html.H5(first_row)),
         dbc.Row(html.H5(second_row)),
         dbc.Row(html.H5(third_row))
     ], style={'padding': '0px'})
-    return column
 
 
 def make_trend_graph() -> dbc.Col:

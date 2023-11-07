@@ -2,7 +2,7 @@
 # pylint: disable=import-error
 import os
 import pandas as pd
-from helper_io import save_dataframe, load_dataframe, load_input_time,\
+from helper_io import save_dataframe, load_dataframe, load_input_time, \
     load_config, load_lastest_row, \
     modify_latest_row, append_to_database, load_activity_between, \
     load_categories

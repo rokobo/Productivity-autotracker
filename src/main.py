@@ -52,11 +52,11 @@ if __name__ == '__main__':
                 keyboard_thread.start()
                 print("\033[92mRestarted!\033[00m")
 
-            try:  # Soundcard library cannot run in thread
+            try:  # Audio detection thread
                 assert audio_process.is_alive()
             except Exception:
                 print("\033[91mError in audio_process... \033[00m", end="")
-                audio_process = Process(target=audio_idle_detector)
+                audio_process = Thread(target=audio_idle_detector)
                 audio_process.daemon = True
                 audio_process.start()
                 print("\033[92mRestarted!\033[00m")

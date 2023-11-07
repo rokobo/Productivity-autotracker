@@ -1,15 +1,23 @@
 """Function for trying to execute code."""
-# pylint: disable=exec-used, eval-used, broad-exception-caught
+# pylint: disable=exec-used, eval-used, broad-exception-caught, import-error
 # pylint: disable=unused-import, too-many-arguments, no-name-in-module
 # flake8: noqa: F401
 import os
 import time
+import platform
 import sqlite3 as sql
 import yaml
 import pandas as pd
-from win32com.client import GetObject
-from win32gui import GetForegroundWindow
 from psutil import process_iter, Process
+
+system = platform.system()
+if system == "Windows":
+    from win32com.client import GetObject
+    from win32gui import GetForegroundWindow
+elif system == "Linux":
+    pass
+else:
+    raise OSError("App only supported in Windows and Linux")
 
 
 def try_to_run(var: str, code: str, error_check: str, final_code: str,

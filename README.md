@@ -26,7 +26,6 @@ Having the window information, the program will try to classify it using the rul
     + This file has regex patterns used to match your current activity to either the personal or work category.
     + Any activity that does not match is considered neutral.
     + Univeral windows platform (UWP) apps will have their process names ending with .UWP for simplicity and organization.
-    + The `FULLSCREEN_APPS` list is used to detect non-idle activity when the process is in fullscreen (if a process that is not on this list is fullscreen and the program has not detected activity for some time, it will consider the state as idle).
 
 2. `config/config.yml`:
     + This file has some values that can be personalized, including color, intervals, spacings and others.
@@ -39,7 +38,7 @@ If the program detects you are idle, it will display a warning modal like this:
   <img src="https://github.com/rokobo/Productivity-autotracker/blob/main/images/idle_warning.png?raw=true" width="200"/>
 </p>
 
-You also have the option to set your status as idle with the top-right button of the main page. Do note that the idle detection uses multiple sources of activity detection, specifically: audio, keyboard, mouse and specific fullscreen apps. If you press the button and move your mouse or forget to pause music, the idle status will be reverted.
+You also have the option to set your status as idle with the top-right button of the main page. Do note that the idle detection uses multiple sources of activity detection, specifically: audio, keyboard and mouse. If you press the button and move your mouse or forget to pause music, the idle status will be reverted.
 
 ## **Pages**
 
@@ -62,7 +61,7 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
   + `Activity table` - Contains a scrollable version of the `activity.db` file.
   + `Categories table` - Contains a scrollable version of the `categories.db` file.
   + `URLs table` - Contains a scrollable version of the `urls.db` file.
-  + `Input tables` - Contains a scrollable version of the `audio.db`, `backend.db`, `frontend.db`, `mouse.db`, `keyboard.db`, `fullscreen.db` and `date.db` files.
+  + `Input tables` - Contains a scrollable version of the `audio.db`, `backend.db`, `frontend.db`, `mouse.db`, `keyboard.db` and `date.db` files.
   + `Milestones table` - Contains a scrollable version of the `milestones.db` file.
 
 + **Credits**:

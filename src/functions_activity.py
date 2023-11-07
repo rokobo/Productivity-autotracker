@@ -102,8 +102,8 @@ def detect_windows() -> tuple[int, str, int]:
         except Exception:
             time.sleep(0.25)
         else:
-            break
-    return handle, title, pid
+            return handle, title, pid
+    return None, None, None
 
 
 def detect_linux() -> tuple[int, str, int]:
@@ -122,7 +122,7 @@ def detect_linux() -> tuple[int, str, int]:
                 ["xdotool", "getactivewindow"]).decode("utf-8").strip())
             title = subprocess.check_output(
                 ["xprop", "-id", str(handle), "_NET_WM_NAME"]
-            ).decode("utf-8").strip().split('"')[-2]
+            ).decode("unicode_escape")[29:-2]
             pid = int(subprocess.check_output(
                 ["xdotool", "getactivewindow", "getwindowpid"]
             ).decode("utf-8").strip())
@@ -133,8 +133,8 @@ def detect_linux() -> tuple[int, str, int]:
         except Exception:
             time.sleep(0.25)
         else:
-            break
-    return handle, title, pid
+            return handle, title, pid
+    return None, None, None
 
 
 def get_process_name(pid: str, title: str) -> str:
@@ -201,8 +201,8 @@ def get_url(title: str, handle: int) -> tuple[str, str]:
                         title = GetWindowText(handle)
                     else:
                         title = subprocess.check_output(
-                            ["xprop", "-id", str(handle), "WM_CLASS"]
-                        ).decode("utf-8").strip().split('"')[-2]
+                            ["xprop", "-id", str(handle), "_NET_WM_NAME"]
+                        ).decode("unicode_escape")[29:-2]
                     assert isinstance(title, str)
                 except AssertionError:
                     time.sleep(0.25)

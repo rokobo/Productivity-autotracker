@@ -202,6 +202,10 @@ def server_supervisor():
     @server.route('/urldata/', methods=['GET'])
     def extension_handler():
         titles = request.args.get('titles').split("|-|")
+        titles = [
+            title.encode("utf-8").decode("unicode_escape")
+            for title in titles
+        ]
         urls = request.args.get("urls").split("|-|")
         if len(titles) != len(urls):
             raise ValueError("Titles and urls list must have same length")

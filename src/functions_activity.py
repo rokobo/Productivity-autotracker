@@ -104,7 +104,7 @@ def detect_idle() -> tuple[int, str, str, str, str]:
     now = int(time.time())
 
     # Access all input times concurrently
-    executor = ThreadPoolExecutor(max_workers=4)
+    executor = ThreadPoolExecutor(max_workers=3)
     mouse_time = executor.submit(load_input_time, 'mouse')
     keyboard_time = executor.submit(load_input_time, 'keyboard')
     audio_time = executor.submit(load_input_time, 'audio')

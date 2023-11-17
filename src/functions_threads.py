@@ -114,7 +114,7 @@ def backups():
     src = os.path.join(cfg["WORKSPACE"], 'data/activity.db')
     dest = os.path.join(cfg["BACKUP"], f'{now.strftime(date_format)}.db')
     shutil.copy2(src, dest)
-    print("\033[96mBackend: " +
+    print(f"\033[96m{time.strftime('%X')} Backend: " +
             f"Backup {now.strftime(date_format)} done successfully\033[00m")
 
     # Delete oldest backup if there are more backups than desired
@@ -202,7 +202,7 @@ def server_supervisor():
     @server.route('/urldata/', methods=['GET'])
     def extension_handler():
         titles = request.args.get('titles').split("|-|")
-        titles = [
+        titles = [  # Correct for special characters
             title.encode("utf-8").decode("unicode_escape")
             for title in titles
         ]

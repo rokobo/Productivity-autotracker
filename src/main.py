@@ -28,7 +28,8 @@ if __name__ == '__main__':
                 assert activity_process.is_alive()
                 assert did_backend_update_recently()
             except Exception:
-                print("\033[91mError in activity_process... \033[00m ", end="")
+                print(f"\033[91m{time.strftime('%X')} Error in",
+                    "activity_process... \033[00m ", end="")
                 activity_process = Process(target=activity_detector)
                 activity_process.daemon = True
                 activity_process.start()
@@ -37,7 +38,8 @@ if __name__ == '__main__':
             try:  # Mouse detection thread
                 assert mouse_thread.is_alive()
             except Exception:
-                print("\033[91mError in mouse_thread... \033[00m", end="")
+                print(f"\033[91m{time.strftime('%X')} Error in",
+                    "mouse_thread... \033[00m", end="")
                 mouse_thread = Thread(target=mouse_idle_detector)
                 mouse_thread.daemon = True
                 mouse_thread.start()
@@ -46,7 +48,8 @@ if __name__ == '__main__':
             try:  # Keyboard detection thread
                 assert keyboard_thread.is_alive()
             except Exception:
-                print("\033[91mError in keyboard_thread... \033[00m", end="")
+                print(f"\033[91m{time.strftime('%X')} Error in",
+                    "keyboard_thread... \033[00m", end="")
                 keyboard_thread = Thread(target=keyboard_idle_detector)
                 keyboard_thread.daemon = True
                 keyboard_thread.start()
@@ -55,7 +58,8 @@ if __name__ == '__main__':
             try:  # Audio detection thread
                 assert audio_process.is_alive()
             except Exception:
-                print("\033[91mError in audio_process... \033[00m", end="")
+                print(f"\033[91m{time.strftime('%X')} Error in",
+                    "audio_process... \033[00m", end="")
                 audio_process = Thread(target=audio_idle_detector)
                 audio_process.daemon = True
                 audio_process.start()
@@ -64,7 +68,8 @@ if __name__ == '__main__':
             try:  # Study advisor process
                 assert advisor_process.is_alive()
             except Exception:
-                print("\033[91mError in advisor_process... \033[00m", end="")
+                print(f"\033[91m{time.strftime('%X')} Error in",
+                    "advisor_process... \033[00m", end="")
                 advisor_process = Process(target=study_advisor)
                 advisor_process.daemon = True
                 advisor_process.start()
@@ -73,7 +78,8 @@ if __name__ == '__main__':
             try:  # Dash server process
                 assert server_process.is_alive()
             except Exception:
-                print("\033[91mError in server_process... \033[00m", end="")
+                print(f"\033[91m{time.strftime('%X')} Error in",
+                    "server_process... \033[00m", end="")
                 server_process = Process(target=server_supervisor)
                 server_process.daemon = True
                 server_process.start()
@@ -82,7 +88,8 @@ if __name__ == '__main__':
             try:  # Backup process
                 assert auxiliary_process.is_alive()
             except Exception:
-                print("\033[91mError in auxiliary_process... \033[00m", end="")
+                print(f"\033[91m{time.strftime('%X')} Error in",
+                    "auxiliary_process... \033[00m", end="")
                 auxiliary_process = Process(target=auxiliary_work)
                 auxiliary_process.daemon = True
                 auxiliary_process.start()
@@ -91,4 +98,5 @@ if __name__ == '__main__':
             time.sleep(CFG['IDLE_CHECK_INTERVAL'] * 5)
 
         except Exception:
-            print("\033[101mMAIN PROGRAM FAILURE, RESTARTING...\033[00m")
+            print(f"\033[101m{time.strftime('%X')}",
+                "MAIN PROGRAM FAILURE, RESTARTING...\033[00m")

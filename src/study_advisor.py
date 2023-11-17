@@ -106,6 +106,7 @@ def check_milestones():
     personal_done = data.loc[0, "Personal"]
     work_done = data.loc[0, "Work"]
     work_goal = cfg["WORK_DAILY_GOAL"]
+    notification = f"\033[96m{time.strftime('%X')} Notification:"
 
     # Check personal
     if not milestones.loc[0, "personal"]:
@@ -114,7 +115,7 @@ def check_milestones():
             work_done * cfg["WORK_TO_PERSONAL_MULTIPLIER"]
         ):
             milestones.loc[0, "personal"] = 1
-            print("\033[96mNotification: personal\033[00m")
+            print(notification, "personal\033[00m")
             send_notification(
                 TITLES["personal"], MESSAGES["personal"], "bad")
 
@@ -122,35 +123,35 @@ def check_milestones():
     if not milestones.loc[0, "small_work"]:
         if work_done >= cfg["SMALL_WORK_DAILY_GOAL"]:
             milestones.loc[0, "small_work"] = 1
-            print("\033[96mNotification: small_work\033[00m")
+            print(notification, "small_work\033[00m")
             send_notification(
                 TITLES["small_work"], MESSAGES["small_work"], "neutral")
 
     if not milestones.loc[0, "work_25"]:
         if work_done >= work_goal * 0.25:
             milestones.loc[0, "work_25"] = 1
-            print("\033[96mNotification: work_25\033[00m")
+            print(notification, "work_25\033[00m")
             send_notification(
                 TITLES["work_25"], MESSAGES["work_25"], "neutral")
 
     if not milestones.loc[0, "work_50"]:
         if work_done >= work_goal * 0.50:
             milestones.loc[0, "work_50"] = 1
-            print("\033[96mNotification: work_50\033[00m")
+            print(notification, "work_50\033[00m")
             send_notification(
                 TITLES["work_50"], MESSAGES["work_50"], "neutral")
 
     if not milestones.loc[0, "work_75"]:
         if work_done >= work_goal * 0.75:
             milestones.loc[0, "work_75"] = 1
-            print("\033[96mNotification: work_75\033[00m")
+            print(notification, "work_75\033[00m")
             send_notification(
                 TITLES["work_75"], MESSAGES["work_75"], "neutral")
 
     if not milestones.loc[0, "work_100"]:
         if work_done >= work_goal:
             milestones.loc[0, "work_100"] = 1
-            print("\033[96mNotification: work_100\033[00m")
+            print(notification, "work_100\033[00m")
             send_notification(
                 TITLES["work_100"], MESSAGES["work_100"], "good")
 

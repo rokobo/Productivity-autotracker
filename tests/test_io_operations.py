@@ -25,8 +25,8 @@ def test_data_integrity() -> None:
     dataframe = pd.DataFrame({
         'start_time': [111], 'end_time': [222],
         'app': ["test_app"], 'info': ["test_info"],
-        'handle': 333, 'pid': 444, 'process_name': "test.exe",
-        'url': "test.com/test", 'domain': "test.com"
+        'process_name': "test.exe", 'url': "test.com/test",
+        'domain': "test.com"
     })
     save_dataframe(dataframe, '__test1__')
     loaded_dataframe = load_dataframe('__test1__')

@@ -360,8 +360,8 @@ def make_heatmap(
         showlegend=False, showscale=False
     ))
     fig.update_layout(
-        plot_bgcolor=cfg["BACKGROUND"],
-        paper_bgcolor=cfg["BACKGROUND"],
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
         font_color=cfg['TEXT_COLOR'],
         height=cfg['GOALS_HEATMAP_HEIGHT'],
         margin={'l': 0, 'r': 0, 't': 0, 'b': 0}

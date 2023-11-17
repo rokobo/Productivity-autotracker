@@ -3,7 +3,6 @@ Collection of helper functions for input and output rountines.
 """
 # pylint: disable=broad-exception-caught, possibly-unused-variable
 # pylint: disable=unused-argument
-import platform
 from os.path import dirname, exists, join, abspath
 import time
 from notifypy import Notify
@@ -30,9 +29,6 @@ def load_config() -> dict[str, any]:
         retries=5,
         environment=locals())
 
-    config["SYSTEM"] = platform.system()
-    if config["SYSTEM"] not in ["Windows", "Linux"]:
-        raise OSError("App only supported in Windows and Linux")
     config["WORKSPACE"] = workspace
     config["ASSETS"] = join(workspace, "assets/")
     config["BACKUP"] = join(workspace, "backup/")

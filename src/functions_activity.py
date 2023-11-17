@@ -10,210 +10,62 @@ from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, wait
 import pandas as pd
 import numpy as np
+import pywinctl as pwc
 from helper_server import format_long_duration
-from helper_retry import try_to_run
 from helper_io import load_dataframe, load_input_time, append_to_database, \
     save_dataframe, load_url, load_config, load_lastest_row, \
     modify_latest_row, load_categories, timestamp_to_day
 
-CFG = load_config()
-if CFG["SYSTEM"] == "Windows":
-    from win32gui import GetWindowText
-    from win32process import GetWindowThreadProcessId
-elif CFG["SYSTEM"] == "Linux":
-    import subprocess
 
-
-def detect_activity() -> tuple[int, str, int, int, str, str, str]:
+def detect_activity() -> tuple[int, str, str, str, str]:
     """
     Detects user activity and returns tracking variables.
 
     Returns:
-        tuple[int, str, str, int]: time of detection, \
-            active window title, window handle, pid, \
-                process name, url and domain in case of browser.
+        tuple[int, str, str, str, str]: time of detection, \
+            active window title, process name, url and domain.
     """
     cfg = load_config()
     cfg2 = load_categories()
     retries = cfg['RETRY_ATTEMPS']
     start_time = int(time.time())
+    title, process_name, url, domain = None, None, None, None
 
     for _ in range(retries):
         try:
-            if CFG["SYSTEM"] == "Windows":
-                handle, title, pid = detect_windows()
-            else:
-                handle, title, pid = detect_linux()
-            assert isinstance(handle, int)
+            window = pwc.getActiveWindow()
+            title = window.title
+            process_name = window.getAppName()
             assert isinstance(title, str)
-            assert isinstance(pid, int)
-            assert pid > 0
-
-            process_name = get_process_name(pid, title)
             assert isinstance(process_name, str)
 
             if process_name not in ["brave.exe", "brave"]:
                 url, domain = "", ""
             else:
-                url, domain = get_url(title, handle)
+                url, domain = match_to_url(title)
             assert url is not None
-        except AssertionError:
+        except (AssertionError, AttributeError):
             time.sleep(0.25)
         else:
             break
 
-    assert isinstance(handle, int), "Handle not found error"
-    assert isinstance(title, str), "Title not found error"
-    assert pid > 0, f"PID lookup error, negative PID, title: {title}"
-    assert url is not None, f"URL not found error ({url}), title: {title}"
+    results = [
+        isinstance(title, str),
+        isinstance(process_name, str),
+        url is not None]
+
+    # Set to idle in case of failure
+    if not all(results):
+        print(
+            f"\033[93m{time.strftime('%X')} Activity failed to detect,",
+            f"setting idle... {results}\033[00m ")
+        return (start_time, "Time not counted", "IDLE TIME", "", "")
 
     # Hide information from apps in HIDDEN_APPS list
     name = process_name.lower()
     if any(re.search(pattern, name) for pattern in cfg2['HIDDEN_APPS']):
         title = "HIDDEN APPLICATION INFO"
-    return (start_time, title, handle, pid, process_name, url, domain)
-
-
-def detect_windows() -> tuple[int, str, int]:
-    """
-    Obtains handle, title, pid from windows system.
-
-    Returns:
-        tuple[int, str, int]: Handle, Title, Pid.
-    """
-    cfg = load_config()
-    retries = cfg['RETRY_ATTEMPS']
-
-    for _ in range(retries):
-        try:
-            handle = try_to_run(
-                var='window',
-                code='window = GetForegroundWindow()',
-                error_check='not isinstance(window, int)',
-                final_code='',
-                retries=retries*10,
-                environment=locals())
-            title = GetWindowText(handle)
-            pid = GetWindowThreadProcessId(handle)[1]
-            assert isinstance(handle, int)
-            assert isinstance(title, str)
-            assert isinstance(pid, int)
-            assert pid > 0
-        except Exception:
-            time.sleep(0.25)
-        else:
-            return handle, title, pid
-    return None, None, None
-
-
-def detect_linux() -> tuple[int, str, int]:
-    """
-    Obtains handle, title, pid from linux system.
-
-    Returns:
-        tuple[int, str, int]: Handle, Title, Pid.
-    """
-    cfg = load_config()
-    retries = cfg['RETRY_ATTEMPS']
-
-    for _ in range(retries):
-        try:
-            handle = int(subprocess.check_output(
-                ["xdotool", "getactivewindow"]).decode("utf-8").strip())
-            title = subprocess.check_output(
-                ["xprop", "-id", str(handle), "_NET_WM_NAME"]
-            ).decode("unicode_escape")[29:-2]
-            pid = int(subprocess.check_output(
-                ["xdotool", "getactivewindow", "getwindowpid"]
-            ).decode("utf-8").strip())
-            assert isinstance(handle, int)
-            assert isinstance(title, str)
-            assert isinstance(pid, int)
-            assert pid > 0
-        except Exception:
-            time.sleep(0.25)
-        else:
-            return handle, title, pid
-    return None, None, None
-
-
-def get_process_name(pid: str, title: str) -> str:
-    """
-    Gets process name using pid.
-
-    Args:
-        pid (str): Window pid.
-        title (str): Window title.
-
-    Returns:
-        str: Process name.
-    """
-    cfg = load_config()
-    retries = cfg['RETRY_ATTEMPS']
-    for _ in range(retries):
-        try:
-            process_name = try_to_run(
-                var='process_name',
-                code='process_name = ""\
-                    \nprocess_name = Process(pid).name()',
-                error_check='process_name == "" or \
-                    not isinstance(process_name, str)',
-                final_code='',
-                retries=retries,
-                environment=locals())
-
-            # Set title as process name for UWP apps
-            if process_name == "ApplicationFrameHost.exe":
-                process_name = title.split("-")[-1].strip()
-                process_name += ".UWP"
-            assert isinstance(process_name, str)
-        except AssertionError:
-            time.sleep(0.25)
-        else:
-            break
-    return process_name
-
-
-def get_url(title: str, handle: int) -> tuple[str, str]:
-    """
-    Gets url from browser window.
-
-    Args:
-        title (str): Window title.
-        handle (int): Window handle.
-
-    Returns:
-        tuple[str, str]: Url, domain.
-    """
-    cfg = load_config()
-    retries = cfg['RETRY_ATTEMPS']
-    for _ in range(retries):
-        try:
-            # Obtain URL in case of browser
-            url = ""
-            domain = ""
-            for _ in range(cfg["RETRY_ATTEMPS"]):
-                try:
-                    url, domain = match_to_url(title)
-                    if url is not None:
-                        break
-                    if cfg["SYSTEM"] == "Windows":
-                        title = GetWindowText(handle)
-                    else:
-                        title = subprocess.check_output(
-                            ["xprop", "-id", str(handle), "_NET_WM_NAME"]
-                        ).decode("unicode_escape")[29:-2]
-                    assert isinstance(title, str)
-                except AssertionError:
-                    time.sleep(0.25)
-                else:
-                    break
-            assert url is not None
-        except AssertionError:
-            time.sleep(0.25)
-        else:
-            break
-    return url, domain
+    return (start_time, title, process_name, url, domain)
 
 
 def match_to_url(title: str) -> tuple[str, str]:
@@ -227,6 +79,8 @@ def match_to_url(title: str) -> tuple[str, str]:
         str: URL of the tab.
         str: Domain of the tab.
     """
+    # Correct for special characters
+    title = title.encode("utf-8").decode("unicode_escape")
     url = load_url(title.removesuffix(" - Brave"))
     if url.empty:
         return None, None
@@ -239,12 +93,12 @@ def match_to_url(title: str) -> tuple[str, str]:
     return url, domain
 
 
-def detect_idle() -> tuple[int, str, int, int, str, str, str]:
+def detect_idle() -> tuple[int, str, str, str, str]:
     """
     if idle, return a tuple representing raw data of idle activity.
 
     Returns:
-        tuple[int, str, int, int, str, str]: Idle raw data or empty tuple.
+        tuple[int, str, str, str, str]: Idle raw data or empty tuple.
     """
     cfg = load_config()
     now = int(time.time())
@@ -263,18 +117,17 @@ def detect_idle() -> tuple[int, str, int, int, str, str, str]:
         now - audio_time.result())
 
     if idle_time > cfg['IDLE_TIME']:
-        return (now, "Time not counted", -1, -1, "IDLE TIME", "", "")
+        return (now, "Time not counted", "IDLE TIME", "", "")
     return ()
 
 
-def parse_data(data: tuple[int, str, int, int, str, str, str]) -> pd.DataFrame:
+def parse_data(data: tuple[int, str, str, str, str]) -> pd.DataFrame:
     """
     Transforms the raw data into an appropriate form for processing.
 
     Args:
-        tuple[int, str, str, int]: time of detection, \
-            active window title, window handle, pid, \
-                process name, url and domain in case of browser.
+        tuple[int, str, str, str, str]: time of detection, \
+            active window title, process name, url and domain.
 
     Returns:
         pd.DataFrame: Dataframe with parsed data.
@@ -284,11 +137,9 @@ def parse_data(data: tuple[int, str, int, int, str, str, str]) -> pd.DataFrame:
         'end_time': [data[0]],
         'app': [data[1].split(" - ")[-1]],
         'info': [data[1]],
-        'handle': data[2],
-        'pid': data[3],
-        'process_name': data[4],
-        'url': data[5],
-        'domain': data[6]
+        'process_name': data[2],
+        'url': data[3],
+        'domain': data[4]
     }
     return pd.DataFrame(parsed)
 
@@ -305,7 +156,7 @@ def join(dataframe: pd.DataFrame) -> None:
     activity = load_lastest_row('activity')
 
     # Check if merge should be done
-    same_event = all(activity.iloc[0, 2:9] == dataframe.iloc[0, 2:9])
+    same_event = all(activity.iloc[0, 2:7] == dataframe.iloc[0, 2:7])
     same_event &= all(timestamp_to_day(  # Check if events are on the same day
         activity["start_time"]) == timestamp_to_day(dataframe["start_time"]))
 

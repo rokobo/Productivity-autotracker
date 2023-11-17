@@ -60,7 +60,7 @@ def update_conflicts(_1):
     cfg2 = load_categories()
     activity = load_dataframe("activity")
     activity.drop(columns=[
-        "start_time", "end_time", "handle", "pid", "url", "rowid", "app"
+        "start_time", "end_time", "url", "rowid", "app"
     ], inplace=True)
     activity["work_match"] = pd.Series(activity['process_name'].str.contains(
         '|'.join(cfg2['WORK_APPS']), case=False, regex=True))

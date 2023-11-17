@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import layout_menu
 from helper_server import generate_cards, make_crown, \
-    make_totals_graph, make_info_row
+    make_totals_graph, make_info_row, make_heatmap
 from helper_io import save_dataframe, load_dataframe, \
     load_config, set_idle, load_lastest_row, load_day_total
 
@@ -46,7 +46,9 @@ layout = html.Div([
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
-    dcc.Interval(id='category_interval', interval=15 * 1000, n_intervals=-1),
+    dcc.Interval(id='heatmap_interval', interval=60000, n_intervals=-1),
+    dbc.Row(id='heatmap_row'),
+    dcc.Interval(id='category_interval', interval=15000, n_intervals=-1),
     dbc.Row(id='category_row'),
     dcc.Interval(
         id='activity_check_interval',
@@ -111,6 +113,34 @@ def update_category(_1):
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }
     return card, style, make_info_row(data), make_crown()
+
+
+@callback(
+    Output('heatmap_row', 'children'),
+    Output('heatmap_row', 'style'),
+    Input('heatmap_interval', 'n_intervals')
+)
+def update_heatmap_graph(_1):
+    """Makes heatmap graph."""
+    global CFG
+    CFG = load_config()
+    totals = load_dataframe("totals")
+
+    fig, _ = make_heatmap(
+        totals, "Work", "Work",
+        "WORK_DAILY_GOAL", CFG["HEATMAP_GOOD_COLOR"]
+    )
+    card_style = {
+        'margin-left': "0px",
+        'margin-right': "0px",
+    }
+    style = {
+        'margin-left': f"{CFG['SIDE_PADDING']}px",
+        'margin-right': f"{CFG['SIDE_PADDING']}px",
+        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
+        'margin-top': f"{CFG['DIVISION_PADDING']}px"
+    }
+    return dbc.Row(dcc.Graph(figure=fig), style=card_style), style
 
 
 @callback(

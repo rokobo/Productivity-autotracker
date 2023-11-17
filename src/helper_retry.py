@@ -10,15 +10,6 @@ import yaml
 import pandas as pd
 from psutil import process_iter, Process
 
-system = platform.system()
-if system == "Windows":
-    from win32com.client import GetObject
-    from win32gui import GetForegroundWindow
-elif system == "Linux":
-    pass
-else:
-    raise OSError("App only supported in Windows and Linux")
-
 
 def try_to_run(var: str, code: str, error_check: str, final_code: str,
         retries: int, environment: dict) -> any:

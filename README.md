@@ -20,6 +20,8 @@ This program works by having it constantly running (I always have a terminal run
 
 Having the window information, the program will try to classify it using the rules defined in the `config/categories.yml` and `config/config.yml`.
 
+To make this program work for Linux and Windows, `PyWinCtl` was used to capture the window information.
+
 ### **Configuration files**
 
 1. `config/categories.yml`:
@@ -89,6 +91,6 @@ So I arrived at a better solution, I created a custom browser extension that sen
 
 ## **Audio detection problem**
 
-I could not find a good way to detect if audio was playing in windows. After messing with a lot of libraries and ending up with `winrt`, I noticed that it worked extremely well for some apps, however, did not detect anything from other apps. So I needed a better solution.
+I could not find a good way to detect if audio was playing. After messing with a lot of libraries and ending up with `winrt`, I noticed that it worked extremely well for some apps, however, did not detect anything from other apps. So I needed a better solution.
 
 After some thought, I decided to go a different direction and record the audio from from the desktop and analyze the volume of the recording later. However, in doing so, I arrived at a better solution. I decided to stream the data from the recording, but bypass the recording entirely. Therefore I simply converted the binary data that was supposed to be a recording into volume intensity, which I then used to determine if any sound was playing.

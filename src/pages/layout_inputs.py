@@ -86,19 +86,20 @@ def update_inputs(_1):
     CFG = load_config()
     inputs = ['backend', 'frontend', 'mouse', 'keyboard', 'audio']
     rows = []
+    c = {'displayModeBar': False}
     for database1, database2 in zip(inputs[::2], inputs[1::2]):
         table1 = create_table(database1)
         table2 = create_table(database2)
         rows.append(dbc.Row([
-            dbc.Col([html.H3(database1), dcc.Graph(figure=table1)]),
-            dbc.Col([html.H3(database2), dcc.Graph(figure=table2)])
+            dbc.Col([html.H3(database1), dcc.Graph(figure=table1, config=c)]),
+            dbc.Col([html.H3(database2), dcc.Graph(figure=table2, config=c)])
         ]))
 
     if len(inputs) % 2 ==1:
         database3 = inputs[-1]
         table3 = create_table(database3)
         rows.append(dbc.Row([
-            dbc.Col([html.H3(database3), dcc.Graph(figure=table3)]),
+            dbc.Col([html.H3(database3), dcc.Graph(figure=table3, config=c)]),
             dbc.Col([])
         ]))
 

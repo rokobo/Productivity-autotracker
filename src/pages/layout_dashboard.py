@@ -103,7 +103,7 @@ def update_category(_1):
     cardbody_style = {'padding': f'{CFG["CARD_PADDING"]}px'}
 
     card = dbc.Card([dbc.CardBody([
-        dcc.Graph(figure=fig),
+        dcc.Graph(figure=fig, config={'displayModeBar': False}),
     ], style=cardbody_style)], style=card_style)
 
     style = {
@@ -140,7 +140,10 @@ def update_heatmap_graph(_1):
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }
-    return dbc.Row(dcc.Graph(figure=fig), style=card_style), style
+    return dbc.Row(
+        dcc.Graph(figure=fig, config={'displayModeBar': False}),
+        style=card_style
+    ), style
 
 
 @callback(

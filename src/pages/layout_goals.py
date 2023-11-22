@@ -68,21 +68,21 @@ def update_category(_1):
         'margin-right': f"{CFG['SIDE_PADDING']}px",
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px"
     }
-
+    c = {'displayModeBar': False}
     cards = dbc.Row([
         dbc.Row([
             html.H2(title1),
-            dcc.Graph(figure=fig1)
+            dcc.Graph(figure=fig1, config=c)
         ], style=style),
         dbc.Row([
             html.H2(title2),
             html.H5(f"or work to personal override \
                     ({CFG['WORK_TO_PERSONAL_MULTIPLIER']}x multiplier)"),
-            dcc.Graph(figure=fig2)
+            dcc.Graph(figure=fig2, config=c)
         ], style=style),
         dbc.Row([
             html.H2(title3),
-            dcc.Graph(figure=fig3)
+            dcc.Graph(figure=fig3, config=c)
         ], style=style),
     ])
     return cards, {'padding': '0px'}

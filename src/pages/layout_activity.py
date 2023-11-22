@@ -38,7 +38,11 @@ layout = html.Div([
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
     dbc.Row([
-        dcc.Graph(id='activity_table', style={'width': '100%'})
+        dcc.Graph(
+            id='activity_table',
+            style={'width': '100%'},
+            config={'displayModeBar': False}
+        )
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px",

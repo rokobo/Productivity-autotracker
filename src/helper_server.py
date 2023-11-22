@@ -359,9 +359,19 @@ def make_heatmap(
             for day_index in range(week * 7, (1 + week) * 7)
         ] for week in range(52)]
     values = list(map(list, zip(*values)))
+    hovertext = [[
+        f"{round(data[day], 2)} hours of {dataframe_accessor},<br>" +
+        f"Week {week+1}, Day {day+1},<br>" +
+        ("Current week" if week == 51 else (f"Happened {51-week}w ago")) +
+        ",<br>" +
+        ("Current day" if day == 363 else (f"Happened {363-day}d ago"))
+        for day in range(week * 7, (1 + week) * 7)] for week in range(52)
+    ]
+    hovertext = list(map(list, zip(*hovertext)))
 
     fig = go.Figure(data=go.Heatmap(
         z=values, x=list(range(1, 53)), y=list(range(1, 7)),
+        hoverinfo="text", text=hovertext,
         xgap=cfg["GOALS_HEATMAP_GAP"], ygap=cfg["GOALS_HEATMAP_GAP"],
         colorscale=base + [color],
         showlegend=False, showscale=False
@@ -613,7 +623,7 @@ def make_trend_graph() -> dbc.Col:
             )
             row.append(dbc.Row([
                 html.H2(f"{selected} {interval}-day trend"),
-                dcc.Graph(figure=fig)
+                dcc.Graph(figure=fig, config={'displayModeBar': False})
             ], style=style))
         row.append(html.Br())
     return dbc.Col(row)

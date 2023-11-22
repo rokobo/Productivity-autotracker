@@ -28,13 +28,6 @@ def test_pylint_helper_io() -> None:
     assert result.global_note == 10, result.by_msg
 
 
-def test_pylint_helper_retry() -> None:
-    """Ensures helper_retry passes pylint specifications."""
-    file = os.path.join(src_folder, "helper_retry.py")
-    result = Run([file], exit=False).linter.stats
-    assert result.global_note == 10, result.by_msg
-
-
 def test_pylint_helper_server() -> None:
     """Ensures helper_server passes pylint specifications."""
     file = os.path.join(src_folder, "helper_server.py")

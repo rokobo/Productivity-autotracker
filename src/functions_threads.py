@@ -7,6 +7,7 @@ is not idle. If the user is not idle, update data file.
 # flake8: noqa: F401
 import time
 import os
+import sys
 import logging
 import shutil
 from datetime import datetime, timedelta
@@ -208,7 +209,8 @@ def server_supervisor():
         ]
         urls = request.args.get("urls").split("|-|")
         if len(titles) != len(urls):
-            raise ValueError("Titles and urls list must have same length")
+            print("\033[93mTitles and urls list must have same length\033[00m")
+            sys.exit()
         dataframe = pd.DataFrame({'title': titles, 'url': urls})
         save_dataframe(dataframe, "urls")
         return "OK"

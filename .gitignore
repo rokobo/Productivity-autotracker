@@ -6,3 +6,4 @@ src/test.*
 desktop.ini
 backup/
 config/categories.yml
+*.code-workspace

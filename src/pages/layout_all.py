@@ -48,7 +48,7 @@ layout = html.Div([
 )
 def update_element_list(_1):
     """Generates the event cards."""
-    dataframe = load_dataframe('categories')
+    dataframe = load_dataframe('activity', False, 'categories')
     dataframe = dataframe.groupby(
         ['process_name', 'subtitle', 'category', 'method']
     ).agg({'total': 'sum'}).reset_index()
@@ -56,7 +56,9 @@ def update_element_list(_1):
     dataframe.loc[:, 'duration'] = dataframe['total'] * 3600
     dataframe.loc[:, 'duration'] = dataframe['duration'].apply(
         format_long_duration)
-    totals = pd.DataFrame(load_dataframe("totals").sum(axis=0)).transpose()
+    totals = pd.DataFrame(
+        load_dataframe('activity', False, 'totals', False).sum(axis=0)
+    ).transpose()
     cards = generate_cards(dataframe, totals)
     style = {
         'margin-left': f"{CFG['SIDE_PADDING']}px",

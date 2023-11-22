@@ -28,13 +28,6 @@ def test_flake8_helper_io() -> None:
     assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))
 
 
-def test_flake8_helper_retry() -> None:
-    """Ensures helper_retry passes flake8 specifications."""
-    file = os.path.join(src_folder, "helper_retry.py")
-    result = flake8.get_style_guide().check_files([file])
-    assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))
-
-
 def test_flake8_helper_server() -> None:
     """Ensures helper_server passes flake8 specifications."""
     file = os.path.join(src_folder, "helper_server.py")

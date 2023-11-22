@@ -88,7 +88,7 @@ def update_category(_1):
     CFG = load_config()
 
     # Main categories graph
-    data = load_day_total(364).transpose()
+    data = load_day_total(0).transpose()
     data.reset_index(inplace=True)
     data.rename(columns={
         'index': 'category', data.columns[1]: 'total'
@@ -124,7 +124,7 @@ def update_heatmap_graph(_1):
     """Makes heatmap graph."""
     global CFG
     CFG = load_config()
-    totals = load_dataframe("totals")
+    totals = load_dataframe('activity', False, 'totals', False).drop(columns=["day"])
 
     fig, _ = make_heatmap(
         totals, "Work", "Work",
@@ -151,7 +151,7 @@ def update_heatmap_graph(_1):
 )
 def update_element_list(_1):
     """Generates the event cards."""
-    dataframe = load_dataframe('categories')
+    dataframe = load_dataframe('activity', False, 'categories')
     dataframe = dataframe[
         dataframe['day'] == str(pd.to_datetime('today').date())]
     save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')

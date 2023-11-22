@@ -45,7 +45,7 @@ def update_category(_1):
     global CFG
     CFG = load_config()
 
-    totals = load_dataframe("totals")
+    totals = load_dataframe('activity', False, 'totals')
 
     fig1, title1 = make_heatmap(
         totals, "Work",

@@ -101,7 +101,7 @@ def check_milestones():
     """
     global MESSAGES, TITLES
     cfg = load_config()
-    data = load_day_total(364)
+    data = load_day_total(0)
     milestones = fix_milestones()
     personal_done = data.loc[0, "Personal"]
     work_done = data.loc[0, "Work"]

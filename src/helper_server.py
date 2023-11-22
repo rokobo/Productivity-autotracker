@@ -2,6 +2,7 @@
 Collection of helper functions for website routines.
 """
 # pylint: disable=consider-using-f-string, import-error
+import sys
 import re
 import time
 import datetime
@@ -26,7 +27,7 @@ def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
         dbc.Row: Dash Row with categorized activities.
     """
     if totals is None:
-        totals = load_day_total(364)
+        totals = load_day_total(0)
     cfg = load_config()
     work_list = []
     personal_list = []
@@ -283,7 +284,9 @@ def rgb_to_hex(rgb_string: str) -> str:
         str: hex string.
     """
     match = re.match(r'^rgb\(\d+,\s*\d+,\s*\d+\)$', rgb_string)
-    assert match is not None, "RGB to HEX error"
+    if match is None:
+        print("\033[93mRGB to HEX error\033[00m")
+        sys.exit()
 
     values = re.findall(r'(\d+)', rgb_string)
     hex_code = "#{:02x}{:02x}{:02x}".format(
@@ -302,7 +305,9 @@ def hex_to_rgb(hex_string: str) -> str:
         str: rgb string.
     """
     match = re.match(r'^#[A-Fa-f0-9]{6}$', hex_string)
-    assert match is not None, "HEX to RGB error"
+    if match is None:
+        print("\033[93mHEX to RGB error\033[00m")
+        sys.exit()
 
     rgb_code = "rgb({}, {}, {})".format(
         int(hex_string[1:3], 16),
@@ -333,7 +338,9 @@ def make_heatmap(
     cfg = load_config()
     data = dataframe[dataframe_accessor].values
     base = [cfg["HEATMAP_BASE_COLOR"], cfg["HEATMAP_BASE_COLOR"]]
-    assert len(data) == 364, "Heatmap data not in correct format error"
+    if len(data) != 364:
+        print("\033[93mHeatmap data not in correct format error\033[00m")
+        sys.exit()
 
     if dataframe_accessor != "Personal":
         values = [[
@@ -389,7 +396,7 @@ def make_crown() -> dbc.Row:
         dbc.Row: Crown row.
     """
     cfg = load_config()
-    data = load_dataframe("totals")
+    data = load_dataframe('activity', False, 'totals', False)
     intervals = [7, 30, 90, 180, 364]
     streaks = [
         round((data.loc[364 - interval:, "Work"] >= cfg[
@@ -578,7 +585,7 @@ def make_trend_graph() -> dbc.Col:
     """
     cfg = load_config()
     row = []
-    totals = load_dataframe("totals")
+    totals = load_dataframe('activity', False, 'totals', False)
     colors = [cfg["WORK_COLOR"], cfg["PERSONAL_COLOR"]]
     types = ["Work", "Personal"]
     intervals = [30, 90, 364]

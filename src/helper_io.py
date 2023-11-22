@@ -3,11 +3,42 @@ Collection of helper functions for input and output rountines.
 """
 # pylint: disable=broad-exception-caught, possibly-unused-variable
 # pylint: disable=unused-argument
+import sys
 from os.path import dirname, exists, join, abspath
 import time
+from datetime import datetime, timedelta
+import sqlite3 as sql
+import yaml
 from notifypy import Notify
 import pandas as pd
-from helper_retry import try_to_run
+
+
+def load_yaml(name: str) -> dict:
+    """
+    Loads yaml file with the provided name using workspace as base dir.
+
+    Args:
+        name (str): Partial path string.
+
+    Returns:
+        dict: Configuration file.
+    """
+    workspace = dirname(dirname(abspath(__file__)))
+    path = join(workspace, name)
+    if not exists(path):
+        print("\033[93mPath does not exist error\033[00m")
+        sys.exit()
+
+    for _ in range(5):
+        with open(path, "r", encoding="utf-8") as file:
+            config = yaml.safe_load(file)
+        if isinstance(config, dict):
+            break
+        time.sleep(0.1)
+    else:
+        print(f"{name} file failed to load\033[00m")
+        sys.exit()
+    return config
 
 
 def load_config() -> dict[str, any]:
@@ -18,16 +49,7 @@ def load_config() -> dict[str, any]:
         dict[str, any]: Dictionary config file.
     """
     workspace = dirname(dirname(abspath(__file__)))
-    config_path = join(workspace, "config/config.yml")
-
-    config = try_to_run(
-        var='config',
-        code='with open(config_path, "r", encoding="utf-8") as file:\
-            \n    config = yaml.safe_load(file)',
-        error_check='not isinstance(config, dict)',
-        final_code='',
-        retries=5,
-        environment=locals())
+    config = load_yaml("config/config.yml")
 
     config["WORKSPACE"] = workspace
     config["ASSETS"] = join(workspace, "assets/")
@@ -36,7 +58,8 @@ def load_config() -> dict[str, any]:
     config["NOTIFICATION"] = Notify(
         default_notification_application_name=app_name,
         default_notification_icon=join(
-            workspace, join(workspace, "assets/sprout.gif")),
+            workspace, join(workspace, "assets/sprout.gif")
+        ),
     )
     return config
 
@@ -48,17 +71,37 @@ def load_categories() -> dict[str, any]:
     Returns:
         dict[str, any]: Dictionary config file.
     """
+    return load_yaml("config/categories.yml")
+
+
+def start_databases() -> None:
+    """Initializes databases with proper schema."""
     cfg = load_config()
-    config_path = join(cfg["WORKSPACE"], "config/categories.yml")
-    categories = try_to_run(
-        var='categories',
-        code='with open(config_path, "r", encoding="utf-8") as file:\
-            \n    categories = yaml.safe_load(file)',
-        error_check='not isinstance(categories, dict)',
-        final_code='',
-        retries=5,
-        environment=locals())
-    return categories
+    path = join(cfg["WORKSPACE"], "data/activity.db")
+    if exists(path):
+        return
+    for _ in range(cfg["RETRY_ATTEMPS"]):
+        try:
+            conn = sql.connect(path)
+            cursor = conn.cursor()
+            for table in ["activity", "categories", "totals"]:
+                schema_path = join(
+                    cfg["WORKSPACE"], f'schema/{table}_schema.sql'
+                )
+                with open(schema_path, 'r', encoding='utf-8') as file:
+                    schema = file.read()
+                cursor.executescript(schema)
+            conn.commit()
+        except Exception:
+            time.sleep(0.1)
+        else:
+            conn.close()
+            break
+    else:
+        conn.close()
+        print("\033[93mFailed to modify latest row\033[00m")
+        sys.exit()
+    conn.close()
 
 
 def load_lastest_row(name: str) -> pd.DataFrame:
@@ -70,59 +113,67 @@ def load_lastest_row(name: str) -> pd.DataFrame:
     """
     # Check if file does not exists
     cfg = load_config()
-    path = join(cfg["WORKSPACE"], f'data/{name}.db')
-    dataframe = pd.DataFrame({})
-    assert exists(path), "Path does not exist error"
+    path = join(cfg["WORKSPACE"], f"data/{name}.db")
+    if not exists(path):
+        print("\033[93mPath does not exist error\033[00m")
+        sys.exit()
 
     # Access database
-    retries = cfg['RETRY_ATTEMPS']
-    dataframe = try_to_run(
-        var='data',
-        code='conn = sql.connect(path)\
-            \ndata = pd.read_sql(\
-                f"SELECT *, rowid FROM {name}\
-                    ORDER BY rowid DESC LIMIT 1", conn)',
-        error_check='data.empty or not isinstance(data, pd.DataFrame)',
-        final_code='conn.close()',
-        retries=retries,
-        environment=locals())
-    assert not dataframe.empty, "Loaded dataframe is empty error"
+    retries = cfg["RETRY_ATTEMPS"]
+    for _ in range(retries):
+        conn = sql.connect(path)
+        dataframe = pd.read_sql(
+            f"SELECT *, rowid FROM {name} ORDER BY rowid DESC LIMIT 1", conn
+        )
+        if isinstance(dataframe, pd.DataFrame) and not dataframe.empty:
+            break
+        time.sleep(0.1)
+    else:
+        conn.close()
+        print("\033[93mFailed to load latest row\033[00m")
+        sys.exit()
+    conn.close()
     return dataframe
 
 
 def load_day_total(day: int) -> pd.DataFrame:
     """
     Loads the total times from the given day.
-    Today is 364, yesterday is 363.
+    Today is 0, yesterday is 1.
 
     Returns:
         pd.DataFrame: Accessed dataframe.
     """
     # Check if file does not exists
     cfg = load_config()
-    path = join(cfg["WORKSPACE"], 'data/totals.db')
-    dataframe = pd.DataFrame({})
-    assert exists(path), "Path does not exist error"
+    path = join(cfg["WORKSPACE"], "data/activity.db")
+    if not exists(path):
+        print("\033[93mPath does not exist error\033[00m")
+        sys.exit()
 
     # Access database
-    retries = cfg['RETRY_ATTEMPS']
-    dataframe = try_to_run(
-        var='data',
-        code='conn = sql.connect(path)\
-            \ndata = pd.read_sql(\
-                f"SELECT * FROM totals\
-                    WHERE rowid = {day}", conn)',
-        error_check='data.empty or not isinstance(data, pd.DataFrame)',
-        final_code='conn.close()',
-        retries=retries,
-        environment=locals())
-    assert not dataframe.empty, "Loaded dataframe is empty error"
+    day_str = (datetime.now() - timedelta(days=day)).strftime('%Y-%m-%d')
+    retries = cfg["RETRY_ATTEMPS"]
+    for _ in range(retries):
+        conn = sql.connect(path)
+        dataframe = pd.read_sql(
+            f"SELECT Neutral, Personal, Work \
+                FROM totals WHERE day = '{day_str}'", conn
+        )
+        if isinstance(dataframe, pd.DataFrame) and not dataframe.empty:
+            break
+        time.sleep(0.1)
+    else:
+        conn.close()
+        print("\033[93mFailed to load day total\033[00m")
+        sys.exit()
+    conn.close()
     return dataframe
 
 
 def modify_latest_row(
-        name: str, new_row: pd.DataFrame,
-        columns_to_update: list[str]) -> None:
+    name: str, new_row: pd.DataFrame, columns_to_update: list[str]
+) -> None:
     """
     Modifies the latest row of a dataframe with the provided new_row.
 
@@ -132,29 +183,41 @@ def modify_latest_row(
         columns_to_update (list[str]): List of columns to update.
     """
     # Check if file does not exists
+    if not isinstance(new_row, pd.DataFrame):
+        print("\033[93mWrong argument passed\033[00m")
+        sys.exit()
     cfg = load_config()
-    path = join(cfg["WORKSPACE"], f'data/{name}.db')
-    assert exists(path), "Path does not exist error"
+    path = join(cfg["WORKSPACE"], f"data/{name}.db")
+    if not exists(path):
+        print("\033[93mPath does not exist error\033[00m")
+        sys.exit()
 
     # Access database
-    retries = cfg['RETRY_ATTEMPS']
-    for col in columns_to_update:
-        rowid = new_row.loc[0, 'rowid']
-        val = new_row.loc[0, col]
-        if isinstance(val, str):
-            val = f'"{val}"'
-        query = f'UPDATE {name} SET {col} = {val} WHERE rowid = {rowid}'
-
-        try_to_run(
-            var='',
-            code='conn = sql.connect(path)\
-                \ncursor = conn.cursor()\
-                \ncursor.execute(query)\
-                \nconn.commit()',
-            error_check='',
-            final_code='conn.close()',
-            retries=retries,
-            environment=locals())
+    retries = cfg["RETRY_ATTEMPS"]
+    for _ in range(retries):
+        try:
+            conn = sql.connect(path)
+            cursor = conn.cursor()
+            for col in columns_to_update:
+                rowid = new_row.loc[0, "rowid"]
+                val = new_row.loc[0, col]
+                if isinstance(val, str):
+                    val = f'"{val}"'
+                cursor.execute(
+                    f"UPDATE {name} SET {col} = {val} WHERE rowid = {rowid}"
+                )
+            conn.commit()
+        except Exception as e:
+            print(e)
+            time.sleep(0.1)
+        else:
+            conn.close()
+            break
+    else:
+        conn.close()
+        print("\033[93mFailed to modify latest row\033[00m")
+        sys.exit()
+    conn.close()
 
 
 def append_to_database(name: str, new_row: pd.DataFrame) -> None:
@@ -165,23 +228,36 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
         name (str): Name of database.
         new_row (pd.DataFrame): New row of database.
     """
-    cfg = load_config()
-    path = join(cfg["WORKSPACE"], f'data/{name}.db')
-    retries = cfg['RETRY_ATTEMPS']
+    if not isinstance(new_row, pd.DataFrame):
+        print("\033[93mWrong argument passed\033[00m")
+        sys.exit()
 
-    try_to_run(
-        var='',
-        code='conn = sql.connect(path)\
-            \nnew_row.to_sql(\
-                name, conn, if_exists="append", index=False)',
-        error_check='not isinstance(new_row, pd.DataFrame)',
-        final_code='conn.close()',
-        retries=retries,
-        environment=locals())
+    cfg = load_config()
+    path = join(cfg["WORKSPACE"], f"data/{name}.db")
+    if not exists(path):
+        print("\033[93mPath does not exist error\033[00m")
+        sys.exit()
+
+    retries = cfg["RETRY_ATTEMPS"]
+    for _ in range(retries):
+        try:
+            conn = sql.connect(path)
+            new_row.to_sql(name, conn, if_exists="append", index=False)
+        except Exception:
+            time.sleep(0.1)
+        else:
+            conn.close()
+            break
+    else:
+        conn.close()
+        print("\033[93mFailed to append to database\033[00m")
+        sys.exit()
+    conn.close()
 
 
 def load_activity_between(
-        start: int, end: int, name: str = "activity") -> pd.DataFrame:
+    start: int, end: int, name: str = "activity"
+) -> pd.DataFrame:
     """
     Loads events in activity database between the start and end timestamp.
 
@@ -195,27 +271,34 @@ def load_activity_between(
     """
     # Check if file does not exists
     cfg = load_config()
-    path = join(cfg["WORKSPACE"], f'data/{name}.db')
-    dataframe = pd.DataFrame({})
-    assert exists(path), "Path does not exist error"
+    path = join(cfg["WORKSPACE"], f"data/{name}.db")
+    if not exists(path):
+        print("\033[93mPath does not exist error\033[00m")
+        sys.exit()
 
     # Access database
-    retries = cfg['RETRY_ATTEMPS']
-    dataframe = try_to_run(
-        var='data',
-        code='conn = sql.connect(path)\
-            \ndata = pd.read_sql(\
-                f"SELECT *, rowid FROM {name}\
-                    WHERE start_time >= {start} AND end_time <= {end}", conn)',
-        error_check='data.empty or not isinstance(data, pd.DataFrame)',
-        final_code='conn.close()',
-        retries=retries,
-        environment=locals())
-    assert not dataframe.empty, "Loaded dataframe is empty error"
+    retries = cfg["RETRY_ATTEMPS"]
+    for _ in range(retries):
+        conn = sql.connect(path)
+        dataframe = pd.read_sql(
+            f"SELECT *, rowid FROM {name}\
+                WHERE start_time >= {start} AND end_time <= {end}",
+            conn,
+        )
+        if isinstance(dataframe, pd.DataFrame) and not dataframe.empty:
+            break
+        time.sleep(0.1)
+    else:
+        conn.close()
+        print("\033[93mFailed to load activity between\033[00m")
+        sys.exit()
+    conn.close()
     return dataframe
 
 
-def load_dataframe(name: str, can_be_empty=False) -> pd.DataFrame:
+def load_dataframe(
+    name: str, can_be_empty=False, table: str = None, load_rowid=True
+) -> pd.DataFrame:
     """
     Loads entire database with the provided name.
 
@@ -228,30 +311,32 @@ def load_dataframe(name: str, can_be_empty=False) -> pd.DataFrame:
     """
     # Check if file does not exists
     cfg = load_config()
-    path = join(cfg["WORKSPACE"], f'data/{name}.db')
-    dataframe = pd.DataFrame({})
-    assert exists(path), "Path does not exist error"
-    if can_be_empty:
-        error_check = 'not isinstance(data, pd.DataFrame)'
-    else:
-        error_check = 'data.empty or not isinstance(data, pd.DataFrame)'
+    path = join(cfg["WORKSPACE"], f"data/{name}.db")
+    if not exists(path):
+        print("\033[93mPath does not exist error\033[00m")
+        sys.exit()
 
     # Access database
-    retries = cfg['RETRY_ATTEMPS']
-    dataframe = try_to_run(
-        var='data',
-        code='conn = sql.connect(path)\
-            \ndata = pd.read_sql(f"SELECT *, rowid FROM {name}", conn)',
-        error_check=error_check,
-        final_code='conn.close()',
-        retries=retries,
-        environment=locals())
-    if not can_be_empty:
-        assert not dataframe.empty, "Loaded dataframe is empty error"
+    table = name if table is None else table
+    retries = cfg["RETRY_ATTEMPS"]
+    for _ in range(retries):
+        conn = sql.connect(path)
+        dataframe = pd.read_sql(f"SELECT *{', rowid' if load_rowid else ''} \
+            FROM {table}", conn)
+        if isinstance(dataframe, pd.DataFrame):
+            break
+        if can_be_empty or not dataframe.empty:
+            break
+        time.sleep(0.1)
+    else:
+        conn.close()
+        print("\033[93mFailed to load latest dataframe\033[00m")
+        sys.exit()
+    conn.close()
     return dataframe
 
 
-def save_dataframe(dataframe: pd.DataFrame, name: str):
+def save_dataframe(dataframe: pd.DataFrame, name: str, table: str = None):
     """
     Saves dataframe to .db file.
 
@@ -259,20 +344,29 @@ def save_dataframe(dataframe: pd.DataFrame, name: str):
         dataframe (pd.DataFrame): Dataframe to be saved.
         path (str): Location the dataframe will be saved.
     """
+    if not isinstance(dataframe, pd.DataFrame):
+        print("\033[93mWrong argument passed\033[00m")
+        sys.exit()
     cfg = load_config()
-    path = join(cfg["WORKSPACE"], f'data/{name}.db')
-    retries = cfg['RETRY_ATTEMPS']
+    path = join(cfg["WORKSPACE"], f"data/{name}.db")
+    table = name if table is None else table
 
-    try_to_run(
-        var='dataframe',
-        code='conn = sql.connect(path)\
-            \nconn.execute("BEGIN EXCLUSIVE")\
-            \ndataframe.to_sql(\
-                name, conn, if_exists="replace", index=False)',
-        error_check='not isinstance(dataframe, pd.DataFrame)',
-        final_code='conn.close()',
-        retries=retries,
-        environment=locals())
+    retries = cfg["RETRY_ATTEMPS"]
+    for _ in range(retries):
+        try:
+            conn = sql.connect(path)
+            conn.execute("BEGIN EXCLUSIVE")
+            dataframe.to_sql(table, conn, if_exists="replace", index=False)
+        except Exception:
+            time.sleep(0.1)
+        else:
+            conn.close()
+            break
+    else:
+        conn.close()
+        print("\033[93mFailed to save dataframe\033[00m")
+        sys.exit()
+    conn.close()
 
 
 def load_input_time(name: str) -> int:
@@ -301,23 +395,28 @@ def load_url(page_title: str) -> pd.DataFrame:
         str: URL of the page.
     """
     cfg = load_config()
-    path = join(cfg["WORKSPACE"], 'data/urls.db')
-    assert exists(path), "Path does not exist error"
+    path = join(cfg["WORKSPACE"], "data/urls.db")
+    if not exists(path):
+        print("\033[93mPath does not exist error\033[00m")
+        sys.exit()
 
     # Load the file and output list of URLs
-    retries = cfg['RETRY_ATTEMPS']
+    retries = cfg["RETRY_ATTEMPS"]
     query = """
         SELECT *, rowid FROM urls
         WHERE title = ?
     """
-    url = try_to_run(
-        var='url',
-        code="conn = sql.connect(path)\
-            \nurl = pd.read_sql(query , conn, params=[page_title])",
-        error_check='not isinstance(url, pd.DataFrame)',
-        final_code='conn.close()',
-        retries=retries,
-        environment=locals())
+    for _ in range(retries):
+        conn = sql.connect(path)
+        url = pd.read_sql(query, conn, params=[page_title])
+        if isinstance(url, pd.DataFrame):
+            break
+        time.sleep(0.1)
+    else:
+        conn.close()
+        print("\033[93mFailed to load latest URLs\033[00m")
+        sys.exit()
+    conn.close()
     return url
 
 
@@ -331,9 +430,9 @@ def set_idle():
 
     for input_name in inputs:
         input_dataframe = load_lastest_row(input_name)
-        if now - input_dataframe.loc[0, 'time'] < idle_time:
-            input_dataframe.loc[0, 'time'] = now - idle_time
-            modify_latest_row(input_name, input_dataframe, ['time'])
+        if now - input_dataframe.loc[0, "time"] < idle_time:
+            input_dataframe.loc[0, "time"] = now - idle_time
+            modify_latest_row(input_name, input_dataframe, ["time"])
 
 
 def timestamp_to_day(values: pd.Series) -> pd.Series:
@@ -348,14 +447,15 @@ def timestamp_to_day(values: pd.Series) -> pd.Series:
     """
     cfg = load_config()
     dates = (
-        pd.to_datetime(values, unit='s') +
-        pd.Timedelta(cfg["GMT_OFFSET"], unit='h')
+        pd.to_datetime(values, unit="s")
+        + pd.Timedelta(cfg["GMT_OFFSET"], unit="h")
     ).dt.date
     return dates
 
 
 def send_notification(
-        title: str, message: str, audio: str = "notification") -> None:
+    title: str, message: str, audio: str = "notification"
+) -> None:
     """
     Sends a desktop notification with the title and message.
     Waits 12 seconds for message to go away and a little more.
@@ -369,8 +469,7 @@ def send_notification(
     notification = cfg["NOTIFICATION"]
     notification.title = title
     notification.message = message
-    notification.audio = join(
-        cfg["WORKSPACE"], "assets", audio + ".wav")
+    notification.audio = join(cfg["WORKSPACE"], "assets", audio + ".wav")
     notification.send(block=False)
     time.sleep(12)
 
@@ -384,7 +483,7 @@ def check_dataframe(name: str) -> bool:
     """
     # Check if file does not exists
     cfg = load_config()
-    path = join(cfg["WORKSPACE"], f'data/{name}.db')
+    path = join(cfg["WORKSPACE"], f"data/{name}.db")
     return exists(path)
 
 
@@ -398,21 +497,29 @@ def delete_from_dataframe(name: str, column: str, values: list) -> None:
         values (list): List of values to delete.
     """
     cfg = load_config()
-    path = join(cfg["WORKSPACE"], f'data/{name}.db')
-    retries = cfg['RETRY_ATTEMPS']
-    assert exists(path), "Path does not exist error"
+    path = join(cfg["WORKSPACE"], f"data/{name}.db")
+    retries = cfg["RETRY_ATTEMPS"]
+    if not exists(path):
+        print("\033[93mPath does not exist error\033[00m")
+        sys.exit()
 
     query = f"DELETE FROM {name} \
         WHERE {column} \
             IN ({', '.join('?' for _ in values)})"
 
-    try_to_run(
-        var='',
-        code='conn = sql.connect(path)\
-            \ncursor = conn.cursor()\
-            \ncursor.execute(query, values)\
-            \nconn.commit()',
-        error_check='',
-        final_code='conn.close()',
-        retries=retries,
-        environment=locals())
+    for _ in range(retries):
+        try:
+            conn = sql.connect(path)
+            cursor = conn.cursor()
+            cursor.execute(query, values)
+            conn.commit()
+        except Exception:
+            time.sleep(0.1)
+        else:
+            conn.close()
+            break
+    else:
+        conn.close()
+        print("\033[93mFailed to delete dataframe\033[00m")
+        sys.exit()
+    conn.close()

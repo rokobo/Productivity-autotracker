@@ -9,6 +9,7 @@ This project began with a desire to have a time tracking software with the autom
 + [How it works](#how-it-works)
   + [Configuration files](#configuration-files)
   + [Idle detection](#idle-detection)
++ [Redundancies and error management](#redundancies-and-error-management)
 + [Crowns and study advisor](#crowns-and-study-advisor)
 + [Backup system](#backup-system)
 + [Pages](#pages)
@@ -25,7 +26,7 @@ To make this program work for Linux and Windows, `PyWinCtl` was used to capture 
 ### **Configuration files**
 
 1. `config/categories.yml`:
-    + This file has regex patterns used to match your current activity to either the personal or work category.
+    + This file has `RegEx` patterns used to match your current activity to either the personal or work category.
     + Any activity that does not match is considered neutral.
     + Univeral windows platform (UWP) apps will have their process names ending with .UWP for simplicity and organization.
 
@@ -57,7 +58,6 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 + **Customization pages**:
   + `Configuration page` - Offers ways to modify the contents of `config.yaml`.
   + `Categories page` - Offers ways to modify the contents of `categories.yaml`.
-  + `Breaks page` - Offers ways to add break days without damaging streaks or achievements.
 
 + **Troubleshooting pages**:
   + `Activity table` - Contains a scrollable version of the `activity.db` file.
@@ -68,6 +68,14 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 
 + **Credits**:
   + `Attributions page` - Contains image attributions for assets used in this project.
+
+## **Redundancies and error management**
+
+The program uses a configuration file to define various parameters like database paths, schema file locations, and retry attempts as well as database schemas, which are defined in separate SQL files and are loaded to create and test the main `activity.db` database.
+
+The program consistently checks for the existence of database files before attempting operations, ensuring that it does not proceed on invalid paths. This is done with the retry mechanism, which is implemented to handle transient issues like temporary database locks or momentary I/O interruptions. In case of failure, the program uses a clear messaging system for errors, making it easier for users to understand the nature of the failure.
+
+Upon exhausting all retries, the program exits the thread or core gracefully, indicating an unresolved issue that requires attention. The `main.py` script then ensures that all background processes and threads are continually monitored and maintained. Its robust error handling and restart mechanisms aim to provide a stable and resilient operation of the application, adapting to any runtime anomalies or failures.
 
 ## **Crowns and study advisor**
 

@@ -78,19 +78,40 @@ def start_databases() -> None:
     """Initializes databases with proper schema."""
     cfg = load_config()
     path = join(cfg["WORKSPACE"], "data/activity.db")
-    if exists(path):
-        return
+    tables = ["activity", "categories", "totals", "settings", "activity_view"]
+    if not exists(path):
+        for _ in range(cfg["RETRY_ATTEMPS"]):
+            try:
+                conn = sql.connect(path)
+                cursor = conn.cursor()
+                for table in tables:
+                    schema_path = join(
+                        cfg["WORKSPACE"], f'schema/{table}_schema.sql'
+                    )
+                    with open(schema_path, 'r', encoding='utf-8') as file:
+                        schema = file.read()
+                    cursor.executescript(schema)
+                conn.commit()
+            except Exception:
+                time.sleep(0.1)
+            else:
+                conn.close()
+                break
+        else:
+            conn.close()
+            print("\033[93mFailed to create database\033[00m")
+            sys.exit()
+        conn.close()
+
     for _ in range(cfg["RETRY_ATTEMPS"]):
         try:
             conn = sql.connect(path)
             cursor = conn.cursor()
-            for table in ["activity", "categories", "totals"]:
-                schema_path = join(
-                    cfg["WORKSPACE"], f'schema/{table}_schema.sql'
-                )
-                with open(schema_path, 'r', encoding='utf-8') as file:
-                    schema = file.read()
-                cursor.executescript(schema)
+            q = "INSERT OR REPLACE INTO settings (label, value) VALUES (?, ?)"
+            cursor.execute(
+                q, ("total_offset", f"{cfg['GMT_OFFSET']} hours"))
+            cursor.execute(
+                q, ("gmt_offset", str(cfg['GMT_OFFSET'])))
             conn.commit()
         except Exception:
             time.sleep(0.1)
@@ -99,7 +120,7 @@ def start_databases() -> None:
             break
     else:
         conn.close()
-        print("\033[93mFailed to modify latest row\033[00m")
+        print("\033[93mFailed to configure database\033[00m")
         sys.exit()
     conn.close()
 

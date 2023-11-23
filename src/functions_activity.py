@@ -275,7 +275,7 @@ def parser(save_files: bool = True) -> pd.DataFrame:
     join(parsed_data)
 
     # Make secondary file containing aggregated entries
-    act = load_dataframe("activity")
+    act = load_dataframe("activity", False, 'activity_view', False)
     categorized_dataframe = categories_sum(act)
     if save_files:
         arg = (categorized_dataframe, "activity", "categories")

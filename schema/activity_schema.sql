@@ -6,9 +6,6 @@ CREATE TABLE "activity" (
     process_name TEXT NOT NULL,
     url TEXT DEFAULT "" NOT NULL,
     domain TEXT DEFAULT "" NOT NULL,
-    day TEXT GENERATED ALWAYS AS (
-        strftime('%Y-%m-%d', start_time, 'unixepoch')
-    ) STORED NOT NULL,
     duration INTEGER GENERATED ALWAYS AS (
         end_time - start_time
     ) STORED NOT NULL,

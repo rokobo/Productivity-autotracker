@@ -60,7 +60,7 @@ def update_activity(_1):
     """Makes activity graph."""
     global CFG
     CFG = load_config()
-    dataframe = load_dataframe('activity')
+    dataframe = load_dataframe('activity', False, 'activity_view', False)
     dataframe = dataframe.iloc[::-1]
 
     table = go.Table(

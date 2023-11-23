@@ -13,7 +13,10 @@ def test_database_schema() -> None:
     """"Tests if database has correct schema."""
     path = os.path.join(CFG["WORKSPACE"], 'data/activity.db')
     conn = sql.connect(path)
-    schemas = pd.read_sql("SELECT name, sql FROM sqlite_master", conn)
+    schemas = pd.read_sql(
+        "SELECT name, sql FROM sqlite_master WHERE type='view' OR type='table'",
+        conn
+    )
     conn.close()
 
     for _, row in schemas.iterrows():
@@ -22,4 +25,4 @@ def test_database_schema() -> None:
         )
         with open(schema_path, 'r') as file:
             schema = re.sub(r'\s+', ' ', file.read()).strip()
-        assert schema == re.sub(r'\s+', ' ', row["sql"]).strip()
+        assert schema == re.sub(r'\s+', ' ', row["sql"]).strip(), row["name"]

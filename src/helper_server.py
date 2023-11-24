@@ -376,6 +376,10 @@ def make_heatmap(
         colorscale=base + [color],
         showlegend=False, showscale=False
     ))
+    for week in [1, 4, 12, 26, 52]:
+        fig.add_vline(
+            x=52.5-week, line_width=1, line_dash="dash", line_color="cyan")
+
     fig.update_layout(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
@@ -386,8 +390,12 @@ def make_heatmap(
     fig.update_xaxes(
         side="top", title=None, showgrid=False,
         color=cfg['TEXT_COLOR'], tickmode='array',
-        tickvals=[1, 10, 20, 30, 40, 50],
-        ticktext=[1, 10, 20, 30, 40, 50]
+        tickvals=[
+            1, 5, 10, 15, 20, 26.5, 30, 35, 40.5, 45, 48.5, 50, 51.5
+        ],
+        ticktext=[
+            "52w", 5, 10, 15, 20, "26w", 30, 35, "12w", 45, "4w", 50, "1w"
+        ]
     )
     fig.update_yaxes(
         side="right", title=None, showgrid=False,
@@ -407,15 +415,15 @@ def make_crown() -> dbc.Row:
     """
     cfg = load_config()
     data = load_dataframe('activity', False, 'totals', False)
-    intervals = [7, 30, 90, 180, 364]
+    intervals = [1, 4, 12, 26, 52]
     streaks = [
-        round((data.loc[364 - interval:, "Work"] >= cfg[
-            "WORK_DAILY_GOAL"]).sum() / interval * 100, 1)
+        round((data.loc[364 - (interval * 7):, "Work"] >= cfg[
+            "WORK_DAILY_GOAL"]).sum() / (interval * 7) * 100, 1)
         for interval in intervals
     ]
     streaks2 = [
-        round((data.loc[364 - interval:, "Work"] >= cfg[
-            "SMALL_WORK_DAILY_GOAL"]).sum() / interval * 100, 1)
+        round((data.loc[364 - (interval * 7):, "Work"] >= cfg[
+            "SMALL_WORK_DAILY_GOAL"]).sum() / (interval * 7) * 100, 1)
         for interval in intervals
     ]
 
@@ -443,10 +451,10 @@ def make_crown() -> dbc.Row:
                 height="32px",
                 width="32px",
                 title=(
-                    f"{intervals[i]}-day work goal percentage: "
-                    f"{int(streaks[i]*intervals[i]/100)} / {intervals[i]}\n"
-                    f"{intervals[i]}-day small work goal percentage: "
-                    f"{int(streaks2[i]*intervals[i]/100)} / {intervals[i]}"
+                    f"{intervals[i]}-week work goal: "
+                    f"{int(streaks[i]*7*intervals[i]/100)} / {7*intervals[i]}"
+                    f"\n{intervals[i]}-week small work goal: "
+                    f"{int(streaks2[i]*7*intervals[i]/100)} / {7*intervals[i]}"
                 )
             ),
             html.H5([f"{streaks[i]}%", html.Br(), f"{streaks2[i]}%"]),

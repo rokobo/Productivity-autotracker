@@ -415,16 +415,16 @@ def make_crown() -> dbc.Row:
     """
     cfg = load_config()
     data = load_dataframe('activity', False, 'totals', False)
-    intervals = [1, 4, 12, 26, 52]
+    weeks = [1, 4, 12, 26, 52]
     streaks = [
         round((data.loc[364 - (interval * 7):, "Work"] >= cfg[
             "WORK_DAILY_GOAL"]).sum() / (interval * 7) * 100, 1)
-        for interval in intervals
+        for interval in weeks
     ]
     streaks2 = [
         round((data.loc[364 - (interval * 7):, "Work"] >= cfg[
             "SMALL_WORK_DAILY_GOAL"]).sum() / (interval * 7) * 100, 1)
-        for interval in intervals
+        for interval in weeks
     ]
 
     # Determine which crown to give
@@ -451,10 +451,10 @@ def make_crown() -> dbc.Row:
                 height="32px",
                 width="32px",
                 title=(
-                    f"{intervals[i]}-week work goal: "
-                    f"{int(streaks[i]*7*intervals[i]/100)} / {7*intervals[i]}"
-                    f"\n{intervals[i]}-week small work goal: "
-                    f"{int(streaks2[i]*7*intervals[i]/100)} / {7*intervals[i]}"
+                    f"{weeks[i]}-week work goal: "
+                    f"{round(streaks[i]*7*weeks[i]/100)} / {7*weeks[i]}"
+                    f"\n{weeks[i]}-week small work goal: "
+                    f"{round(streaks2[i]*7*weeks[i]/100)} / {7*weeks[i]}"
                 )
             ),
             html.H5([f"{streaks[i]}%", html.Br(), f"{streaks2[i]}%"]),

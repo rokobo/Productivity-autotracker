@@ -326,6 +326,9 @@ def load_dataframe(
     Args:
         name (str): Database name.
         can_be_empty (bool, optional): If df can be empty. Defaults to False.
+        table (str, optional): Table name, otherwise use database name to
+            access it. Defaults to None.
+        load_rowid (bool, optional): Select rowid. Defaults to True.
 
     Returns:
         pd.DataFrame: Accessed dataframe.
@@ -351,7 +354,7 @@ def load_dataframe(
         time.sleep(0.1)
     else:
         conn.close()
-        print("\033[93mFailed to load latest dataframe\033[00m")
+        print(f"\033[93mFailed to load {name} dataframe\033[00m")
         sys.exit()
     conn.close()
     return dataframe

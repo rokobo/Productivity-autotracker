@@ -317,65 +317,67 @@ def hex_to_rgb(hex_string: str) -> str:
     return rgb_code
 
 
-def make_heatmap(
-        dataframe: pd.DataFrame, dataframe_accessor: str,
-        title: str, goal: str, color: str) -> tuple[go.Figure, str]:
+def make_heatmap() -> go.Figure:
     """
-    Makes a yealy heatmap using the provided arguments.
-    The arguments are lists for multiple graphs support.
-
-    Args:
-        data (pd.DataFrame): Data used for the heatmap.
-        dataframe_accessor (str): Column name.
-        title (str): Name of the graph.
-        goal (str): Goal variable from config file.
-        color (str): Color for the heatmap
+    Makes a yealy heatmap with goals.
 
     Returns:
         go.Figure: Heatmap graph.
-        str: Full title.
     """
     cfg = load_config()
-    data = dataframe[dataframe_accessor].values
-    base = [cfg["HEATMAP_BASE_COLOR"], cfg["HEATMAP_BASE_COLOR"]]
-    if len(data) != 364:
-        print("\033[93mHeatmap data not in correct format error\033[00m")
+    totals = load_dataframe("activity", False, "totals", False)
+
+    if len(totals) != 364:
+        print("\033[93mHeatmap totals not in correct format error\033[00m")
         sys.exit()
 
-    if dataframe_accessor != "Personal":
-        values = [[
-            1 if data[day_index] >= cfg[goal]
-            else 0
-            for day_index in range(week * 7, (1 + week) * 7)
-        ] for week in range(52)]
-    else:
-        work_data = dataframe["Work"].values
-        values = [[
-            1 if data[day_index] >= max(
-                cfg[goal],
-                work_data[day_index] * cfg["WORK_TO_PERSONAL_MULTIPLIER"]
-            )
-            else 0
-            for day_index in range(week * 7, (1 + week) * 7)
-        ] for week in range(52)]
-    values = list(map(list, zip(*values)))
-    hovertext = [[
-        f"{round(data[day], 2)} hours of {dataframe_accessor},<br>" +
-        f"Week {week+1}, Day {day+1},<br>" +
-        ("Current week" if week == 51 else (f"Happened {51-week}w ago")) +
-        ",<br>" +
-        ("Current day" if day == 363 else (f"Happened {363-day}d ago"))
-        for day in range(week * 7, (1 + week) * 7)] for week in range(52)
-    ]
-    hovertext = list(map(list, zip(*hovertext)))
+    fig = go.Figure()
+    base = [cfg["HEATMAP_BASE_COLOR"], cfg["HEATMAP_BASE_COLOR"]]
+    accessors = ["Personal", "Work", "Work"]
+    goals = ["PERSONAL_DAILY_GOAL", "SMALL_WORK_DAILY_GOAL", "WORK_DAILY_GOAL"]
+    data = {
+        "Work": totals["Work"].values, "Personal": totals["Personal"].values
+    }
 
-    fig = go.Figure(data=go.Heatmap(
-        z=values, x=list(range(1, 53)), y=list(range(1, 7)),
-        hoverinfo="text", text=hovertext,
-        xgap=cfg["GOALS_HEATMAP_GAP"], ygap=cfg["GOALS_HEATMAP_GAP"],
-        colorscale=base + [color],
-        showlegend=False, showscale=False
-    ))
+    for accessor, goal in zip(accessors, goals):
+        if accessor != "Personal":
+            values = [[
+                1 if data[accessor][day] >= cfg[goal]
+                else 0
+                for day in range(week * 7, (1 + week) * 7)
+            ] for week in range(52)]
+        else:
+            values = [[
+                1 if data[accessor][day] >= max(
+                    cfg[goal],
+                    data["Work"][day] * cfg["WORK_TO_PERSONAL_MULTIPLIER"]
+                )
+                else 0
+                for day in range(week * 7, (1 + week) * 7)
+            ] for week in range(52)]
+
+        values = list(map(list, zip(*values)))
+        hovertext = [[
+            f"{round(data[accessor][day], 2)} hours of {accessor},<br>" +
+            f"Week {week+1}, Day {day+1},<br>" +
+            ("Current week" if week == 51 else (f"Happened {51-week}w ago")) +
+            ",<br>" +
+            ("Current day" if day == 363 else (f"Happened {363-day}d ago"))
+            for day in range(week * 7, (1 + week) * 7)] for week in range(52)
+        ]
+        hovertext = list(map(list, zip(*hovertext)))
+
+        fig.add_trace(go.Heatmap(
+            z=values, x=list(range(1, 53)), y=list(range(1, 7)),
+            hoverinfo="text", text=hovertext,
+            xgap=cfg["GOALS_HEATMAP_GAP"], ygap=cfg["GOALS_HEATMAP_GAP"],
+            colorscale=base + [
+                cfg["HEATMAP_BAD_COLOR"]
+                if accessor == "Personal"
+                else cfg["HEATMAP_GOOD_COLOR"]],
+            showlegend=False, showscale=False
+        ))
+
     for week in [1, 4, 12, 26, 52]:
         fig.add_vline(
             x=52.5-week, line_width=1, line_dash="dash", line_color="cyan")
@@ -385,7 +387,18 @@ def make_heatmap(
         paper_bgcolor="rgba(0,0,0,0)",
         font_color=cfg['TEXT_COLOR'],
         height=cfg['GOALS_HEATMAP_HEIGHT'],
-        margin={'l': 0, 'r': 0, 't': 0, 'b': 0}
+        margin={'l': 0, 'r': 0, 't': 0, 'b': 0},
+        updatemenus=[{
+            "type": "buttons",
+            "direction": "down",
+            "buttons": [{
+                "args": [{"visible": [j == i for j in range(2, -1, -1)]}],
+                "label": label,
+                "method": "update"
+            } for i, label in zip(range(3), ["W", "w", "P"])],
+            "showactive": False,
+            "xanchor": "left"
+        }]
     )
     fig.update_xaxes(
         side="top", title=None, showgrid=False,
@@ -402,8 +415,7 @@ def make_heatmap(
         color=cfg['TEXT_COLOR'], tickmode='array',
         tickvals=[7], ticktext=["←"]
     )
-    full_title = f"{title} {cfg[goal]}h"
-    return fig, full_title
+    return fig
 
 
 def make_crown() -> dbc.Row:
@@ -424,6 +436,11 @@ def make_crown() -> dbc.Row:
     streaks2 = [
         round((data.loc[364 - (interval * 7):, "Work"] >= cfg[
             "SMALL_WORK_DAILY_GOAL"]).sum() / (interval * 7) * 100, 1)
+        for interval in weeks
+    ]
+    sums = [
+        format_short_duration(
+            3600 * data.loc[364 - (interval*7):, "Work"].sum() / (interval*7))
         for interval in weeks
     ]
 
@@ -455,6 +472,7 @@ def make_crown() -> dbc.Row:
                     f"{round(streaks[i]*7*weeks[i]/100)} / {7*weeks[i]}"
                     f"\n{weeks[i]}-week small work goal: "
                     f"{round(streaks2[i]*7*weeks[i]/100)} / {7*weeks[i]}"
+                    f"\n{weeks[i]}-week work average: {sums[i]}"
                 )
             ),
             html.H5([f"{streaks[i]}%", html.Br(), f"{streaks2[i]}%"]),
@@ -616,9 +634,8 @@ def make_trend_graph() -> dbc.Col:
         for interval in intervals:
             fig = px.bar(
                 totals.iloc[-interval:, :],
-                x="rowid",
+                x="day",
                 y=selected,
-                labels={"rowid": "day"},
                 color_discrete_sequence=[color]
             )
             fig.update_layout(

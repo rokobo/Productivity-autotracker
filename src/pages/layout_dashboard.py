@@ -124,12 +124,8 @@ def update_heatmap_graph(_1):
     """Makes heatmap graph."""
     global CFG
     CFG = load_config()
-    totals = load_dataframe('activity', False, 'totals', False).drop(columns=["day"])
 
-    fig, _ = make_heatmap(
-        totals, "Work", "Work",
-        "WORK_DAILY_GOAL", CFG["HEATMAP_GOOD_COLOR"]
-    )
+    fig = make_heatmap()
     card_style = {
         'margin-left': "0px",
         'margin-right': "0px",

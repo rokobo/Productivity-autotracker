@@ -38,7 +38,7 @@ body::-webkit-scrollbar {
     width: 0em;
 }
 .DateInput_input, .DateInput_input_1 {
-    background-color: rgb(43, 43, 43); 
+    background-color: rgb(43, 43, 43);
     color: white;
     text-align: center;
 }

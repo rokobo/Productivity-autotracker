@@ -6,7 +6,8 @@ Main runner file for the Dash app and its background processes.
 from threading import Thread
 from multiprocessing import Process
 import time
-from helper_io import load_input_time, load_config, start_databases
+from helper_io import load_input_time, load_config, start_databases, \
+    send_notification
 from functions_threads import (
     mouse_idle_detector,
     keyboard_idle_detector,
@@ -25,7 +26,14 @@ start_databases()
 
 def did_backend_update_recently():
     """Determines if backend has been updated in a given timeframe."""
-    return (int(time.time()) - load_input_time("backend")) < THRESHOLD
+    since = (int(time.time()) - load_input_time("backend"))
+    if since > 300:
+        send_notification(
+            "Backend error, manually intervene",
+            "More than 5 minutes since last backend update!",
+            "bad"
+        )
+    return since < THRESHOLD
 
 
 if __name__ == "__main__":
@@ -36,6 +44,8 @@ if __name__ == "__main__":
                     activity_process.is_alive()
                     and did_backend_update_recently()
                 ):
+                    activity_process.terminate()
+                    activity_process.join()
                     raise AssertionError
             except Exception:
                 print(

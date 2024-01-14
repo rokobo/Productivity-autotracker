@@ -612,7 +612,7 @@ def make_info_row(data: pd.DataFrame) -> dbc.Col:
     ], style={'padding': '0px'})
 
 
-def make_trend_graph() -> dbc.Col:
+def make_trend_graphs() -> dbc.Col:
     """
     Makes trend graphs for trends page.
 
@@ -622,33 +622,58 @@ def make_trend_graph() -> dbc.Col:
     cfg = load_config()
     row = []
     totals = load_dataframe('activity', False, 'totals', False)
-    colors = [cfg["WORK_COLOR"], cfg["PERSONAL_COLOR"]]
-    types = ["Work", "Personal"]
-    intervals = [30, 90, 364]
-    style = {
-        'margin-left': f"{cfg['SIDE_PADDING']}px",
-        'margin-right': f"{cfg['SIDE_PADDING']}px",
-        'margin-bottom': f"{cfg['DIVISION_PADDING']}px"
-    }
-    for selected, color in zip(types, colors):
-        for interval in intervals:
-            fig = px.bar(
-                totals.iloc[-interval:, :],
-                x="day",
-                y=selected,
-                color_discrete_sequence=[color]
-            )
-            fig.update_layout(
-                plot_bgcolor=cfg['CARD_COLOR'],
-                paper_bgcolor=cfg['CARD_COLOR'],
-                font_color=cfg['TEXT_COLOR'],
-                height=cfg['CATEGORY_HEIGHT'],
-                title="",
-                margin={'l': 0, 'r': 0, 't': 0, 'b': 0}
-            )
+    intervals = [364, 90, 30]
+
+    figs = [go.Figure() for _ in range(4)]
+    for title, ind1, acc in zip(
+        ["total trends", "weekday trends"],
+        range(0, 3, 2),
+        ["day", "weekday"]
+    ):
+        for selected, color, ind2 in zip(
+            ["Work", "Personal"],
+            [cfg["WORK_COLOR"], cfg["PERSONAL_COLOR"]],
+            range(2)
+        ):
+            fig = figs[ind1 + ind2]
+            for interval in intervals[::-1]:
+                _totals = totals.iloc[-interval:, :]
+                if acc == "weekday":
+                    _totals = _totals.groupby(['weekday', 'weekday_num']).agg(
+                        {"Neutral": "sum", "Personal": "sum", "Work": "sum"}
+                    ).reset_index().sort_values('weekday_num')
+                    _totals["Work"] /= interval
+                    _totals["Personal"] /= interval
+                fig.add_trace(go.Bar(
+                    x=_totals[acc], y=_totals[selected],
+                    showlegend=False, marker_color=color
+                ))
+
             row.append(dbc.Row([
-                html.H2(f"{selected} {interval}-day trend"),
+                html.H2(f"{selected} {title}"),
                 dcc.Graph(figure=fig, config={'displayModeBar': False})
-            ], style=style))
-        row.append(html.Br())
+            ], style={
+                'margin-left': f"{cfg['SIDE_PADDING']}px",
+                'margin-right': f"{cfg['SIDE_PADDING']}px",
+                'margin-bottom': f"{cfg['DIVISION_PADDING']}px"
+            }))
+
+    for fig in figs:
+        fig.update_layout(
+            plot_bgcolor=cfg['CARD_COLOR'],
+            paper_bgcolor=cfg['CARD_COLOR'],
+            font_color='rgb(180, 180, 180)',
+            height=cfg['CATEGORY_HEIGHT'],
+            margin={'l': 0, 'r': 0, 't': 0, 'b': 0},
+            updatemenus=[{
+                "type": "buttons", "direction": "down",
+                "buttons": [{
+                    "args": [{"visible": [j == i for j in range(2, -1, -1)]}],
+                    "label": label,
+                    "method": "update"
+                } for i, label in zip(range(3), intervals)],
+                "showactive": True, "xanchor": "right",
+                "active": 0
+            }]
+        )
     return dbc.Col(row)

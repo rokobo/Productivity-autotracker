@@ -11,7 +11,7 @@ sys.path.append(dirname(abspath(__file__)))
 
 import layout_menu
 from helper_io import load_config
-from helper_server import make_trend_graph
+from helper_server import make_trend_graphs
 
 CFG = load_config()
 
@@ -42,4 +42,4 @@ layout = html.Div([
 )
 def update_category(_1):
     """Makes total time by category graph."""
-    return make_trend_graph(), {'padding': '0px'}
+    return make_trend_graphs(), {'padding': '0px'}

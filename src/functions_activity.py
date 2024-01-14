@@ -258,12 +258,6 @@ def parser(save_files: bool = True) -> pd.DataFrame:
     Returns:
         tuple[pd.DataFrame]: Dataframes created.
     """
-    # Update backend update time
-    arg = (pd.DataFrame({"time": [int(time.time())]}), "backend")
-    input_thread = Thread(target=save_dataframe, args=arg)
-    input_thread.daemon = True
-    input_thread.start()
-
     # Get raw data
     raw_data = detect_activity()
     idle_data = detect_idle()
@@ -282,6 +276,12 @@ def parser(save_files: bool = True) -> pd.DataFrame:
         categories_thread = Thread(target=save_dataframe, args=arg)
         categories_thread.daemon = True
         categories_thread.start()
+
+    # Update backend update time
+    arg = (pd.DataFrame({"time": [int(time.time())]}), "backend")
+    input_thread = Thread(target=save_dataframe, args=arg)
+    input_thread.daemon = True
+    input_thread.start()
 
     # Wait for thread finish
     if save_files:

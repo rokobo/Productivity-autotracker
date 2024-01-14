@@ -6,7 +6,6 @@ Collection of helper functions for input and output rountines.
 import sys
 from os.path import dirname, exists, join, abspath
 import time
-from datetime import datetime, timedelta
 import sqlite3 as sql
 import yaml
 from notifypy import Notify
@@ -78,7 +77,9 @@ def start_databases() -> None:
     """Initializes databases with proper schema."""
     cfg = load_config()
     path = join(cfg["WORKSPACE"], "data/activity.db")
-    tables = ["activity", "categories", "totals", "settings", "activity_view"]
+    tables = [
+        "activity", "categories", "totals", "settings", "activity_view"
+    ]
     if not exists(path):
         for _ in range(cfg["RETRY_ATTEMPS"]):
             try:
@@ -171,15 +172,17 @@ def load_day_total(day: int) -> pd.DataFrame:
     if not exists(path):
         print("\033[93mPath does not exist error\033[00m")
         sys.exit()
+    if (day > 363) or not isinstance(day, int):
+        print("\033[93mInvalid argument error\033[00m")
+        sys.exit()
 
     # Access database
-    day_str = (datetime.now() - timedelta(days=day)).strftime('%Y-%m-%d')
     retries = cfg["RETRY_ATTEMPS"]
     for _ in range(retries):
         conn = sql.connect(path)
         dataframe = pd.read_sql(
             f"SELECT Neutral, Personal, Work \
-                FROM totals WHERE day = '{day_str}'", conn
+                FROM totals WHERE days_since = '{day}'", conn
         )
         if isinstance(dataframe, pd.DataFrame) and not dataframe.empty:
             break

@@ -8,7 +8,7 @@ SELECT ds.day,
     COALESCE(SUM(CASE WHEN c.category = 'Neutral' AND c.process_name != "IDLE TIME" THEN c.total ELSE 0 END), 0) AS Neutral,
     COALESCE(SUM(CASE WHEN c.category = 'Personal' THEN c.total ELSE 0 END), 0) AS Personal,
     COALESCE(SUM(CASE WHEN c.category = 'Work' THEN c.total ELSE 0 END), 0) AS Work,
-    CAST(julianday('now') - julianday(ds.day) AS INTEGER) as days_since,
+    CAST(julianday(date('now', (SELECT value FROM settings WHERE label="total_offset"))) - julianday(ds.day) AS INTEGER) as days_since,
     CASE strftime('%w', ds.day)
         WHEN '0' THEN 'Sunday'
         WHEN '1' THEN 'Monday'

@@ -12,6 +12,7 @@ from functions_threads import (
     mouse_idle_detector,
     keyboard_idle_detector,
     activity_detector,
+    activity_processor,
     audio_idle_detector,
     server_supervisor,
     auxiliary_work,
@@ -56,6 +57,20 @@ if __name__ == "__main__":
                 activity_process = Process(target=activity_detector)
                 activity_process.daemon = True
                 activity_process.start()
+                print("\033[92mRestarted!\033[00m")
+
+            try:  # Secondary activity thread
+                if not activity_process2.is_alive():
+                    raise AssertionError
+            except Exception:
+                print(
+                    f"\033[91m{time.strftime('%X')} Error in",
+                    "activity_process2... \033[00m",
+                    end="",
+                )
+                activity_process2 = Thread(target=activity_processor)
+                activity_process2.daemon = True
+                activity_process2.start()
                 print("\033[92mRestarted!\033[00m")
 
             try:  # Mouse detection thread

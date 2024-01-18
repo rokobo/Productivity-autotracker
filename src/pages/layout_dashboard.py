@@ -148,7 +148,7 @@ def update_heatmap_graph(_1):
 )
 def update_element_list(_1):
     """Generates the event cards."""
-    dataframe = load_dataframe('activity', False, 'categories')
+    dataframe = load_dataframe('activity', False, 'categories_partial')
     dataframe = dataframe[
         dataframe['day'] == str(pd.to_datetime('today').date())]
     save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')

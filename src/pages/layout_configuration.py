@@ -118,6 +118,8 @@ layout = html.Div([
         html.Hr(),
         dbc.Row([
             make_valuepicker("NUMBER_OF_BACKUPS", 1, 100),
+            make_valuepicker("PARTIAL_CATEGORIES_INTERVAL", 1, 60),
+            dbc.Col()
         ], className="g-0"),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
@@ -197,7 +199,7 @@ vars1 = [
     "IDLE_TIME", "IDLE_CHECK_INTERVAL", "ACTIVITY_CHECK_INTERVAL",
     "MINIMUM_ACTIVITY_TIME", "UNRESPONSIVE_THRESHOLD", "RETRY_ATTEMPS",
     "GMT_OFFSET", "ADVISOR_CHECK_INTERVAL", "BACKUP_INTERVAL",
-    "NUMBER_OF_BACKUPS",
+    "NUMBER_OF_BACKUPS", "PARTIAL_CATEGORIES_INTERVAL",
     "CATEGORY_HEIGHT", "CATEGORY_FONT_SIZE", "TROUBLESHOOTING_HEIGHT",
     "DIVISION_PADDING", "SIDE_PADDING", "CARD_PADDING",
     "GOALS_HEATMAP_HEIGHT", "GOALS_HEATMAP_GAP", "GOALS_HEATMAP_DIVISION",

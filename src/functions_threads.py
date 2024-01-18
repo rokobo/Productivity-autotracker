@@ -18,7 +18,7 @@ from pynput import keyboard
 from pyautogui import position
 import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, Input, Output, callback
-from functions_activity import parser
+from functions_activity import parser, secondary_parser
 from helper_io import save_dataframe, load_config
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
@@ -65,6 +65,16 @@ def activity_detector():
         cfg = load_config()
         parser()
         time.sleep(cfg['ACTIVITY_CHECK_INTERVAL'])
+
+
+def activity_processor():
+    """
+    Process activity database into categories and total databases.
+    """
+    while True:
+        cfg = load_config()
+        secondary_parser()
+        time.sleep(cfg['PARTIAL_CATEGORIES_INTERVAL'])
 
 
 def audio_idle_detector():

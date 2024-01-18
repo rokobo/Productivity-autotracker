@@ -7,6 +7,7 @@ import time
 import re
 from threading import Thread
 from urllib.parse import urlparse
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, wait
 import pandas as pd
 import numpy as np
@@ -248,16 +249,40 @@ def categories_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
     return df_sum
 
 
-def parser(save_files: bool = True) -> pd.DataFrame:
+def create_categories_database(partial: bool = False) -> None:
     """
-    Parses raw activity and creates appropriate files.
+    Wrapper function for creating categories DB.
 
     Args:
-        save_files (bool, optional): If files should be saved. Default True.
-
-    Returns:
-        tuple[pd.DataFrame]: Dataframes created.
+        partial (bool, optional): Create partial categories DB?
+            Defaults to False.
     """
+    if partial:
+        act = load_dataframe(
+            "activity", False, 'activity_view',
+            False, ('day', '=', datetime.now().date()))
+    else:
+        act = load_dataframe("activity", False, 'activity_view', False)
+
+    cat_df = categories_sum(act)
+    arg = (cat_df, "activity", f"categories{'_partial' if partial else ''}")
+    categories_thread = Thread(target=save_dataframe, args=arg)
+    categories_thread.daemon = True
+    categories_thread.start()
+
+    # Update backend update time
+    arg = (pd.DataFrame({"time": [int(time.time())]}), "backend")
+    input_thread = Thread(target=save_dataframe, args=arg)
+    input_thread.daemon = True
+    input_thread.start()
+
+    # Wait for thread finish
+    categories_thread.join()
+    input_thread.join()
+
+
+def parser() -> None:
+    """Parses raw activity and creates appropriate partial categories DBs."""
     # Get raw data
     raw_data = detect_activity()
     idle_data = detect_idle()
@@ -268,23 +293,9 @@ def parser(save_files: bool = True) -> pd.DataFrame:
     parsed_data = parse_data(raw_data)
     join(parsed_data)
 
-    # Make secondary file containing aggregated entries
-    act = load_dataframe("activity", False, 'activity_view', False)
-    categorized_dataframe = categories_sum(act)
-    if save_files:
-        arg = (categorized_dataframe, "activity", "categories")
-        categories_thread = Thread(target=save_dataframe, args=arg)
-        categories_thread.daemon = True
-        categories_thread.start()
+    create_categories_database(True)
 
-    # Update backend update time
-    arg = (pd.DataFrame({"time": [int(time.time())]}), "backend")
-    input_thread = Thread(target=save_dataframe, args=arg)
-    input_thread.daemon = True
-    input_thread.start()
 
-    # Wait for thread finish
-    if save_files:
-        categories_thread.join()
-    input_thread.join()
-    return categorized_dataframe
+def secondary_parser() -> None:
+    """Parses activity DB and creates complete categories DB."""
+    create_categories_database(False)

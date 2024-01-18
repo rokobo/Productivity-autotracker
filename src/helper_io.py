@@ -321,7 +321,8 @@ def load_activity_between(
 
 
 def load_dataframe(
-    name: str, can_be_empty=False, table: str = None, load_rowid=True
+    name: str, can_be_empty=False, table: str = None,
+    load_rowid=True, where_cond: tuple = None
 ) -> pd.DataFrame:
     """
     Loads entire database with the provided name.
@@ -332,6 +333,8 @@ def load_dataframe(
         table (str, optional): Table name, otherwise use database name to
             access it. Defaults to None.
         load_rowid (bool, optional): Select rowid. Defaults to True.
+        where_cond (tuple, optional): Used for WHERE clause. Defaults to True.
+            "count > 3" should be passed as ("count", ">", 3)
 
     Returns:
         pd.DataFrame: Accessed dataframe.
@@ -346,10 +349,15 @@ def load_dataframe(
     # Access database
     table = name if table is None else table
     retries = cfg["RETRY_ATTEMPS"]
+
+    query = f"SELECT *{', rowid' if load_rowid else ''} "
+    query += f"FROM {table} "
+    if isinstance(where_cond, tuple) and len(where_cond) == 3:
+        query += f"WHERE {where_cond[0]} {where_cond[1]} '{where_cond[2]}'"
+
     for _ in range(retries):
         conn = sql.connect(path)
-        dataframe = pd.read_sql(f"SELECT *{', rowid' if load_rowid else ''} \
-            FROM {table}", conn)
+        dataframe = pd.read_sql(query, conn)
         if isinstance(dataframe, pd.DataFrame):
             break
         if can_be_empty or not dataframe.empty:

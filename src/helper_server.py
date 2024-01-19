@@ -83,15 +83,12 @@ def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
         else:
             neutral_list.append(item)
 
-    cols = [
-        dbc.Col(work_list, class_name='g-0'),
-        dbc.Col(personal_list, class_name='g-0', style={
-            'margin-left': f'{cfg["CATEGORY_COLUMN_SPACE"]}px',
-            'margin-right': f'{cfg["CATEGORY_COLUMN_SPACE"]}px'
-        }),
-        dbc.Col(neutral_list, class_name='g-0'),
+    spacing = f'g-{cfg["CATEGORY_COLUMN_SPACE"]}'
+    return [
+        dbc.Col(work_list, class_name=spacing, width=4),
+        dbc.Col(personal_list, class_name=spacing, width=4),
+        dbc.Col(neutral_list, class_name=spacing, width=4)
     ]
-    return cols
 
 
 def get_day_timestamps(date: str):
@@ -327,56 +324,55 @@ def make_heatmap() -> go.Figure:
     cfg = load_config()
     totals = load_dataframe("activity", False, "totals", False)
 
-    if len(totals) != 364:
-        print("\033[93mHeatmap totals not in correct format error\033[00m")
-        sys.exit()
-
     fig = go.Figure()
-    base = [cfg["HEATMAP_BASE_COLOR"], cfg["HEATMAP_BASE_COLOR"]]
-    accessors = ["Personal", "Work", "Work"]
-    goals = ["PERSONAL_DAILY_GOAL", "SMALL_WORK_DAILY_GOAL", "WORK_DAILY_GOAL"]
-    data = {
-        "Work": totals["Work"].values, "Personal": totals["Personal"].values
-    }
+    offset = 6 - int(totals.query('days_since == 0')["weekday_num"].iloc[0])
 
-    for accessor, goal in zip(accessors, goals):
-        if accessor != "Personal":
-            values = [[
-                1 if data[accessor][day] >= cfg[goal]
-                else 0
-                for day in range(week * 7, (1 + week) * 7)
-            ] for week in range(52)]
-        else:
-            values = [[
-                1 if data[accessor][day] >= max(
-                    cfg[goal],
-                    data["Work"][day] * cfg["WORK_TO_PERSONAL_MULTIPLIER"]
-                )
-                else 0
-                for day in range(week * 7, (1 + week) * 7)
-            ] for week in range(52)]
+    values = []
+    hovertext = []
+    for w in range(52):
+        temp_values = []
+        temp_hovertext = []
+        for d in range(w * 7, (1 + w) * 7):
+            work = totals.loc[d + offset, "Work"]
+            pers = totals.loc[d + offset, "Personal"]
 
-        values = list(map(list, zip(*values)))
-        hovertext = [[
-            f"{round(data[accessor][day], 2)} hours of {accessor},<br>" +
-            f"Week {week+1}, Day {day+1},<br>" +
-            ("Current week" if week == 51 else (f"Happened {51-week}w ago")) +
-            ",<br>" +
-            ("Current day" if day == 363 else (f"Happened {363-day}d ago"))
-            for day in range(week * 7, (1 + week) * 7)] for week in range(52)
-        ]
-        hovertext = list(map(list, zip(*hovertext)))
+            if work > cfg["WORK_DAILY_GOAL"]:
+                temp_values.append(3)
+            elif work > cfg["SMALL_WORK_DAILY_GOAL"]:
+                temp_values.append(2)
+            elif (pers > cfg["PERSONAL_DAILY_GOAL"]) and (
+                work * cfg["WORK_TO_PERSONAL_MULTIPLIER"]
+                < max(cfg["PERSONAL_DAILY_GOAL"], pers)
+            ):
+                temp_values.append(1)
+            else:
+                temp_values.append(0)
 
-        fig.add_trace(go.Heatmap(
-            z=values, x=list(range(1, 53)), y=list(range(1, 7)),
-            hoverinfo="text", text=hovertext,
-            xgap=cfg["GOALS_HEATMAP_GAP"], ygap=cfg["GOALS_HEATMAP_GAP"],
-            colorscale=base + [
-                cfg["HEATMAP_BAD_COLOR"]
-                if accessor == "Personal"
-                else cfg["HEATMAP_GOOD_COLOR"]],
-            showlegend=False, showscale=False
-        ))
+            temp_hovertext.append((
+                f"{round(work, 2)} hours of work<br>"
+                f"{round(pers, 2)} hours of personal<br>"
+                f"Week {w + 1}, Day {d + 1}<br>"
+                f"{('Current week' if w==51 else (f'Happened {51-w}w ago'))}"
+                "<br>"
+                f"{('Current day' if d==363 else (f'Happened {363-d}d ago'))}"
+            ))
+        values.append(temp_values)
+        hovertext.append(temp_hovertext)
+
+    values = list(map(list, zip(*values)))
+    hovertext = list(map(list, zip(*hovertext)))
+
+    fig.add_trace(go.Heatmap(
+        z=values, x=list(range(1, 52)), y=list(range(1, 7)),
+        hoverinfo="text", text=hovertext,
+        xgap=cfg["GOALS_HEATMAP_GAP"], ygap=cfg["GOALS_HEATMAP_GAP"],
+        colorscale=[
+            cfg["HEATMAP_BASE_COLOR"],
+            cfg["HEATMAP_BAD_COLOR"],
+            cfg["HEATMAP_OKAY_COLOR"],
+            cfg["HEATMAP_GOOD_COLOR"]],
+        showlegend=False, showscale=False
+    ))
 
     for week in [1, 4, 12, 26, 52]:
         fig.add_vline(
@@ -387,33 +383,25 @@ def make_heatmap() -> go.Figure:
         paper_bgcolor="rgba(0,0,0,0)",
         font_color=cfg['TEXT_COLOR'],
         height=cfg['GOALS_HEATMAP_HEIGHT'],
-        margin={'l': 0, 'r': 0, 't': 0, 'b': 0},
-        updatemenus=[{
-            "type": "buttons",
-            "direction": "down",
-            "buttons": [{
-                "args": [{"visible": [j == i for j in range(2, -1, -1)]}],
-                "label": label,
-                "method": "update"
-            } for i, label in zip(range(3), ["W", "w", "P"])],
-            "showactive": False,
-            "xanchor": "left"
-        }]
+        margin={'l': 0, 'r': 0, 't': 0, 'b': 0}
     )
     fig.update_xaxes(
         side="top", title=None, showgrid=False,
         color=cfg['TEXT_COLOR'], tickmode='array',
         tickvals=[
-            1, 5, 10, 15, 20, 26.5, 30, 35, 40.5, 45, 48.5, 50, 51.5
+            0.5, 5, 10, 15, 20, 26.5, 30, 35, 40.5, 45, 48.5, 51.5
         ],
         ticktext=[
-            "52w", 5, 10, 15, 20, "26w", 30, 35, "12w", 45, "4w", 50, "1w"
+            "1y", 5, 10, 15, 20, "6m", 30, 35, "3m", 45, "1m", "1w"
         ]
     )
+    offset = 6 - offset
+    row_ticks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    row_ticks[offset] = "(" + row_ticks[offset] + ")"
     fig.update_yaxes(
         side="right", title=None, showgrid=False,
         color=cfg['TEXT_COLOR'], tickmode='array',
-        tickvals=[7], ticktext=["←"]
+        tickvals=list(range(1, 8)), ticktext=row_ticks
     )
     return fig
 

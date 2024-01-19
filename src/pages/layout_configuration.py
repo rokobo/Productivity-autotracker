@@ -173,15 +173,15 @@ layout = html.Div([
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
-            make_colorpicker('HEATMAP_BASE_COLOR'),
             make_colorpicker('HEATMAP_GOOD_COLOR'),
+            make_colorpicker('HEATMAP_OKAY_COLOR'),
             make_colorpicker('HEATMAP_BAD_COLOR'),
         ], className="g-0"),
         html.Hr(),
         dbc.Row([
+            make_colorpicker('HEATMAP_BASE_COLOR'),
             make_colorpicker('CATEGORY_CARD_PERCENTAGE_COLOR'),
             make_colorpicker('CARD_OUTLINE_COLOR'),
-            dbc.Col()
         ], className="g-0")
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
@@ -208,8 +208,8 @@ vars1 = [
 vars2 = [
     "WORK_COLOR", "PERSONAL_COLOR", "NEUTRAL_COLOR",
     "TEXT_COLOR", "CARD_COLOR", "BACKGROUND",
-    "HEATMAP_BASE_COLOR", "HEATMAP_GOOD_COLOR", "HEATMAP_BAD_COLOR",
-    "CATEGORY_CARD_PERCENTAGE_COLOR", "CARD_OUTLINE_COLOR"
+    "HEATMAP_OKAY_COLOR", "HEATMAP_GOOD_COLOR", "HEATMAP_BAD_COLOR",
+    "HEATMAP_BASE_COLOR", "CATEGORY_CARD_PERCENTAGE_COLOR", "CARD_OUTLINE_COLOR"
 ]
 
 @callback(

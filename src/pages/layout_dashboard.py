@@ -46,7 +46,7 @@ layout = html.Div([
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
-    dcc.Interval(id='heatmap_interval', interval=60000, n_intervals=-1),
+    dcc.Interval(id='heatmap_interval', interval=30000, n_intervals=-1),
     dbc.Row(id='heatmap_row'),
     dcc.Interval(id='category_interval', interval=15000, n_intervals=-1),
     dbc.Row(id='category_row'),

@@ -348,6 +348,8 @@ def make_heatmap() -> go.Figure:
             else:
                 temp_values.append(0)
 
+            w += offset
+            d += offset
             temp_hovertext.append((
                 f"{round(work, 2)} hours of work<br>"
                 f"{round(pers, 2)} hours of personal<br>"

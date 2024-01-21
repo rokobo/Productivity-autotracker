@@ -348,18 +348,16 @@ def make_heatmap() -> go.Figure:
     """
     cfg = load_config()
     totals = load_dataframe("activity", False, "totals", False)
-
     fig = go.Figure()
-    offset = 6 - int(totals.query('days_since == 0')["weekday_num"].iloc[0])
-
     values = []
     hovertext = []
+
     for w in range(52):
         temp_values = []
         temp_hovertext = []
         for d in range(w * 7, (1 + w) * 7):
-            work = totals.loc[d + offset, "Work"]
-            pers = totals.loc[d + offset, "Personal"]
+            work = totals.loc[d, "Work"]
+            pers = totals.loc[d, "Personal"]
 
             if work > cfg["WORK_DAILY_GOAL"]:
                 temp_values.append(4)
@@ -376,8 +374,6 @@ def make_heatmap() -> go.Figure:
             else:
                 temp_values.append(0)
 
-            w += offset
-            d += offset
             temp_hovertext.append((
                 f"{round(work, 2)} hours of work<br>"
                 f"{round(pers, 2)} hours of personal<br>"
@@ -426,9 +422,11 @@ def make_heatmap() -> go.Figure:
             "1y", 5, 10, 15, 20, "6m", 30, 35, "3m", 45, "1m", "1w"
         ]
     )
-    offset = 6 - offset
+
+    offset = int(totals.query('days_since == 0')["weekday_num"].iloc[0]) + 1
     row_ticks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    row_ticks[offset] = "(" + row_ticks[offset] + ")"
+    row_ticks = row_ticks[offset:] + row_ticks[:offset]
+    row_ticks[6] = "(" + row_ticks[6] + ")"
     fig.update_yaxes(
         side="right", title=None, showgrid=False,
         color=cfg['TEXT_COLOR'], tickmode='array',

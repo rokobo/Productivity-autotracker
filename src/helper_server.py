@@ -314,6 +314,31 @@ def hex_to_rgb(hex_string: str) -> str:
     return rgb_code
 
 
+def join_rgb(rgb1: str, rgb2: str) -> str:
+    """
+    Joins two rgb strings and returns the average color.
+
+    Args:
+        rgb1 (str): RGB string 1.
+        rgb2 (str): RGB string 2.
+
+    Returns:
+        str: Average RGB string.
+    """
+    match1 = re.match(r'^rgb\(\d+,\s*\d+,\s*\d+\)$', rgb1)
+    match2 = re.match(r'^rgb\(\d+,\s*\d+,\s*\d+\)$', rgb2)
+    if match1 is None or match2 is None:
+        print("\033[93mRGB join error\033[00m")
+        sys.exit()
+
+    values1 = re.findall(r'(\d+)', rgb1)
+    values2 = re.findall(r'(\d+)', rgb2)
+    rgb_code = "rgb({}, {}, {})".format(
+        *[int((int(v1) + int(v2)) / 2) for v1, v2 in zip(values1, values2)]
+    )
+    return rgb_code
+
+
 def make_heatmap() -> go.Figure:
     """
     Makes a yealy heatmap with goals.
@@ -337,14 +362,17 @@ def make_heatmap() -> go.Figure:
             pers = totals.loc[d + offset, "Personal"]
 
             if work > cfg["WORK_DAILY_GOAL"]:
-                temp_values.append(3)
-            elif work > cfg["SMALL_WORK_DAILY_GOAL"]:
-                temp_values.append(2)
+                temp_values.append(4)
             elif (pers > cfg["PERSONAL_DAILY_GOAL"]) and (
                 work * cfg["WORK_TO_PERSONAL_MULTIPLIER"]
                 < max(cfg["PERSONAL_DAILY_GOAL"], pers)
             ):
-                temp_values.append(1)
+                if work > cfg["SMALL_WORK_DAILY_GOAL"]:
+                    temp_values.append(2)
+                else:
+                    temp_values.append(1)
+            elif work > cfg["SMALL_WORK_DAILY_GOAL"]:
+                temp_values.append(3)
             else:
                 temp_values.append(0)
 
@@ -371,6 +399,7 @@ def make_heatmap() -> go.Figure:
         colorscale=[
             cfg["HEATMAP_BASE_COLOR"],
             cfg["HEATMAP_BAD_COLOR"],
+            join_rgb(cfg["HEATMAP_BAD_COLOR"], cfg["HEATMAP_OKAY_COLOR"]),
             cfg["HEATMAP_OKAY_COLOR"],
             cfg["HEATMAP_GOOD_COLOR"]],
         showlegend=False, showscale=False

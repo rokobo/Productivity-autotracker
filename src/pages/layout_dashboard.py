@@ -25,6 +25,7 @@ layout = html.Div([
         layout_menu.layout,
         dbc.Col(html.H2("Dashboard"), width='auto'),
         dbc.Col(id="goals_title", width='auto'),
+        dcc.Interval(id='title_interval', interval=1000, n_intervals=-1),
         dbc.Col(id="streak_crowns", width='auto'),
         dbc.Col(
             dbc.Button([
@@ -76,9 +77,23 @@ layout = html.Div([
 
 
 @callback(
+    Output('goals_title', 'children'),
+    Input('title_interval', 'n_intervals')
+)
+def update_title(_1):
+    """Updates title."""
+    global CFG
+    CFG = load_config()
+    data = load_day_total(0).transpose()
+    data.reset_index(inplace=True)
+    data.rename(columns={
+        'index': 'category', data.columns[1]: 'total'
+    }, inplace=True)
+    return make_info_row()
+
+@callback(
     Output('category_row', 'children'),
     Output('category_row', 'style'),
-    Output('goals_title', 'children'),
     Output('streak_crowns', 'children'),
     Input('category_interval', 'n_intervals')
 )
@@ -112,7 +127,7 @@ def update_category(_1):
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }
-    return card, style, make_info_row(data), make_crown()
+    return card, style, make_crown()
 
 
 @callback(

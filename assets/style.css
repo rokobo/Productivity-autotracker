@@ -1,3 +1,13 @@
+@font-face {
+    font-family: "JetBrains";
+    src: url("JetBrainsMono[wght].ttf") format("truetype");
+}
+
+*, html, body {
+    font-family: "JetBrains";
+    font-size: 15px;
+}
+
 body {
     color: rgb(203, 203, 203);
     z-index: 1;

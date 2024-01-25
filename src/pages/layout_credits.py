@@ -11,13 +11,9 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import layout_menu
 from helper_io import load_config
+from helper_server import make_credit
 
 CFG = load_config()
-card_style = {
-    'background-color': CFG['CARD_COLOR'],
-    'border': '0px',
-    'margin-bottom': f'{CFG["CATEGORY_CARD_MARGIN"]}px'
-}
 
 
 layout = html.Div([
@@ -31,67 +27,23 @@ layout = html.Div([
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }),
     dbc.Row([
-        dbc.Col(dbc.Card([dbc.Row([
-            dbc.Col(
-                dbc.CardImg(
-                    src="/assets/favicon.ico",
-                    className="img-fluid rounded-start",
-                ), className="col-md-4",
-            ),
-            dbc.Col(
-                dbc.CardBody([
-                    html.H3("Application favicon", className="card-title"),
-                    html.P(
-                        "Grow icons created by Freepik at\
-                            https://www.flaticon.com/free-icons/grow",
-                        className="card-text",
-                    ),
-                ]),
-            ),], className="d-flex align-items-center",)
-        ], style=card_style, className="mb-3")),
-
-        dbc.Col(dbc.Card([dbc.Row([
-            dbc.Col(
-                dbc.CardImg(
-                    src="/assets/sprout.png",
-                    className="img-fluid rounded-start",
-                ), className="col-md-4",
-            ),
-            dbc.Col(
-                dbc.CardBody([
-                    html.H3("Desktop notification icon", className="card-title"),
-                    html.P(
-                        "Sprout icons created by Freepik at\
-                            https://www.flaticon.com/free-icons/sprout",
-                        className="card-text",
-                    ),
-                ]),
-            ),], className="d-flex align-items-center",)
-        ], style=card_style, className="mb-3")),
+        make_credit("favicon.ico", "Application favicon", (
+            "Grow icons created by Freepik at "
+            "https://www.flaticon.com/free-icons/grow")),
+        make_credit("sprout.png", "Notification icon", (
+            "Sprout icons created by Freepik at "
+            "https://www.flaticon.com/free-icons/sprout"))
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px"
     }),
     dbc.Row([
-        dbc.Col(dbc.Card([dbc.Row([
-            dbc.Col(
-                dbc.CardImg(
-                    src="/assets/crown_gold.png",
-                    className="img-fluid rounded-start",
-                ), className="col-md-4",
-            ),
-            dbc.Col(
-                dbc.CardBody([
-                    html.H3("Dashboard goal streak icon", className="card-title"),
-                    html.P(
-                        "Crown icon by Icons8 at\
-                            https://icons8.com/icon/13728/crown",
-                        className="card-text",
-                    ),
-                ]),
-            ),], className="d-flex align-items-center",)
-        ], style=card_style, className="mb-3")),
-        dbc.Col()
+        make_credit("crown_gold.png", "Goal streak icon", (
+            "Crown icon by Icons8 at "
+            "https://icons8.com/icon/13728/crown")),
+        make_credit(None, "Application font", (
+            "JetBrains font at "
+            "https://github.com/JetBrains/JetBrainsMono")),
     ], style={
         'margin-left': f"{CFG['SIDE_PADDING']}px",
         'margin-right': f"{CFG['SIDE_PADDING']}px"

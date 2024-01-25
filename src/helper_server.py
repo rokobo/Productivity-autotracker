@@ -124,22 +124,18 @@ def format_duration(seconds: int, long: bool) -> str:
     Returns:
         str: Readable string.
     """
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    duration_parts = []
-    units = [" hour", " minute", " second"] if long else ["h", "m", "s"]
-    join_string = ", " if long else " "
-    if hours > 0:
-        duration_parts.append(
-            f"{int(hours)}{units[0]}{'s' if hours > 1 and long else ''}")
-    if minutes > 0:
-        duration_parts.append(
-            f"{int(minutes)}{units[1]}{'s' if minutes > 1 and long else ''}")
-    if seconds > 0 or not duration_parts:
-        duration_parts.append(
-            f"{int(seconds)}{units[2]}{'s' if seconds > 1 and long else ''}")
-    return join_string.join(duration_parts)
+    time_parts = [seconds // 3600, (seconds % 3600) // 60, seconds % 60]
+    time_units = [" hour", " minute", " second"] if long else ["h", "m", "s"]
+    separator = ", " if long else " "
+    string_parts = []
+
+    for time_part, time_unit in zip(time_parts, time_units):
+        if time_part == 0:
+            continue
+        string_parts.append(
+            f"{int(time_part)}{time_unit}{'s' if time_part>1 and long else ''}"
+        )
+    return separator.join(string_parts)
 
 
 def format_long_duration(seconds: int) -> str:
@@ -566,18 +562,16 @@ def make_totals_graph(graph_data: pd.DataFrame):
     return fig
 
 
-def make_info_row(data: pd.DataFrame) -> dbc.Col:
+def make_info_row() -> dbc.Col:
     """
     Makes the top info row of the main page.
-
-    Args:
-        data (pd.DataFrame): Daily progress data.
 
     Returns:
         dbc.Col: Info row column.
     """
     cfg = load_config()
-    work = data.loc[data['category'] == 'Work', 'total'].values[0]
+    data = load_day_total(0)
+    work = data.loc[0, "Work"]
     work_goal = cfg['WORK_DAILY_GOAL']
 
     # Make first row
@@ -587,7 +581,7 @@ def make_info_row(data: pd.DataFrame) -> dbc.Col:
     else:
         first_row += f"{int((work_goal - work) * 60)} min left"
 
-    personal = data.loc[data['category'] == 'Personal', 'total'].values[0]
+    personal = data.loc[0, "Personal"]
     first_row += ", Personal: "
     personal_goal = cfg['PERSONAL_DAILY_GOAL']
     work_multiplied = cfg['WORK_TO_PERSONAL_MULTIPLIER'] * work
@@ -599,7 +593,7 @@ def make_info_row(data: pd.DataFrame) -> dbc.Col:
         first_row += f"{int((personal_goal - personal) * 60)} min left"
 
     # Make second row
-    second_row = datetime.datetime.now().strftime('%B %d, %A, %H:%M')
+    second_row = datetime.datetime.now().strftime('%B %d, %A, %H:%M:%S')
     thresholds = [
         work_goal * 0.25, work_goal * 0.50,
         work_goal * 0.75, work_goal]
@@ -694,3 +688,37 @@ def make_trend_graphs() -> dbc.Col:
             }]
         )
     return dbc.Col(row)
+
+
+def make_credit(img_src: str, title: str, subtitle: str) -> dbc.Col:
+    """
+    Makes credit and attribution card.
+
+    Args:
+        img_src (str): Image source.
+        title (str): Title of the card.
+        subtitle (str): Subtitle of the card.
+
+    Returns:
+        dbc.Col: Card column.
+    """
+    cfg = load_config()
+    card_style = {
+        'background-color': cfg['CARD_COLOR'],
+        'border': '0px',
+        'margin-bottom': f'{cfg["CATEGORY_CARD_MARGIN"]}px',
+        'color': cfg['TEXT_COLOR']
+    }
+    col = []
+    if img_src is not None:
+        col.append(dbc.Col(dbc.CardImg(
+            src=f"assets/{img_src}",
+            className="img-fluid rounded-start",
+        ), className="col-md-4"))
+    col.append(dbc.Col(dbc.CardBody([
+        html.H4(title),
+        html.H5(subtitle),
+    ])))
+    return dbc.Col(dbc.Card([dbc.Row(
+        col, className="d-flex align-items-center"
+    )], style=card_style, className="mb-3"))

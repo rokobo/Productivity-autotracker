@@ -5,6 +5,9 @@ Updates DataFrame with current activity.
 # pylint: disable=c-extension-no-member, import-error, no-name-in-module
 import time
 import re
+import sys
+import subprocess
+from typing import Optional
 from threading import Thread
 from urllib.parse import urlparse
 from datetime import datetime
@@ -25,9 +28,11 @@ from helper_io import (
     load_categories,
     timestamp_to_day,
 )
+from retry_decorator import retry
 
 
-def detect_activity() -> tuple[int, str, str, str, str]:
+@retry(wait=0.25)
+def detect_activity() -> Optional[tuple[int, str, str, str, str]]:
     """
     Detects user activity and returns tracking variables.
 
@@ -35,32 +40,47 @@ def detect_activity() -> tuple[int, str, str, str, str]:
         tuple[int, str, str, str, str]: time of detection, \
             active window title, process name, url and domain.
     """
-    cfg = load_config()
     cfg2 = load_categories()
-    retries = cfg["RETRY_ATTEMPS"]
     start_time = int(time.time())
-    title, process_name, url, domain = None, None, None, None
 
-    for _ in range(retries):
-        try:
-            window = pwc.getActiveWindow()
-            title = window.title
-            process_name = window.getAppName()
-            if not (isinstance(title, str) and isinstance(process_name, str)):
-                time.sleep(0.25)
-                continue
+    window = pwc.getActiveWindow()
 
-            if process_name not in ["brave.exe", "brave"]:
-                url, domain = "", ""
-            else:
-                url, domain = match_to_url(title)
-            if url is None:
-                time.sleep(0.25)
-                continue
-        except (AssertionError, AttributeError):
-            time.sleep(0.25)
-        else:
-            break
+    if not window:
+        raise EnvironmentError("Could not get active window")
+
+    process_name = window.getAppName()
+    title = window.title
+
+    if sys.platform == "linux":  # pywinctl bug that will soon be fixed
+        window = re.search(
+            "window id # (0x[0-9a-fA-F]+)", subprocess.run(
+                ["xprop", "-root", "_NET_ACTIVE_WINDOW"],
+                capture_output=True, text=True, check=True
+            ).stdout)
+
+        if not window:
+            raise EnvironmentError("Could not get active window")
+
+        title = re.search(
+            '= "(.*?)"', subprocess.run(
+                ["xprop", "-id", window.group(1), "WM_NAME"],
+                capture_output=True, text=True, check=True
+            ).stdout)
+
+        if not title:
+            raise LookupError("Could not find title of window on linux")
+
+        title = title.group(1)
+
+    if not (isinstance(title, str) and isinstance(process_name, str)):
+        raise LookupError("Could not find title and process name of window")
+
+    if process_name not in ["brave.exe", "brave"]:
+        url, domain = "", ""
+    else:
+        url, domain = match_to_url(title)
+    if url is None or domain is None:
+        raise LookupError(f"Could not find URL and domain on {title}")
 
     results = [
         isinstance(title, str),
@@ -74,7 +94,7 @@ def detect_activity() -> tuple[int, str, str, str, str]:
             f"\033[93m{time.strftime('%X')} Activity failed to detect,",
             f"setting idle... {results}\033[00m ",
         )
-        return (start_time, "Time not counted", "IDLE TIME", "", "")
+        return None
 
     # Hide information from apps in HIDDEN_APPS list
     name = process_name.lower()
@@ -83,7 +103,7 @@ def detect_activity() -> tuple[int, str, str, str, str]:
     return (start_time, title, process_name, url, domain)
 
 
-def match_to_url(title: str) -> tuple[str, str]:
+def match_to_url(title: str) -> tuple[str, str] | tuple[None, None]:
     """
     Matches a window title to a browser tab's URL.
 
@@ -108,12 +128,13 @@ def match_to_url(title: str) -> tuple[str, str]:
     return url, domain
 
 
-def detect_idle() -> tuple[int, str, str, str, str]:
+@retry(attempts=2, wait=0.1)
+def detect_idle() -> Optional[bool]:
     """
     if idle, return a tuple representing raw data of idle activity.
 
     Returns:
-        tuple[int, str, str, str, str]: Idle raw data or empty tuple.
+        tuple[int, bool]: Time now and if idle is detected.
     """
     cfg = load_config()
     now = int(time.time())
@@ -133,8 +154,8 @@ def detect_idle() -> tuple[int, str, str, str, str]:
     )
 
     if idle_time > cfg["IDLE_TIME"]:
-        return (now, "Time not counted", "IDLE TIME", "", "")
-    return ()
+        return True
+    return False
 
 
 def parse_data(data: tuple[int, str, str, str, str]) -> pd.DataFrame:
@@ -160,37 +181,38 @@ def parse_data(data: tuple[int, str, str, str, str]) -> pd.DataFrame:
     return pd.DataFrame(parsed)
 
 
-def join(dataframe: pd.DataFrame) -> None:
+def join(current_act: pd.DataFrame) -> None:
     """
     Tries to join current activity to previous activity,
     adds activity otherwise.
 
     Args:
-        pd.DataFrame: Dataframe with parsed data.
+        pd.DataFrame: Dataframe with parsed data from latest activity.
     """
     cfg = load_config()
-    act = load_lastest_row("activity")
+    previous_act = load_lastest_row("activity")
+    start1, start2 = previous_act["start_time"], current_act["start_time"]
+    assert isinstance(start1, pd.Series) and isinstance(start2, pd.Series)
 
-    # Check if merge should be done
-    same_event = all(act.iloc[0, 2:7] == dataframe.iloc[0, 2:7])
-    same_event &= all(  # Check if events are on the same day
-        timestamp_to_day(act["start_time"])
-        == timestamp_to_day(dataframe["start_time"])
-    )
+    # Check if merge should be done and if events are on the same day
+    same_event = all(previous_act.iloc[0, 2:7] == current_act.iloc[0, 2:7])
+    same_event &= all(timestamp_to_day(start1) == timestamp_to_day(start2))
 
-    not_idle = (int(time.time()) - act.loc[0, "end_time"]) < cfg["IDLE_TIME"]
+    not_idle = (
+        int(time.time()) - previous_act.loc[0, "end_time"]
+    ) < cfg["IDLE_TIME"]
 
     if not_idle:
         if same_event:  # Join to last event
-            act.loc[0, "end_time"] = dataframe.loc[0, "end_time"]
-            modify_latest_row("activity", act, ["end_time"])
+            previous_act.loc[0, "end_time"] = current_act.loc[0, "end_time"]
+            modify_latest_row("activity", previous_act, ["end_time"])
         else:  # Append and connect to last event
-            new_time = act.loc[0, "end_time"]
-            dataframe.loc[0, "start_time"] = new_time
-            append_to_database("activity", dataframe)
+            new_time = previous_act.loc[0, "end_time"]
+            current_act.loc[0, "start_time"] = new_time
+            append_to_database("activity", current_act)
     else:  # Raw append
-        dataframe.loc[0, "start_time"] -= 1
-        append_to_database("activity", dataframe)
+        current_act.loc[0, "start_time"] -= 1
+        append_to_database("activity", current_act)
 
 
 def categories_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -245,7 +267,9 @@ def categories_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
         .reset_index()
     )
     df_sum = df_sum.sort_values(by=["day", "duration"], ascending=False)
-    df_sum.loc[:, "duration"] = df_sum["duration"].apply(format_long_duration)
+    durations = df_sum["duration"].apply(format_long_duration)
+    df_sum = df_sum.astype({"duration": "str"})
+    df_sum.loc[:, "duration"] = durations
     return df_sum
 
 
@@ -286,8 +310,8 @@ def parser() -> None:
     # Get raw data
     raw_data = detect_activity()
     idle_data = detect_idle()
-    if idle_data:
-        raw_data = idle_data
+    if idle_data or (raw_data is None) or (idle_data is None):
+        raw_data = (int(time.time()), "Time not counted", "IDLE TIME", "", "")
 
     # Parse and add to activity file
     parsed_data = parse_data(raw_data)

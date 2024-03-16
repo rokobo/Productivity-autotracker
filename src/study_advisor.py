@@ -3,10 +3,11 @@ Study advisor, sends realtime messages to support user.
 """
 # pylint: disable=global-variable-not-assigned
 import time
+from typing import Optional
 from datetime import datetime, timedelta
 import pandas as pd
 from helper_io import load_config, send_notification, load_day_total, \
-    load_dataframe, save_dataframe, check_dataframe
+    load_dataframe, save_dataframe, check_dataframe, retry
 
 
 MESSAGES = {}
@@ -55,7 +56,7 @@ def load_messages():
     TITLES["work_100"] = "🎉 Milestone achieved! 🎉"
 
 
-def fix_milestones() -> pd.DataFrame:
+def fix_milestones() -> Optional[pd.DataFrame]:
     """
     Fixes milestone database in case of: non-existance, updated goals.
 
@@ -80,7 +81,11 @@ def fix_milestones() -> pd.DataFrame:
     if not check_dataframe("milestones"):
         save_dataframe(dataframe, "milestones")
 
-    milestones = load_dataframe("milestones").drop("rowid", axis=1)
+    milestones = load_dataframe("milestones")
+    if milestones is None:
+        return
+
+    milestones = milestones.drop("rowid", axis=1)
 
     # Check day change
     if milestones.loc[0, "day"] != day:
@@ -94,6 +99,7 @@ def fix_milestones() -> pd.DataFrame:
     return milestones
 
 
+@retry(wait=0.5)
 def check_milestones():
     """
     Function to check for goal milestones.
@@ -103,6 +109,10 @@ def check_milestones():
     cfg = load_config()
     data = load_day_total(0)
     milestones = fix_milestones()
+
+    assert milestones is not None
+    assert data is not None
+
     personal_done = data.loc[0, "Personal"]
     work_done = data.loc[0, "Work"]
     work_goal = cfg["WORK_DAILY_GOAL"]

@@ -38,6 +38,48 @@ def did_backend_update_recently():
 
 
 if __name__ == "__main__":
+    # Initialize processes and threads
+    activity_process = Process(target=activity_detector)
+    activity_process.daemon = True
+    activity_process.start()
+    print(f"\033[92m{time.strftime('%X')} activity_process started!\033[00m")
+
+    activity_process2 = Thread(target=activity_processor)
+    activity_process2.daemon = True
+    activity_process2.start()
+    print(f"\033[92m{time.strftime('%X')} activity_process2 started!\033[00m")
+
+    mouse_thread = Thread(target=mouse_idle_detector)
+    mouse_thread.daemon = True
+    mouse_thread.start()
+    print(f"\033[92m{time.strftime('%X')} mouse_thread started!\033[00m")
+
+    keyboard_thread = Thread(target=keyboard_idle_detector)
+    keyboard_thread.daemon = True
+    keyboard_thread.start()
+    print(f"\033[92m{time.strftime('%X')} keyboard_thread started!\033[00m")
+
+    audio_process = Thread(target=audio_idle_detector)
+    audio_process.daemon = True
+    audio_process.start()
+    print(f"\033[92m{time.strftime('%X')} audio_process started!\033[00m")
+
+    advisor_process = Process(target=study_advisor)
+    advisor_process.daemon = True
+    advisor_process.start()
+    print(f"\033[92m{time.strftime('%X')} advisor_process started!\033[00m")
+
+    auxiliary_process = Process(target=auxiliary_work)
+    auxiliary_process.daemon = True
+    auxiliary_process.start()
+    print(f"\033[92m{time.strftime('%X')} auxiliary_process started!\033[00m")
+
+    server_process = Process(target=server_supervisor)
+    server_process.daemon = True
+    server_process.start()
+    print(f"\033[92m{time.strftime('%X')} server_process started!\033[00m")
+
+    # Restart mechanism
     while True:
         try:
             try:  # Main activity process

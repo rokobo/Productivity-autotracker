@@ -22,8 +22,10 @@ CFG = load_config()
 
 layout = html.Div([
     dbc.Row([
-        layout_menu.layout,
-        dbc.Col(html.H2("Dashboard"), width='auto'),
+        dbc.Col([
+            html.H3("Dashboard"),
+            layout_menu.layout,
+        ], width='auto'),
         dbc.Col(id="goals_title", width='auto'),
         dcc.Interval(id='title_interval', interval=1000, n_intervals=-1),
         dbc.Col(id="streak_crowns", width='auto'),

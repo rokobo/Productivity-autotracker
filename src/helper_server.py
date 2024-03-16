@@ -6,21 +6,22 @@ import sys
 import re
 import time
 import datetime
+from typing import Optional
 import pandas as pd
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import plotly.express as px
 from helper_io import load_config, load_categories, load_day_total, \
-    load_dataframe, load_input_time
+    load_dataframe, load_input_time  # , retry
 
 
-def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
+def generate_cards(df: pd.DataFrame, totals=None) -> Optional[list[dbc.Col]]:
     """
     Generates categorized list of activities in a given timeframe.
 
     Args:
-        dataframe (pd.DataFrame): Dataframe with categories.
+        df (pd.DataFrame): Dataframe with categories.
         totals (pd.DataFrame): Total time of three categories for comparison.
 
     Returns:
@@ -28,6 +29,8 @@ def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
     """
     if totals is None:
         totals = load_day_total(0)
+    if (totals is None) or totals.empty:
+        return None
     cfg = load_config()
     work_list = []
     personal_list = []
@@ -40,20 +43,23 @@ def generate_cards(dataframe: pd.DataFrame, totals=None) -> dbc.Row:
     }
     cardbody_style = {'padding': f'{cfg["CARD_PADDING"]}px'}
 
-    for _, row in dataframe.iterrows():
+    for _, row in df.iterrows():
         if row['total'] < cfg['MINIMUM_ACTIVITY_TIME'] / 3600:
             continue
         category = row['category']
-        total = totals.loc[0, category]
-        percentage1 = f'{round(row["total"] / 16 * 100, 1)}% day '
-        percentage2 = 0 if total == 0 \
-            else f' {round(row["total"] / total * 100, 1)}% total'
+        cat_total = totals.loc[0, category]
+        act_total = row["total"]
+        assert isinstance(act_total, float)
+
+        percentage1 = f'{round(act_total / 16 * 100, 1)}% day '
+        percentage2 = 0 if cat_total == 0 \
+            else f' {round(row["total"] / cat_total * 100, 1)}% total'
         percentage2 = percentage2 if row["process_name"] != "IDLE TIME" else ""
 
         item = dbc.Card([dbc.CardBody([
             dbc.Row([
                 html.H4(f'{row["process_name"]} {row["method"]}'),
-                html.H5(row['subtitle']) if row['subtitle'] else None],
+                html.H5(row['subtitle']) if row['subtitle'] != "" else None],
                 className="g-0",
                 align='center',
                 style={"color": cfg["TEXT_COLOR"]}
@@ -124,16 +130,16 @@ def format_duration(seconds: int, long: bool) -> str:
     Returns:
         str: Readable string.
     """
-    time_parts = [seconds // 3600, (seconds % 3600) // 60, seconds % 60]
-    time_units = [" hour", " minute", " second"] if long else ["h", "m", "s"]
+    t_parts = [seconds // 3600, (seconds % 3600) // 60, seconds % 60]
+    t_units = [" hour", " minute", " second"] if long else ["h", "m", "s"]
     separator = ", " if long else " "
     string_parts = []
 
-    for time_part, time_unit in zip(time_parts, time_units):
-        if time_part == 0:
+    for t_part, t_unit in zip(t_parts, t_units):
+        if t_part == 0:
             continue
         string_parts.append(
-            f"{int(time_part)}{time_unit}{'s' if time_part>1 and long else ''}"
+            f"{int(t_part)}{t_unit}{'s' if t_part > 1 and long else ''}"
         )
     return separator.join(string_parts)
 
@@ -335,7 +341,7 @@ def join_rgb(rgb1: str, rgb2: str) -> str:
     return rgb_code
 
 
-def make_heatmap() -> go.Figure:
+def make_heatmap() -> Optional[go.Figure]:
     """
     Makes a yealy heatmap with goals.
 
@@ -344,16 +350,18 @@ def make_heatmap() -> go.Figure:
     """
     cfg = load_config()
     totals = load_dataframe("activity", False, "totals", False)
+    if (totals is None) or totals.empty:
+        return None
     fig = go.Figure()
     values = []
     hovertext = []
 
-    for w in range(52):
+    for week in range(52):
         temp_values = []
         temp_hovertext = []
-        for d in range(w * 7, (1 + w) * 7):
-            work = totals.loc[d, "Work"]
-            pers = totals.loc[d, "Personal"]
+        for day in range(week * 7, (1 + week) * 7):
+            work = totals.loc[day, "Work"]
+            pers = totals.loc[day, "Personal"]
 
             if work > cfg["WORK_DAILY_GOAL"]:
                 temp_values.append(4)
@@ -373,10 +381,14 @@ def make_heatmap() -> go.Figure:
             temp_hovertext.append((
                 f"{round(work, 2)} hours of work<br>"
                 f"{round(pers, 2)} hours of personal<br>"
-                f"Week {w + 1}, Day {d + 1}<br>"
-                f"{('Current week' if w==51 else (f'Happened {51-w}w ago'))}"
+                f"Week {week + 1}, Day {day + 1}<br>"
+                f"{('Current week'
+                    if week == 51
+                    else (f'Happened {51-week}w ago'))}"
                 "<br>"
-                f"{('Current day' if d==363 else (f'Happened {363-d}d ago'))}"
+                f"{('Current day'
+                    if day == 363
+                    else (f'Happened {363-day}d ago'))}"
             ))
         values.append(temp_values)
         hovertext.append(temp_hovertext)
@@ -431,7 +443,7 @@ def make_heatmap() -> go.Figure:
     return fig
 
 
-def make_crown() -> dbc.Row:
+def make_crown() -> Optional[dbc.Row]:
     """
     Makes a row of three crowns representing work completion trends.
 
@@ -440,10 +452,18 @@ def make_crown() -> dbc.Row:
     """
     cfg = load_config()
     data = load_dataframe('activity', False, 'totals', False)
+    if (data is None) or data.empty:
+        return None
     weeks = [1, 4, 12, 26, 52]
-    streaks = [
-        round((data.loc[364 - (interval * 7):, "Work"] >= cfg[
-            "WORK_DAILY_GOAL"]).sum() / (interval * 7) * 100, 1)
+    goal = cfg["WORK_DAILY_GOAL"]
+    streaks0 = [
+        round(data.loc[364 - (interval * 7):, "Work"].apply(
+            lambda x: min(x, goal)).sum() / (interval * 7 * goal) * 100, 2)
+        for interval in weeks
+    ]
+    streaks1 = [
+        round((data.loc[364 - (interval * 7):, "Work"] >= goal).sum() /
+              (interval * 7) * 100, 1)
         for interval in weeks
     ]
     streaks2 = [
@@ -472,28 +492,27 @@ def make_crown() -> dbc.Row:
         result for threshold, result
         in zip(thresholds, crowns)
         if value >= threshold
-    ) for value in streaks]
+    ) for value in streaks0]
 
     row = dbc.Row([
         dbc.Col([
             html.Img(
                 src=f"/assets/{asset}",
-                height="32px",
-                width="32px",
+                height="35px",
+                width="35px",
                 title=(
                     f"{weeks[i]}-week work goal: "
-                    f"{round(streaks[i]*7*weeks[i]/100)} / {7*weeks[i]}"
+                    f"{round(streaks1[i]*7*weeks[i]/100)} / {7*weeks[i]}"
                     f"\n{weeks[i]}-week small work goal: "
                     f"{round(streaks2[i]*7*weeks[i]/100)} / {7*weeks[i]}"
                     f"\n{weeks[i]}-week work average: {sums[i]}"
                 )
             ),
-            html.H5([f"{streaks[i]}%", html.Br(), f"{streaks2[i]}%"]),
-        ], class_name="g-0", style={
+            html.H5([f"{streaks0[i]}%"]),
+        ], class_name="g-0 justify-content-md-end", style={
             'margin-right': '15px', 'margin-bottom': '0px'})
         for i, asset in enumerate(assets)
     ], class_name="g-0")
-
     return row
 
 
@@ -562,7 +581,7 @@ def make_totals_graph(graph_data: pd.DataFrame):
     return fig
 
 
-def make_info_row() -> dbc.Col:
+def make_info_row() -> Optional[dbc.Col]:
     """
     Makes the top info row of the main page.
 
@@ -571,6 +590,8 @@ def make_info_row() -> dbc.Col:
     """
     cfg = load_config()
     data = load_day_total(0)
+    if (data is None) or data.empty:
+        return None
     work = data.loc[0, "Work"]
     work_goal = cfg['WORK_DAILY_GOAL']
 
@@ -623,7 +644,7 @@ def make_info_row() -> dbc.Col:
     ], style={'padding': '0px'})
 
 
-def make_trend_graphs() -> dbc.Col:
+def make_trend_graphs() -> Optional[dbc.Col]:
     """
     Makes trend graphs for trends page.
 
@@ -633,6 +654,8 @@ def make_trend_graphs() -> dbc.Col:
     cfg = load_config()
     row = []
     totals = load_dataframe('activity', False, 'totals', False)
+    if (totals is None) or totals.empty:
+        return None
     intervals = [364, 90, 30]
 
     figs = [go.Figure() for _ in range(4)]

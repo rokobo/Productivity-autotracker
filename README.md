@@ -81,7 +81,7 @@ Upon exhausting all retries, the program either exits the thread or core gracefu
 
 On the background, the study advisor routine is running. It sends desktop notifications when you reach certain goals or pass the daily personal activity limit.
 
-Additionally, the main dashboard pages has crowns that represent the percentage of days you achieved the study goal over different intervals. Depending on how many days in an interval you have studied, a different crown will appear. Settings changes the percentage values for each crown.
+Additionally, the main dashboard page has crowns that represent the percentage of your daily study goals over different intervals. It will sum how much of each day's goal you achieved. Depending on your percentage, a different crown will appear. Settings changes the percentage values for each crown.
 
 ## **Backup system**
 

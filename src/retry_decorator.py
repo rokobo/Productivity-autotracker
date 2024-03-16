@@ -14,9 +14,8 @@ from helper_io import load_config
 
 
 logging.basicConfig(
-    filename='app.log',
+    filename='../app.log',
     filemode='w',
-    # level=logging.INFO,
     format='%(asctime)s - %(message)s',
     datefmt='%H:%M:%S'
 )

@@ -117,10 +117,3 @@ def test_pylint_study_advisor() -> None:
     file = os.path.join(src_folder, "study_advisor.py")
     result = Run([file], exit=False).linter.stats
     assert result.global_note == 10, result.by_msg
-
-
-def test_pylint_retry_decorator() -> None:
-    """Ensures retry_decorator passes pylint specifications."""
-    file = os.path.join(src_folder, "retry_decorator.py")
-    result = Run([file], exit=False).linter.stats
-    assert result.global_note == 10, result.by_msg

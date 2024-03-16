@@ -117,10 +117,3 @@ def test_flake8_study_advisor() -> None:
     file = os.path.join(src_folder, "study_advisor.py")
     result = flake8.get_style_guide().check_files([file])
     assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))
-
-
-def test_flake8_retry_decorator() -> None:
-    """Ensures retry_decorator passes flake8 specifications."""
-    file = os.path.join(src_folder, "retry_decorator.py")
-    result = flake8.get_style_guide().check_files([file])
-    assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))

@@ -6,10 +6,89 @@ Collection of helper functions for input and output rountines.
 import sys
 from os.path import dirname, exists, join, abspath
 import time
+import logging
+from typing import Callable, TypeVar, Any, Optional
 import sqlite3 as sql
 import yaml
 from notifypy import Notify
 import pandas as pd
+
+
+logging.basicConfig(
+    filename='app.log',
+    filemode='w',
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s',
+    datefmt='%H:%M:%S'
+)
+logger = logging.getLogger('app')
+T = TypeVar('T')
+logger.info("Logger started")
+
+
+def retry(
+    attempts: int = 0, wait: float = 0.5, print_fail: bool = False
+) -> Callable[[Callable[..., T]], Callable[..., Optional[T]]]:
+    """
+    Retry decorator for any function.
+
+    Args:
+        attempts (int, optional): Attempts to execute function.
+            Defaults to retry attemps defined in configuration file.
+        wait (float, optional): Wait time in between attempts. Defaults to 0.5.
+        return_params (int, optional): How many None values to return if fail.
+
+    Returns:
+        Callable[[Callable[..., T]], Callable[..., Optional[T]]]:
+            Returns decorator that wraps the function with the retry mechanism.
+    """
+    attempts = load_config()["RETRY_ATTEMPS"] if attempts == 0 else attempts
+
+    def decorator(func: Callable[..., T]) -> Callable[..., Optional[T]]:
+        """
+        Decorator function that applies the retry mechanism.
+
+        Args:
+            func (Callable[..., T]): Function to be wrapped.
+
+        Returns:
+            Callable[..., Optional[T]]: Wrapped function with retry logic.
+        """
+        def wrapper(*args: Any, **kwargs: Any) -> Optional[T]:
+            """
+            Wrapper function that executes the retries.
+
+            Args:
+                *args (Any): Variable length arg list for wrapped function.
+                **kwargs (Any): Arbitrary keyword args for wrapped function.
+
+            Returns:
+                Optional[T]: Wrapped function return or None if all tries fail.
+            """
+            for attempt in range(attempts):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if (attempt + 1) != attempts:
+                        continue
+                    logger.error(
+                        "Error at function %s() on attempt %i: %s(\"%s\")",
+                        func.__name__,
+                        attempt + 1,
+                        type(e).__name__,
+                        e
+                    )
+                    if not print_fail:
+                        continue
+                    print(
+                        f"\033[93m{time.strftime('%X')}",
+                        f"Error at {func.__name__}(),",
+                        "seek app logs \033[00m"
+                    )
+                time.sleep(wait)
+            return None
+        return wrapper
+    return decorator
 
 
 def load_yaml(name: str) -> dict:
@@ -40,12 +119,12 @@ def load_yaml(name: str) -> dict:
     return config
 
 
-def load_config() -> dict[str, any]:
+def load_config() -> dict[str, Any]:
     """
     Loads the configuration file.
 
     Returns:
-        dict[str, any]: Dictionary config file.
+        dict[str, Any]: Dictionary config file.
     """
     workspace = dirname(dirname(abspath(__file__)))
     config = load_yaml("config/config.yml")
@@ -63,16 +142,17 @@ def load_config() -> dict[str, any]:
     return config
 
 
-def load_categories() -> dict[str, any]:
+def load_categories() -> dict[str, Any]:
     """
     Loads the categories configuration file.
 
     Returns:
-        dict[str, any]: Dictionary config file.
+        dict[str, Any]: Dictionary config file.
     """
     return load_yaml("config/categories.yml")
 
 
+@retry(wait=0.1)
 def start_databases() -> None:
     """Initializes databases with proper schema."""
     cfg = load_config()
@@ -81,51 +161,32 @@ def start_databases() -> None:
         "activity", "categories", "totals", "settings", "activity_view"
     ]
     if not exists(path):
-        for _ in range(cfg["RETRY_ATTEMPS"]):
-            try:
-                conn = sql.connect(path)
-                cursor = conn.cursor()
-                for table in tables:
-                    schema_path = join(
-                        cfg["WORKSPACE"], f'schema/{table}_schema.sql'
-                    )
-                    with open(schema_path, 'r', encoding='utf-8') as file:
-                        schema = file.read()
-                    cursor.executescript(schema)
-                conn.commit()
-            except Exception:
-                time.sleep(0.1)
-            else:
-                conn.close()
-                break
-        else:
-            conn.close()
-            print("\033[93mFailed to create database\033[00m")
-            sys.exit()
+        conn = sql.connect(path)
+        assert conn is not None
+        cursor = conn.cursor()
+        for table in tables:
+            schema_path = join(
+                cfg["WORKSPACE"], f'schema/{table}_schema.sql'
+            )
+            with open(schema_path, 'r', encoding='utf-8') as file:
+                schema = file.read()
+            cursor.executescript(schema)
+        conn.commit()
         conn.close()
 
-    for _ in range(cfg["RETRY_ATTEMPS"]):
-        try:
-            conn = sql.connect(path)
-            cursor = conn.cursor()
-            q = "INSERT OR REPLACE INTO settings (label, value) VALUES (?, ?)"
-            cursor.execute(
-                q, ("total_offset", f"{cfg['GMT_OFFSET']} hours"))
-            cursor.execute(
-                q, ("gmt_offset", str(cfg['GMT_OFFSET'])))
-            conn.commit()
-        except Exception:
-            time.sleep(0.1)
-        else:
-            conn.close()
-            break
-    else:
-        conn.close()
-        print("\033[93mFailed to configure database\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    assert conn is not None
+    cursor = conn.cursor()
+    q = "INSERT OR REPLACE INTO settings (label, value) VALUES (?, ?)"
+    cursor.execute(
+        q, ("total_offset", f"{cfg['GMT_OFFSET']} hours"))
+    cursor.execute(
+        q, ("gmt_offset", str(cfg['GMT_OFFSET'])))
+    conn.commit()
     conn.close()
 
 
+@retry(wait=0.1)
 def load_lastest_row(name: str) -> pd.DataFrame:
     """
     Loads latest row of a given dataframe.
@@ -141,23 +202,17 @@ def load_lastest_row(name: str) -> pd.DataFrame:
         sys.exit()
 
     # Access database
-    retries = cfg["RETRY_ATTEMPS"]
-    for _ in range(retries):
-        conn = sql.connect(path)
-        dataframe = pd.read_sql(
-            f"SELECT *, rowid FROM {name} ORDER BY rowid DESC LIMIT 1", conn
-        )
-        if isinstance(dataframe, pd.DataFrame) and not dataframe.empty:
-            break
-        time.sleep(0.1)
-    else:
-        conn.close()
-        print("\033[93mFailed to load latest row\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    assert conn is not None
+    dataframe = pd.read_sql(
+        f"SELECT *, rowid FROM {name} ORDER BY rowid DESC LIMIT 1", conn
+    )
+    assert isinstance(dataframe, pd.DataFrame) and not dataframe.empty
     conn.close()
     return dataframe
 
 
+@retry(wait=0.1)
 def load_day_total(day: int) -> pd.DataFrame:
     """
     Loads the total times from the given day.
@@ -177,24 +232,18 @@ def load_day_total(day: int) -> pd.DataFrame:
         sys.exit()
 
     # Access database
-    retries = cfg["RETRY_ATTEMPS"]
-    for _ in range(retries):
-        conn = sql.connect(path)
-        dataframe = pd.read_sql(
-            f"SELECT Neutral, Personal, Work \
-                FROM totals WHERE days_since = '{day}'", conn
-        )
-        if isinstance(dataframe, pd.DataFrame) and not dataframe.empty:
-            break
-        time.sleep(0.1)
-    else:
-        conn.close()
-        print("\033[93mFailed to load day total\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    assert conn is not None
+    dataframe = pd.read_sql(
+        f"SELECT Neutral, Personal, Work \
+            FROM totals WHERE days_since = '{day}'", conn
+    )
+    assert isinstance(dataframe, pd.DataFrame) and not dataframe.empty
     conn.close()
     return dataframe
 
 
+@retry(wait=0.1)
 def modify_latest_row(
     name: str, new_row: pd.DataFrame, columns_to_update: list[str]
 ) -> None:
@@ -217,33 +266,22 @@ def modify_latest_row(
         sys.exit()
 
     # Access database
-    retries = cfg["RETRY_ATTEMPS"]
-    for _ in range(retries):
-        try:
-            conn = sql.connect(path)
-            cursor = conn.cursor()
-            for col in columns_to_update:
-                rowid = new_row.loc[0, "rowid"]
-                val = new_row.loc[0, col]
-                if isinstance(val, str):
-                    val = f'"{val}"'
-                cursor.execute(
-                    f"UPDATE {name} SET {col} = {val} WHERE rowid = {rowid}"
-                )
-            conn.commit()
-        except Exception as e:
-            print(e)
-            time.sleep(0.1)
-        else:
-            conn.close()
-            break
-    else:
-        conn.close()
-        print("\033[93mFailed to modify latest row\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    assert conn is not None
+    cursor = conn.cursor()
+    for col in columns_to_update:
+        rowid = new_row.loc[0, "rowid"]
+        val = new_row.loc[0, col]
+        if isinstance(val, str):
+            val = f'"{val}"'
+        cursor.execute(
+            f"UPDATE {name} SET {col} = {val} WHERE rowid = {rowid}"
+        )
+    conn.commit()
     conn.close()
 
 
+@retry(wait=0.1)
 def append_to_database(name: str, new_row: pd.DataFrame) -> None:
     """
     Appends row to dataframe with the provided new_row.
@@ -262,23 +300,13 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
         print("\033[93mPath does not exist error\033[00m")
         sys.exit()
 
-    retries = cfg["RETRY_ATTEMPS"]
-    for _ in range(retries):
-        try:
-            conn = sql.connect(path)
-            new_row.to_sql(name, conn, if_exists="append", index=False)
-        except Exception:
-            time.sleep(0.1)
-        else:
-            conn.close()
-            break
-    else:
-        conn.close()
-        print("\033[93mFailed to append to database\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    assert conn is not None
+    new_row.to_sql(name, conn, if_exists="append", index=False)
     conn.close()
 
 
+@retry(wait=0.1)
 def load_activity_between(
     start: int, end: int, name: str = "activity"
 ) -> pd.DataFrame:
@@ -301,28 +329,22 @@ def load_activity_between(
         sys.exit()
 
     # Access database
-    retries = cfg["RETRY_ATTEMPS"]
-    for _ in range(retries):
-        conn = sql.connect(path)
-        dataframe = pd.read_sql(
-            f"SELECT *, rowid FROM {name}\
-                WHERE start_time >= {start} AND end_time <= {end}",
-            conn,
-        )
-        if isinstance(dataframe, pd.DataFrame) and not dataframe.empty:
-            break
-        time.sleep(0.1)
-    else:
-        conn.close()
-        print("\033[93mFailed to load activity between\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    assert conn is not None
+    dataframe = pd.read_sql(
+        f"SELECT *, rowid FROM {name}\
+            WHERE start_time >= {start} AND end_time <= {end}",
+        conn,
+    )
+    assert isinstance(dataframe, pd.DataFrame) and not dataframe.empty
     conn.close()
     return dataframe
 
 
+@retry(wait=0.1)
 def load_dataframe(
-    name: str, can_be_empty=False, table: str = None,
-    load_rowid=True, where_cond: tuple = None
+    name: str, can_be_empty=False, table: Optional[str] = None,
+    load_rowid=True, where_cond: Optional[tuple] = None
 ) -> pd.DataFrame:
     """
     Loads entire database with the provided name.
@@ -348,30 +370,23 @@ def load_dataframe(
 
     # Access database
     table = name if table is None else table
-    retries = cfg["RETRY_ATTEMPS"]
 
     query = f"SELECT *{', rowid' if load_rowid else ''} "
     query += f"FROM {table} "
     if isinstance(where_cond, tuple) and len(where_cond) == 3:
         query += f"WHERE {where_cond[0]} {where_cond[1]} '{where_cond[2]}'"
 
-    for _ in range(retries):
-        conn = sql.connect(path)
-        dataframe = pd.read_sql(query, conn)
-        if isinstance(dataframe, pd.DataFrame):
-            break
-        if can_be_empty or not dataframe.empty:
-            break
-        time.sleep(0.1)
-    else:
-        conn.close()
-        print(f"\033[93mFailed to load {name} dataframe\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    dataframe = pd.read_sql(query, conn)
+    assert isinstance(dataframe, pd.DataFrame)
+    if not can_be_empty:
+        assert not dataframe.empty
     conn.close()
     return dataframe
 
 
-def save_dataframe(dataframe: pd.DataFrame, name: str, table: str = None):
+@retry(wait=0.1)
+def save_dataframe(df: pd.DataFrame, name: str, table: Optional[str] = None):
     """
     Saves dataframe to .db file.
 
@@ -379,28 +394,17 @@ def save_dataframe(dataframe: pd.DataFrame, name: str, table: str = None):
         dataframe (pd.DataFrame): Dataframe to be saved.
         path (str): Location the dataframe will be saved.
     """
-    if not isinstance(dataframe, pd.DataFrame):
+    if not isinstance(df, pd.DataFrame):
         print("\033[93mWrong argument passed\033[00m")
         sys.exit()
     cfg = load_config()
     path = join(cfg["WORKSPACE"], f"data/{name}.db")
     table = name if table is None else table
 
-    retries = cfg["RETRY_ATTEMPS"]
-    for _ in range(retries):
-        try:
-            conn = sql.connect(path)
-            conn.execute("BEGIN EXCLUSIVE")
-            dataframe.to_sql(table, conn, if_exists="replace", index=False)
-        except Exception:
-            time.sleep(0.1)
-        else:
-            conn.close()
-            break
-    else:
-        conn.close()
-        print("\033[93mFailed to save dataframe\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    assert conn is not None
+    conn.execute("BEGIN EXCLUSIVE")
+    df.to_sql(table, conn, if_exists="replace", index=False)
     conn.close()
 
 
@@ -415,10 +419,13 @@ def load_input_time(name: str) -> int:
         int: Time of latest input from path.
     """
     device = load_lastest_row(name)
+    if device is None:
+        return -1
     recorded_time = device.iloc[0, 0]
     return recorded_time
 
 
+@retry(wait=0.1)
 def load_url(page_title: str) -> pd.DataFrame:
     """
     Access the URL by title that was provided by the browser extension.
@@ -436,25 +443,19 @@ def load_url(page_title: str) -> pd.DataFrame:
         sys.exit()
 
     # Load the file and output list of URLs
-    retries = cfg["RETRY_ATTEMPS"]
     query = """
         SELECT *, rowid FROM urls
         WHERE title = ?
     """
-    for _ in range(retries):
-        conn = sql.connect(path)
-        url = pd.read_sql(query, conn, params=[page_title])
-        if isinstance(url, pd.DataFrame):
-            break
-        time.sleep(0.1)
-    else:
-        conn.close()
-        print("\033[93mFailed to load latest URLs\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    assert conn is not None
+    url = pd.read_sql(query, conn, params=[page_title])
+    assert isinstance(url, pd.DataFrame)
     conn.close()
     return url
 
 
+@retry(wait=0.1)
 def set_idle():
     """Function that sets all input databases to idle state."""
     time.sleep(1)
@@ -465,6 +466,7 @@ def set_idle():
 
     for input_name in inputs:
         input_dataframe = load_lastest_row(input_name)
+        assert input_dataframe is not None
         if now - input_dataframe.loc[0, "time"] < idle_time:
             input_dataframe.loc[0, "time"] = now - idle_time
             modify_latest_row(input_name, input_dataframe, ["time"])
@@ -522,6 +524,7 @@ def check_dataframe(name: str) -> bool:
     return exists(path)
 
 
+@retry(wait=0.1)
 def delete_from_dataframe(name: str, column: str, values: list) -> None:
     """
     Deletes values from database by checking matches in the provided column.
@@ -533,7 +536,6 @@ def delete_from_dataframe(name: str, column: str, values: list) -> None:
     """
     cfg = load_config()
     path = join(cfg["WORKSPACE"], f"data/{name}.db")
-    retries = cfg["RETRY_ATTEMPS"]
     if not exists(path):
         print("\033[93mPath does not exist error\033[00m")
         sys.exit()
@@ -542,19 +544,9 @@ def delete_from_dataframe(name: str, column: str, values: list) -> None:
         WHERE {column} \
             IN ({', '.join('?' for _ in values)})"
 
-    for _ in range(retries):
-        try:
-            conn = sql.connect(path)
-            cursor = conn.cursor()
-            cursor.execute(query, values)
-            conn.commit()
-        except Exception:
-            time.sleep(0.1)
-        else:
-            conn.close()
-            break
-    else:
-        conn.close()
-        print("\033[93mFailed to delete dataframe\033[00m")
-        sys.exit()
+    conn = sql.connect(path)
+    assert conn is not None
+    cursor = conn.cursor()
+    cursor.execute(query, values)
+    conn.commit()
     conn.close()

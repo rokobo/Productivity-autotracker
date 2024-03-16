@@ -27,8 +27,8 @@ from helper_io import (
     modify_latest_row,
     load_categories,
     timestamp_to_day,
+    retry
 )
-from retry_decorator import retry
 
 
 @retry(wait=0.25)
@@ -117,7 +117,7 @@ def match_to_url(title: str) -> tuple[str, str] | tuple[None, None]:
     # Correct for special characters
     title = title.encode("utf-8").decode("unicode_escape")
     url = load_url(title.removesuffix(" - Brave"))
-    if url.empty:
+    if url is None:
         return None, None
     url = url.loc[0, "url"]
     parsed = urlparse(url)
@@ -191,6 +191,8 @@ def join(current_act: pd.DataFrame) -> None:
     """
     cfg = load_config()
     previous_act = load_lastest_row("activity")
+    if previous_act is None:
+        return
     start1, start2 = previous_act["start_time"], current_act["start_time"]
     assert isinstance(start1, pd.Series) and isinstance(start2, pd.Series)
 
@@ -288,6 +290,8 @@ def create_categories_database(partial: bool = False) -> None:
     else:
         act = load_dataframe("activity", False, 'activity_view', False)
 
+    if act is None:
+        return
     cat_df = categories_sum(act)
     arg = (cat_df, "activity", f"categories{'_partial' if partial else ''}")
     categories_thread = Thread(target=save_dataframe, args=arg)

@@ -10,8 +10,9 @@ import os
 import sys
 import logging
 import shutil
+from typing import Any
 from datetime import datetime, timedelta
-from flask import request
+from flask import request, jsonify, Flask
 import soundcard as sc
 import pandas as pd
 from pynput import keyboard
@@ -26,7 +27,7 @@ from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_trends, layout_all, layout_conflicts
 
 
-def mouse_idle_detector():
+def mouse_idle_detector() -> None:
     """
     Detects if mouse had activity. Waits a couple of seconds
     after detection to actively look for activity again.
@@ -41,14 +42,14 @@ def mouse_idle_detector():
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
 
 
-def keyboard_idle_detector():
+def keyboard_idle_detector() -> None:
     """
     Detects if keyboard had activity. Waits a couple of seconds
     after detection to actively look for activity again.
     """
-    def track_activity(*_args):
+    def track_activity(*_args: Any) -> None:
         save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'keyboard')
-        return False
+        return
     while True:
         cfg = load_config()
         with keyboard.Listener(on_press=track_activity) as listener:
@@ -56,7 +57,7 @@ def keyboard_idle_detector():
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
 
 
-def activity_detector():
+def activity_detector() -> None:
     """
     Detects window activity. Waits a couple of seconds
     after detection to actively look for activity again.
@@ -67,7 +68,7 @@ def activity_detector():
         time.sleep(cfg['ACTIVITY_CHECK_INTERVAL'])
 
 
-def activity_processor():
+def activity_processor() -> None:
     """
     Process activity database into categories and total databases.
     """
@@ -77,7 +78,7 @@ def activity_processor():
         time.sleep(cfg['PARTIAL_CATEGORIES_INTERVAL'])
 
 
-def audio_idle_detector():
+def audio_idle_detector() -> None:
     """
     Detects if audio had activity. Waits a couple of seconds
     after detection to actively look for activity again.
@@ -94,7 +95,7 @@ def audio_idle_detector():
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
 
 
-def backups():
+def backups() -> None:
     """
     Does backup for the activity database, which is the one
     that generates all other databases.
@@ -137,7 +138,7 @@ def backups():
         files.sort()
 
 
-def auxiliary_work():
+def auxiliary_work() -> None:
     """
     Does auxiliary work for the program.
     Backup.
@@ -148,17 +149,18 @@ def auxiliary_work():
         backups()
 
 
-def server_supervisor():
+def server_supervisor() -> None:
     """Server runner function."""
     external_stylesheets = [dbc.themes.BOOTSTRAP]
     app = Dash(
         __name__,
-        update_title=None,
+        update_title="Productivity Dashboard...",
         external_stylesheets=external_stylesheets,
         title="Productivity Dashboard",
         assets_folder='../assets')
 
     server = app.server
+    assert isinstance(server, Flask)
 
     app.layout = html.Div([
         dcc.Location(id='url', refresh=False),
@@ -210,18 +212,25 @@ def server_supervisor():
 
     @server.route('/urldata/', methods=['GET'])
     def extension_handler():
-        titles = request.args.get('titles').split("|-|")
+        titles = request.args.get('titles')
+        assert isinstance(titles, str)
+        titles = titles.split("|-|")
         titles = [  # Correct for special characters
             title.encode("utf-8").decode("unicode_escape")
             for title in titles
         ]
-        urls = request.args.get("urls").split("|-|")
+
+        urls = request.args.get("urls")
+        assert isinstance(urls, str)
+        urls = urls.split("|-|")
+
         if len(titles) != len(urls):
             print("\033[93mTitles and urls list must have same length\033[00m")
             sys.exit()
+
         dataframe = pd.DataFrame({'title': titles, 'url': urls})
         save_dataframe(dataframe, "urls")
-        return "OK"
+        return jsonify({'message': 'OK'}), 200
 
     # Run the server
-    server.run(port="8050")
+    server.run(port=8050)

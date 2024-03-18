@@ -1,0 +1,1 @@
+18:20:59 - Error at function load_dataframe() on attempt 1: AssertionError("Empty dataframe")

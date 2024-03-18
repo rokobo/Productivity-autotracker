@@ -7,27 +7,38 @@ import sys
 from os.path import dirname, exists, join, abspath
 import time
 import logging
+from logging.handlers import RotatingFileHandler
 from typing import Callable, TypeVar, Any, Optional
 import sqlite3 as sql
 import yaml
 from notifypy import Notify
 import pandas as pd
 
+log_path = join(dirname(dirname(abspath(__file__))), "logs")
+logger1 = logging.getLogger('retry')
+logger1.setLevel(logging.DEBUG)
+file_handler1 = RotatingFileHandler(
+    join(log_path, 'retry.log'), maxBytes=1024*256, backupCount=3)
+file_handler1.setLevel(logging.DEBUG)
+file_handler1.setFormatter(
+    logging.Formatter('%(asctime)s - %(message)s', datefmt='%H:%M:%S'))
+logger1.addHandler(file_handler1)
 
-logging.basicConfig(
-    filename='app.log',
-    filemode='w',
-    level=logging.INFO,
-    format='%(asctime)s - %(message)s',
-    datefmt='%H:%M:%S'
-)
-logger = logging.getLogger('app')
+logger2 = logging.getLogger('activity')
+logger2.setLevel(logging.DEBUG)
+file_handler2 = RotatingFileHandler(
+    join(log_path, 'activity.log'), maxBytes=1024*160, backupCount=3)
+file_handler2.setLevel(logging.DEBUG)
+file_handler2.setFormatter(
+    logging.Formatter('%(asctime)s - %(message)s', datefmt='%H:%M:%S'))
+logger2.addHandler(file_handler2)
+
 T = TypeVar('T')
-logger.info("Logger started")
 
 
 def retry(
-    attempts: int = 0, wait: float = 0.5, print_fail: bool = False
+    attempts: int = 0, wait: float = 0.5, print_fail: bool = False,
+    log_args: bool = False, log_result: bool = False
 ) -> Callable[[Callable[..., T]], Callable[..., Optional[T]]]:
     """
     Retry decorator for any function.
@@ -36,7 +47,6 @@ def retry(
         attempts (int, optional): Attempts to execute function.
             Defaults to retry attemps defined in configuration file.
         wait (float, optional): Wait time in between attempts. Defaults to 0.5.
-        return_params (int, optional): How many None values to return if fail.
 
     Returns:
         Callable[[Callable[..., T]], Callable[..., Optional[T]]]:
@@ -67,25 +77,33 @@ def retry(
             """
             for attempt in range(attempts):
                 try:
-                    return func(*args, **kwargs)
+                    t1 = time.time()
+                    result = func(*args, **kwargs)
+                    t2 = time.time()
                 except Exception as e:
-                    if (attempt + 1) != attempts:
-                        continue
-                    logger.error(
-                        "Error at function %s() on attempt %i: %s(\"%s\")",
+                    logger1.error(
+                        "Error at function %s(%s) on attempt %i: %s(\"%s\")",
                         func.__name__,
+                        ', '.join(map(str, args)) if log_args else "",
                         attempt + 1,
                         type(e).__name__,
                         e
                     )
-                    if not print_fail:
-                        continue
-                    print(
-                        f"\033[93m{time.strftime('%X')}",
-                        f"Error at {func.__name__}(),",
-                        "seek app logs \033[00m"
-                    )
-                time.sleep(wait)
+                    if print_fail:
+                        print(
+                            f"\033[93m{time.strftime('%X')}",
+                            f"Error at {func.__name__}(),",
+                            "seek app logs \033[00m"
+                        )
+                    time.sleep(wait)
+                    continue
+                else:
+                    if log_result:
+                        logger2.info(
+                            "%s(), %.3f seconds, result: %s",
+                            func.__name__, t2-t1, result
+                        )
+                return result
             return None
         return wrapper
     return decorator
@@ -162,7 +180,7 @@ def start_databases() -> None:
     ]
     if not exists(path):
         conn = sql.connect(path)
-        assert conn is not None
+        assert conn is not None, "conn is None"
         cursor = conn.cursor()
         for table in tables:
             schema_path = join(
@@ -175,7 +193,7 @@ def start_databases() -> None:
         conn.close()
 
     conn = sql.connect(path)
-    assert conn is not None
+    assert conn is not None, "conn is None"
     cursor = conn.cursor()
     q = "INSERT OR REPLACE INTO settings (label, value) VALUES (?, ?)"
     cursor.execute(
@@ -185,9 +203,16 @@ def start_databases() -> None:
     conn.commit()
     conn.close()
 
+    # Start these to prevent errors from last interruption
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'mouse')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'keyboard')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'backend')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'audio')
 
-@retry(wait=0.1)
-def load_lastest_row(name: str) -> pd.DataFrame:
+
+@retry(wait=0.3, log_args=True)
+def load_latest_row(name: str) -> pd.DataFrame:
     """
     Loads latest row of a given dataframe.
 
@@ -203,11 +228,12 @@ def load_lastest_row(name: str) -> pd.DataFrame:
 
     # Access database
     conn = sql.connect(path)
-    assert conn is not None
+    assert conn is not None, "conn is None"
     dataframe = pd.read_sql(
         f"SELECT *, rowid FROM {name} ORDER BY rowid DESC LIMIT 1", conn
     )
-    assert isinstance(dataframe, pd.DataFrame) and not dataframe.empty
+    assert isinstance(dataframe, pd.DataFrame), "Not a dataframe"
+    assert not dataframe.empty, "Empty dataframe"
     conn.close()
     return dataframe
 
@@ -233,12 +259,13 @@ def load_day_total(day: int) -> pd.DataFrame:
 
     # Access database
     conn = sql.connect(path)
-    assert conn is not None
+    assert conn is not None, "conn is None"
     dataframe = pd.read_sql(
         f"SELECT Neutral, Personal, Work \
             FROM totals WHERE days_since = '{day}'", conn
     )
-    assert isinstance(dataframe, pd.DataFrame) and not dataframe.empty
+    assert isinstance(dataframe, pd.DataFrame), "Not a dataframe"
+    assert not dataframe.empty, "Empty dataframe"
     conn.close()
     return dataframe
 
@@ -267,7 +294,7 @@ def modify_latest_row(
 
     # Access database
     conn = sql.connect(path)
-    assert conn is not None
+    assert conn is not None, "conn is None"
     cursor = conn.cursor()
     for col in columns_to_update:
         rowid = new_row.loc[0, "rowid"]
@@ -301,7 +328,7 @@ def append_to_database(name: str, new_row: pd.DataFrame) -> None:
         sys.exit()
 
     conn = sql.connect(path)
-    assert conn is not None
+    assert conn is not None, "conn is None"
     new_row.to_sql(name, conn, if_exists="append", index=False)
     conn.close()
 
@@ -330,13 +357,14 @@ def load_activity_between(
 
     # Access database
     conn = sql.connect(path)
-    assert conn is not None
+    assert conn is not None, "conn is None"
     dataframe = pd.read_sql(
         f"SELECT *, rowid FROM {name}\
             WHERE start_time >= {start} AND end_time <= {end}",
         conn,
     )
-    assert isinstance(dataframe, pd.DataFrame) and not dataframe.empty
+    assert isinstance(dataframe, pd.DataFrame), "Not a dataframe"
+    assert not dataframe.empty, "Empty dataframe"
     conn.close()
     return dataframe
 
@@ -378,9 +406,9 @@ def load_dataframe(
 
     conn = sql.connect(path)
     dataframe = pd.read_sql(query, conn)
-    assert isinstance(dataframe, pd.DataFrame)
+    assert isinstance(dataframe, pd.DataFrame), "Not a dataframe"
     if not can_be_empty:
-        assert not dataframe.empty
+        assert not dataframe.empty, "Empty dataframe"
     conn.close()
     return dataframe
 
@@ -402,7 +430,7 @@ def save_dataframe(df: pd.DataFrame, name: str, table: Optional[str] = None):
     table = name if table is None else table
 
     conn = sql.connect(path)
-    assert conn is not None
+    assert conn is not None, "conn is None"
     conn.execute("BEGIN EXCLUSIVE")
     df.to_sql(table, conn, if_exists="replace", index=False)
     conn.close()
@@ -418,7 +446,7 @@ def load_input_time(name: str) -> int:
     Returns:
         int: Time of latest input from path.
     """
-    device = load_lastest_row(name)
+    device = load_latest_row(name)
     if device is None:
         return -1
     recorded_time = device.iloc[0, 0]
@@ -448,9 +476,9 @@ def load_url(page_title: str) -> pd.DataFrame:
         WHERE title = ?
     """
     conn = sql.connect(path)
-    assert conn is not None
+    assert conn is not None, "conn is None"
     url = pd.read_sql(query, conn, params=[page_title])
-    assert isinstance(url, pd.DataFrame)
+    assert isinstance(url, pd.DataFrame), "Not a URL dataframe"
     conn.close()
     return url
 
@@ -465,8 +493,8 @@ def set_idle():
     inputs = ["mouse", "keyboard", "audio"]
 
     for input_name in inputs:
-        input_dataframe = load_lastest_row(input_name)
-        assert input_dataframe is not None
+        input_dataframe = load_latest_row(input_name)
+        assert input_dataframe is not None, "Failed to get latest row"
         if now - input_dataframe.loc[0, "time"] < idle_time:
             input_dataframe.loc[0, "time"] = now - idle_time
             modify_latest_row(input_name, input_dataframe, ["time"])
@@ -545,7 +573,7 @@ def delete_from_dataframe(name: str, column: str, values: list) -> None:
             IN ({', '.join('?' for _ in values)})"
 
     conn = sql.connect(path)
-    assert conn is not None
+    assert conn is not None, "conn is None"
     cursor = conn.cursor()
     cursor.execute(query, values)
     conn.commit()

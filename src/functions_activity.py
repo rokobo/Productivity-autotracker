@@ -23,15 +23,15 @@ from helper_io import (
     save_dataframe,
     load_url,
     load_config,
-    load_lastest_row,
+    load_latest_row,
     modify_latest_row,
     load_categories,
     timestamp_to_day,
-    retry
+    retry,
 )
 
 
-@retry(wait=0.25)
+@retry(wait=0.25, log_result=True)
 def detect_activity() -> Optional[tuple[int, str, str, str, str]]:
     """
     Detects user activity and returns tracking variables.
@@ -44,10 +44,7 @@ def detect_activity() -> Optional[tuple[int, str, str, str, str]]:
     start_time = int(time.time())
 
     window = pwc.getActiveWindow()
-
-    if not window:
-        raise EnvironmentError("Could not get active window")
-
+    assert window, "Could not get active window"
     process_name = window.getAppName()
     title = window.title
 
@@ -58,8 +55,7 @@ def detect_activity() -> Optional[tuple[int, str, str, str, str]]:
                 capture_output=True, text=True, check=True
             ).stdout)
 
-        if not window:
-            raise EnvironmentError("Could not get active window")
+        assert window, "Could not get active window"
 
         title = re.search(
             '= "(.*?)"', subprocess.run(
@@ -67,34 +63,22 @@ def detect_activity() -> Optional[tuple[int, str, str, str, str]]:
                 capture_output=True, text=True, check=True
             ).stdout)
 
-        if not title:
-            raise LookupError("Could not find title of window on linux")
-
+        assert title, "Could not find title of window on linux"
         title = title.group(1)
 
-    if not (isinstance(title, str) and isinstance(process_name, str)):
-        raise LookupError("Could not find title and process name of window")
+    assert isinstance(title, str), "Could not find title of window"
+    assert isinstance(process_name, str), "Could not find pname of window"
 
-    if process_name not in ["brave.exe", "brave"]:
-        url, domain = "", ""
+    url, domain = None, None
+    if process_name in ["brave.exe", "brave"]:
+        result = match_to_url(title)
+        if result is not None:
+            url, domain = result
     else:
-        url, domain = match_to_url(title)
-    if url is None or domain is None:
-        raise LookupError(f"Could not find URL and domain on {title}")
+        url, domain = "", ""
 
-    results = [
-        isinstance(title, str),
-        isinstance(process_name, str),
-        url is not None,
-    ]
-
-    # Set to idle in case of failure
-    if not all(results):
-        print(
-            f"\033[93m{time.strftime('%X')} Activity failed to detect,",
-            f"setting idle... {results}\033[00m ",
-        )
-        return None
+    assert url is not None, f"Could not find URL for {title}"
+    assert domain is not None, f"Could not find domain for {title}"
 
     # Hide information from apps in HIDDEN_APPS list
     name = process_name.lower()
@@ -103,7 +87,7 @@ def detect_activity() -> Optional[tuple[int, str, str, str, str]]:
     return (start_time, title, process_name, url, domain)
 
 
-def match_to_url(title: str) -> tuple[str, str] | tuple[None, None]:
+def match_to_url(title: str) -> Optional[tuple[str, str]]:
     """
     Matches a window title to a browser tab's URL.
 
@@ -117,8 +101,7 @@ def match_to_url(title: str) -> tuple[str, str] | tuple[None, None]:
     # Correct for special characters
     title = title.encode("utf-8").decode("unicode_escape")
     url = load_url(title.removesuffix(" - Brave"))
-    if url is None:
-        return None, None
+    assert url is not None, "URL is None"
     url = url.loc[0, "url"]
     parsed = urlparse(url)
     if parsed.scheme not in ["http", "https"]:
@@ -128,7 +111,6 @@ def match_to_url(title: str) -> tuple[str, str] | tuple[None, None]:
     return url, domain
 
 
-@retry(attempts=2, wait=0.1)
 def detect_idle() -> Optional[bool]:
     """
     if idle, return a tuple representing raw data of idle activity.
@@ -190,7 +172,7 @@ def join(current_act: pd.DataFrame) -> None:
         pd.DataFrame: Dataframe with parsed data from latest activity.
     """
     cfg = load_config()
-    previous_act = load_lastest_row("activity")
+    previous_act = load_latest_row("activity")
     if previous_act is None:
         return
     start1, start2 = previous_act["start_time"], current_act["start_time"]

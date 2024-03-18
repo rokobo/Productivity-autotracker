@@ -3,7 +3,7 @@
 import os
 import pandas as pd
 from helper_io import save_dataframe, load_dataframe, load_input_time, \
-    load_config, load_lastest_row, \
+    load_config, load_latest_row, \
     modify_latest_row, append_to_database, load_activity_between, \
     load_categories
 
@@ -63,12 +63,12 @@ def test_load_latest_row() -> None:
     """Tests load_latest_row function."""
     dataframe = pd.DataFrame({'col1': ["1"]})
     save_dataframe(dataframe, '__test3__')
-    loaded_dataframe = load_lastest_row('__test3__')
+    loaded_dataframe = load_latest_row('__test3__')
     assert dataframe.tail(1).equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({'col1': [1], 'col2': ["2"]})
     save_dataframe(dataframe, '__test3__')
-    loaded_dataframe = load_lastest_row('__test3__')
+    loaded_dataframe = load_latest_row('__test3__')
     assert dataframe.tail(1).equals(loaded_dataframe.drop('rowid', axis=1))
 
     dataframe = pd.DataFrame({'col2': [5], 'col3': [3], 'col1': [7]})
@@ -85,32 +85,32 @@ def test_modify_latest_row() -> None:
     """Tests the modify_latest_row function."""
     dataframe = pd.DataFrame({'col1': ["1"]})
     save_dataframe(dataframe, '__test4__')
-    new_dataframe = load_lastest_row('__test4__')
+    new_dataframe = load_latest_row('__test4__')
     new_dataframe.loc[0, 'col1'] = "2"
     modify_latest_row('__test4__', new_dataframe, ['col1'])
-    loaded_dataframe = load_lastest_row('__test4__')
+    loaded_dataframe = load_latest_row('__test4__')
     assert new_dataframe.equals(loaded_dataframe)
 
     dataframe = pd.DataFrame({'col1': [1], 'col2': ["2"]})
     save_dataframe(dataframe, '__test4__')
-    new_dataframe = load_lastest_row('__test4__')
+    new_dataframe = load_latest_row('__test4__')
     new_dataframe.loc[0, 'col1'] = 5
     modify_latest_row('__test4__', new_dataframe, ['col1'])
-    loaded_dataframe = load_lastest_row('__test4__')
+    loaded_dataframe = load_latest_row('__test4__')
     assert new_dataframe.equals(loaded_dataframe)
 
     dataframe = pd.DataFrame({'col1': [1], 'col2': [2], 'col3': [3]})
     save_dataframe(dataframe, '__test4__')
-    new_dataframe = load_lastest_row('__test4__')
+    new_dataframe = load_latest_row('__test4__')
     new_dataframe.loc[0, 'col1'] = 4
     new_dataframe.loc[0, 'col3'] = 6
     modify_latest_row('__test4__', new_dataframe, ['col1', 'col3'])
-    loaded_dataframe = load_lastest_row('__test4__')
+    loaded_dataframe = load_latest_row('__test4__')
     assert new_dataframe.equals(loaded_dataframe)
 
-    new_dataframe = load_lastest_row('__test4__')
+    new_dataframe = load_latest_row('__test4__')
     modify_latest_row('__test4__', new_dataframe, ['col1', 'col3'])
-    loaded_dataframe = load_lastest_row('__test4__')
+    loaded_dataframe = load_latest_row('__test4__')
     assert new_dataframe.equals(loaded_dataframe)
 
     # Clean files

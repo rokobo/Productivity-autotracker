@@ -15,7 +15,7 @@ import layout_menu
 from helper_server import generate_cards, make_crown, \
     make_totals_graph, make_info_row, make_heatmap
 from helper_io import save_dataframe, load_dataframe, \
-    load_config, set_idle, load_lastest_row, load_day_total
+    load_config, set_idle, load_latest_row, load_day_total
 
 CFG = load_config()
 
@@ -185,7 +185,7 @@ def update_element_list(_1):
 )
 def update_info_row(_1):
     """Updates idle modal."""
-    last_row = load_lastest_row('activity')
+    last_row = load_latest_row('activity')
     idle = last_row.loc[0, "process_name"] == "IDLE TIME"
     return idle
 

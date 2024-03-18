@@ -8,3 +8,4 @@ backup/
 *.code-workspace
 app.log
 default.nix
+.fuse*

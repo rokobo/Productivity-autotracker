@@ -82,15 +82,13 @@ if __name__ == "__main__":
     # Restart mechanism
     while True:
         try:
-            try:  # Main activity process
-                if not (
-                    activity_process.is_alive()
-                    and did_backend_update_recently()
-                ):
-                    activity_process.terminate()
-                    activity_process.join()
-                    raise AssertionError
-            except Exception:
+            # Main activity process
+            if not (
+                activity_process.is_alive()
+                and did_backend_update_recently()
+            ):
+                activity_process.terminate()
+                activity_process.join()
                 print(
                     f"\033[91m{time.strftime('%X')} Error in",
                     "activity_process... \033[00m ",
@@ -101,10 +99,8 @@ if __name__ == "__main__":
                 activity_process.start()
                 print("\033[92mRestarted!\033[00m")
 
-            try:  # Secondary activity thread
-                if not activity_process2.is_alive():
-                    raise AssertionError
-            except Exception:
+            # Secondary activity thread
+            if not activity_process2.is_alive():
                 print(
                     f"\033[91m{time.strftime('%X')} Error in",
                     "activity_process2... \033[00m",
@@ -115,10 +111,8 @@ if __name__ == "__main__":
                 activity_process2.start()
                 print("\033[92mRestarted!\033[00m")
 
-            try:  # Mouse detection thread
-                if not mouse_thread.is_alive():
-                    raise AssertionError
-            except Exception:
+            # Mouse detection thread
+            if not mouse_thread.is_alive():
                 print(
                     f"\033[91m{time.strftime('%X')} Error in",
                     "mouse_thread... \033[00m",
@@ -129,10 +123,8 @@ if __name__ == "__main__":
                 mouse_thread.start()
                 print("\033[92mRestarted!\033[00m")
 
-            try:  # Keyboard detection thread
-                if not keyboard_thread.is_alive():
-                    raise AssertionError
-            except Exception:
+            # Keyboard detection thread
+            if not keyboard_thread.is_alive():
                 print(
                     f"\033[91m{time.strftime('%X')} Error in",
                     "keyboard_thread... \033[00m",
@@ -143,10 +135,8 @@ if __name__ == "__main__":
                 keyboard_thread.start()
                 print("\033[92mRestarted!\033[00m")
 
-            try:  # Audio detection thread
-                if not audio_process.is_alive():
-                    raise AssertionError
-            except Exception:
+            # Audio detection thread
+            if not audio_process.is_alive():
                 print(
                     f"\033[91m{time.strftime('%X')} Error in",
                     "audio_process... \033[00m",
@@ -157,10 +147,8 @@ if __name__ == "__main__":
                 audio_process.start()
                 print("\033[92mRestarted!\033[00m")
 
-            try:  # Study advisor process
-                if not advisor_process.is_alive():
-                    raise AssertionError
-            except Exception:
+            # Study advisor process
+            if not advisor_process.is_alive():
                 print(
                     f"\033[91m{time.strftime('%X')} Error in",
                     "advisor_process... \033[00m",
@@ -171,10 +159,8 @@ if __name__ == "__main__":
                 advisor_process.start()
                 print("\033[92mRestarted!\033[00m")
 
-            try:  # Dash server process
-                if not server_process.is_alive():
-                    raise AssertionError
-            except Exception:
+            # Dash server process
+            if not server_process.is_alive():
                 print(
                     f"\033[91m{time.strftime('%X')} Error in",
                     "server_process... \033[00m",
@@ -185,10 +171,8 @@ if __name__ == "__main__":
                 server_process.start()
                 print("\033[92mRestarted!\033[00m")
 
-            try:  # Backup process
-                if not auxiliary_process.is_alive():
-                    raise AssertionError
-            except Exception:
+            # Backup process
+            if not auxiliary_process.is_alive():
                 print(
                     f"\033[91m{time.strftime('%X')} Error in",
                     "auxiliary_process... \033[00m",

@@ -51,7 +51,7 @@ def keyboard_idle_detector() -> None:
     """
     def track_activity(*_args: Any) -> None:
         save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'keyboard')
-        return
+
     while True:
         cfg = load_config()
         with keyboard.Listener(on_press=track_activity) as listener:
@@ -156,7 +156,6 @@ def auxiliary_work() -> None:
         backups()
 
 
-@retry(attempts=2, wait=1.0)
 def server_supervisor() -> None:
     """Server runner function."""
     external_stylesheets = [dbc.themes.BOOTSTRAP]

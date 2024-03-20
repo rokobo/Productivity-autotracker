@@ -83,7 +83,7 @@ def fix_milestones() -> Optional[pd.DataFrame]:
 
     milestones = load_dataframe("milestones")
     if milestones is None:
-        return
+        return None
 
     milestones = milestones.drop("rowid", axis=1)
 
@@ -100,7 +100,7 @@ def fix_milestones() -> Optional[pd.DataFrame]:
 
 
 @retry(wait=0.5)
-def check_milestones():
+def check_milestones() -> None:
     """
     Function to check for goal milestones.
     Sends a desktop notification when milestone is achieved.

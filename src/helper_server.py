@@ -32,9 +32,7 @@ def generate_cards(df: pd.DataFrame, totals=None) -> Optional[list[dbc.Col]]:
     if (totals is None) or totals.empty:
         return None
     cfg = load_config()
-    work_list = []
-    personal_list = []
-    neutral_list = []
+    card_list = [[], [], []]
 
     card_style = {
         'background-color': cfg['CARD_COLOR'],
@@ -83,17 +81,17 @@ def generate_cards(df: pd.DataFrame, totals=None) -> Optional[list[dbc.Col]]:
             ], className="justify-content-center g-0")
         ], style=cardbody_style)], style=card_style)
         if category == "Work":
-            work_list.append(item)
+            card_list[0].append(item)
         elif category == "Personal":
-            personal_list.append(item)
+            card_list[1].append(item)
         else:
-            neutral_list.append(item)
+            card_list[2].append(item)
 
     spacing = f'g-{cfg["CATEGORY_COLUMN_SPACE"]}'
     return [
-        dbc.Col(work_list, class_name=spacing, width=4),
-        dbc.Col(personal_list, class_name=spacing, width=4),
-        dbc.Col(neutral_list, class_name=spacing, width=4)
+        dbc.Col(card_list[0], class_name=spacing, width=4),
+        dbc.Col(card_list[1], class_name=spacing, width=4),
+        dbc.Col(card_list[2], class_name=spacing, width=4)
     ]
 
 
@@ -131,7 +129,7 @@ def format_duration(seconds: int, long: bool) -> str:
         str: Readable string.
     """
     t_parts = [seconds // 3600, (seconds % 3600) // 60, seconds % 60]
-    t_units = [" hour", " minute", " second"] if long else ["h", "m", "s"]
+    t_units = [" hour", " min", " sec"] if long else ["h", "m", "s"]
     separator = ", " if long else " "
     string_parts = []
 
@@ -604,14 +602,13 @@ def make_info_row() -> Optional[dbc.Col]:
 
     personal = data.loc[0, "Personal"]
     first_row += ", Personal: "
-    personal_goal = cfg['PERSONAL_DAILY_GOAL']
-    work_multiplied = cfg['WORK_TO_PERSONAL_MULTIPLIER'] * work
-    if work_multiplied > personal_goal:
-        personal_goal = work_multiplied
-    if personal >= personal_goal:
+    person_goal = cfg['PERSONAL_DAILY_GOAL']
+    person_goal = max(cfg['WORK_TO_PERSONAL_MULTIPLIER'] * work, person_goal)
+
+    if personal >= person_goal:
         first_row += "Over limit!"
     else:
-        first_row += f"{int((personal_goal - personal) * 60)} min left"
+        first_row += f"{int((person_goal - personal) * 60)} min left"
 
     # Make second row
     second_row = datetime.datetime.now().strftime('%B %d, %A, %H:%M:%S')

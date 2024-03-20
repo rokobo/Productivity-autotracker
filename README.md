@@ -15,6 +15,20 @@ This project began with a desire to have a time tracking software with the autom
 + [Pages](#pages)
 + [Browser URL problem](#browser-url-problem)
 
+## **Running the app**
+
+Navigate to the root directory `Productivity-autotracker/`, activate the virtual environment:
+
+```bash
+source .venv/bin/activate
+```
+
+then run the `main.py` program:
+
+```bash
+python src/main.py
+```
+
 ## **How it works**
 
 This program works by having it constantly running (I always have a terminal running a couple programs). It is periodically getting your active window and other pieces of information to determine what you are doing and if you are idle.

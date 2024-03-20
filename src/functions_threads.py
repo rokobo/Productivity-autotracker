@@ -20,13 +20,14 @@ from pyautogui import position
 import dash_bootstrap_components as dbc
 from dash import Dash, html, dcc, Input, Output, callback
 from functions_activity import parser, secondary_parser
-from helper_io import save_dataframe, load_config
+from helper_io import save_dataframe, load_config, retry
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
     layout_configuration2, layout_urls, layout_milestones, \
     layout_trends, layout_all, layout_conflicts
 
 
+@retry(attempts=2, wait=1.0)
 def mouse_idle_detector() -> None:
     """
     Detects if mouse had activity. Waits a couple of seconds
@@ -42,6 +43,7 @@ def mouse_idle_detector() -> None:
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
 
 
+@retry(attempts=2, wait=1.0)
 def keyboard_idle_detector() -> None:
     """
     Detects if keyboard had activity. Waits a couple of seconds
@@ -57,6 +59,7 @@ def keyboard_idle_detector() -> None:
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
 
 
+@retry(attempts=2, wait=1.0)
 def activity_detector() -> None:
     """
     Detects window activity. Waits a couple of seconds
@@ -68,6 +71,7 @@ def activity_detector() -> None:
         time.sleep(cfg['ACTIVITY_CHECK_INTERVAL'])
 
 
+@retry(attempts=2, wait=1.0)
 def activity_processor() -> None:
     """
     Process activity database into categories and total databases.
@@ -78,6 +82,7 @@ def activity_processor() -> None:
         time.sleep(cfg['PARTIAL_CATEGORIES_INTERVAL'])
 
 
+@retry(attempts=2, wait=1.0)
 def audio_idle_detector() -> None:
     """
     Detects if audio had activity. Waits a couple of seconds
@@ -95,6 +100,7 @@ def audio_idle_detector() -> None:
         time.sleep(cfg['IDLE_CHECK_INTERVAL'])
 
 
+@retry(attempts=2, wait=1.0)
 def backups() -> None:
     """
     Does backup for the activity database, which is the one
@@ -138,6 +144,7 @@ def backups() -> None:
         files.sort()
 
 
+@retry(attempts=2, wait=1.0)
 def auxiliary_work() -> None:
     """
     Does auxiliary work for the program.
@@ -149,6 +156,7 @@ def auxiliary_work() -> None:
         backups()
 
 
+@retry(attempts=2, wait=1.0)
 def server_supervisor() -> None:
     """Server runner function."""
     external_stylesheets = [dbc.themes.BOOTSTRAP]

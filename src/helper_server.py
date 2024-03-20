@@ -380,15 +380,15 @@ def make_heatmap() -> Optional[go.Figure]:
 
             temp_hovertext.append((
                 f"{round(work, 2)} hours of work<br>"
-                f"{round(pers, 2)} hours of personal<br>"
-                f"Week {week + 1}, Day {day + 1}<br>"
-                f"{('Current week'
+                + f"{round(pers, 2)} hours of personal<br>"
+                + f"Week {week + 1}, Day {day + 1}<br>"
+                + ('Current week'
                     if week == 51
-                    else (f'Happened {51-week}w ago'))}"
-                "<br>"
-                f"{('Current day'
+                    else (f'Happened {51-week}w ago'))
+                + "<br>"
+                + ('Current day'
                     if day == 363
-                    else (f'Happened {363-day}d ago'))}"
+                    else (f'Happened {363-day}d ago'))
             ))
         values.append(temp_values)
         hovertext.append(temp_hovertext)

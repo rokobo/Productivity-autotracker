@@ -9,3 +9,6 @@ backup/
 app.log
 default.nix
 .fuse*
+/logs
+/logs
+config/categories.yml

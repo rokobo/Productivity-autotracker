@@ -353,6 +353,7 @@ def make_heatmap() -> Optional[go.Figure]:
     fig = go.Figure()
     values = []
     hovertext = []
+    date = datetime.datetime.now() - datetime.timedelta(days=363)
 
     for week in range(52):
         temp_values = []
@@ -380,6 +381,8 @@ def make_heatmap() -> Optional[go.Figure]:
                 f"{round(work, 2)} hours of work<br>"
                 + f"{round(pers, 2)} hours of personal<br>"
                 + f"Week {week + 1}, Day {day + 1}<br>"
+                + date.strftime("%B %d, %Y")
+                + "<br>"
                 + ('Current week'
                     if week == 51
                     else (f'Happened {51-week}w ago'))
@@ -388,6 +391,7 @@ def make_heatmap() -> Optional[go.Figure]:
                     if day == 363
                     else (f'Happened {363-day}d ago'))
             ))
+            date += datetime.timedelta(days=1)
         values.append(temp_values)
         hovertext.append(temp_hovertext)
 

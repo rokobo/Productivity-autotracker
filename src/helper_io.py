@@ -6,6 +6,7 @@ Collection of helper functions for input and output rountines.
 import sys
 from os.path import dirname, exists, join, abspath
 import time
+import traceback
 import logging
 from logging.handlers import RotatingFileHandler
 from typing import Callable, TypeVar, Any, Optional
@@ -18,7 +19,7 @@ log_path = join(dirname(dirname(abspath(__file__))), "logs")
 logger1 = logging.getLogger('retry')
 logger1.setLevel(logging.DEBUG)
 file_handler1 = RotatingFileHandler(
-    join(log_path, 'retry.log'), maxBytes=1024*256, backupCount=3)
+    join(log_path, 'retry.log'), maxBytes=1024*512, backupCount=3)
 file_handler1.setLevel(logging.DEBUG)
 file_handler1.setFormatter(
     logging.Formatter('%(asctime)s - %(message)s', datefmt='%H:%M:%S'))
@@ -82,12 +83,16 @@ def retry(
                     t2 = time.time()
                 except Exception as e:
                     logger1.error(
-                        "Error at function %s(%s) on attempt %i: %s(\"%s\")",
+                        (
+                            "Error at function %s(%s) "
+                            "on attempt %i: %s(\"%s\")\n%s"
+                        ),
                         func.__name__,
                         ', '.join(map(str, args)) if log_args else "",
                         attempt + 1,
                         type(e).__name__,
-                        e
+                        e,
+                        traceback.format_exc()
                     )
                     if print_fail:
                         print(

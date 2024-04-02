@@ -16,7 +16,7 @@ IDLE_CHECK_INTERVAL: 5             # Time between checking for idle
 ACTIVITY_CHECK_INTERVAL: 1         # Time between checking for interaction
 PARTIAL_CATEGORIES_INTERVAL: 15   # Time between updating total and categories database
 MINIMUM_ACTIVITY_TIME: 30          # Minimum time for activity to show in cards
-UNRESPONSIVE_THRESHOLD: 10         # Minimum time without backend update before server restart
+UNRESPONSIVE_THRESHOLD: 60         # Minimum time without backend update before server restart
 RETRY_ATTEMPS: 5                   # Retry attempts for various IO operations
 GMT_OFFSET: -3                     # Your localtime GMT offset
 ADVISOR_CHECK_INTERVAL: 30         # Time between study advisor checks

@@ -83,10 +83,7 @@ if __name__ == "__main__":
     while True:
         try:
             # Main activity process
-            if not (
-                activity_process.is_alive()
-                and did_backend_update_recently()
-            ):
+            if not activity_process.is_alive():
                 activity_process.terminate()
                 activity_process.join()
                 print(
@@ -184,6 +181,8 @@ if __name__ == "__main__":
                 print("\033[92mRestarted!\033[00m")
 
             time.sleep(CFG["IDLE_CHECK_INTERVAL"] * 5)
+            if not did_backend_update_recently():
+                raise RuntimeError
 
         except Exception:
             print(

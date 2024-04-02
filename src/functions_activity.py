@@ -5,8 +5,6 @@ Updates DataFrame with current activity.
 # pylint: disable=c-extension-no-member, import-error, no-name-in-module
 import time
 import re
-import sys
-import subprocess
 from typing import Optional
 from threading import Thread
 from urllib.parse import urlparse
@@ -47,24 +45,6 @@ def detect_activity() -> Optional[tuple[int, str, str, str, str]]:
     assert window, "Could not get active window"
     process_name = window.getAppName()
     title = window.title
-
-    if sys.platform == "linux":  # pywinctl bug that will soon be fixed
-        window = re.search(
-            "window id # (0x[0-9a-fA-F]+)", subprocess.run(
-                ["xprop", "-root", "_NET_ACTIVE_WINDOW"],
-                capture_output=True, text=True, check=True
-            ).stdout)
-
-        assert window, "Could not get active window"
-
-        title = re.search(
-            '= "(.*?)"', subprocess.run(
-                ["xprop", "-id", window.group(1), "WM_NAME"],
-                capture_output=True, text=True, check=True
-            ).stdout)
-
-        assert title, "Could not find title of window on linux"
-        title = title.group(1)
 
     assert isinstance(title, str), "Could not find title of window"
     assert isinstance(process_name, str), "Could not find pname of window"
@@ -280,22 +260,19 @@ def create_categories_database(partial: bool = False) -> None:
     categories_thread.daemon = True
     categories_thread.start()
 
-    # Update backend update time
-    arg = (pd.DataFrame({"time": [int(time.time())]}), "backend")
-    input_thread = Thread(target=save_dataframe, args=arg)
-    input_thread.daemon = True
-    input_thread.start()
-
-    # Wait for thread finish
-    categories_thread.join()
-    input_thread.join()
-
 
 def parser() -> None:
     """Parses raw activity and creates appropriate partial categories DBs."""
     # Get raw data
     raw_data = detect_activity()
     idle_data = detect_idle()
+
+    if raw_data is not None:
+        arg = (pd.DataFrame({"time": [int(time.time())]}), "backend")
+        save_thread = Thread(target=save_dataframe, args=arg)
+        save_thread.daemon = True
+        save_thread.start()
+
     if idle_data or (raw_data is None) or (idle_data is None):
         raw_data = (int(time.time()), "Time not counted", "IDLE TIME", "", "")
 

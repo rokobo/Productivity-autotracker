@@ -458,64 +458,88 @@ def make_crown() -> Optional[dbc.Row]:
         return None
     weeks = [1, 4, 12, 26, 52]
     goal = cfg["WORK_DAILY_GOAL"]
-    streaks0 = [
+    streaks0 = [  # Percentage of study consistency goal
         round(data.loc[364 - (interval * 7):, "Work"].apply(
             lambda x: min(x, goal)).sum() / (interval * 7 * goal) * 100, 2)
         for interval in weeks
     ]
-    streaks1 = [
+    streaks1 = [  # Days that study goal was achieved
         round((data.loc[364 - (interval * 7):, "Work"] >= goal).sum() /
               (interval * 7) * 100, 1)
         for interval in weeks
     ]
-    streaks2 = [
+    streaks2 = [  # Days that small study goal was achieved
         round((data.loc[364 - (interval * 7):, "Work"] >= cfg[
             "SMALL_WORK_DAILY_GOAL"]).sum() / (interval * 7) * 100, 1)
         for interval in weeks
     ]
-    sums = [
-        format_short_duration(
-            3600 * data.loc[364 - (interval*7):, "Work"].sum() / (interval*7))
-        for interval in weeks
-    ]
+    avg_time, avg_percentage = zip(*[  # Average study time and percetange
+        (format_short_duration(i * 36), round(i / goal, 2)) for i in [
+            data.loc[364 - (interval*7):, "Work"].sum() * 100 / (interval*7)
+            for interval in weeks
+        ]
+    ])
 
     # Determine which crown to give
     crowns = [
-        "crown_enchanted_gold.gif", "crown_gold.png",
-        "crown_red.png", "crown_silver.png",
-        "crown_bronze.png", "crown_black.png"
+        "crown_enchanted_gold.gif", "crown_gold.png", "crown_red.png",
+        "crown_silver.png", "crown_bronze.png", "crown_black.png"
     ]
     thresholds = [
         cfg["ENCHANTED_GOLD_STREAK_VALUE"], cfg["GOLD_STREAK_VALUE"],
         cfg["RED_STREAK_VALUE"], cfg["SILVER_STREAK_VALUE"],
         cfg["BRONZE_STREAK_VALUE"], 0
     ]
-    assets = [next(
-        result for threshold, result
-        in zip(thresholds, crowns)
-        if value >= threshold
-    ) for value in streaks0]
+    assets = [(
+        next(
+            result for threshold, result
+            in zip(thresholds, crowns)
+            if v1 >= threshold),
+        next(
+            result for threshold, result
+            in zip(thresholds, crowns)
+            if v2 >= threshold)
+    ) for v1, v2 in zip(streaks0, avg_percentage)]
 
-    row = dbc.Row([
-        dbc.Col([
-            html.Img(
-                src=f"/assets/{asset}",
-                height="35px",
-                width="35px",
-                title=(
-                    f"{weeks[i]}-week work goal: "
-                    f"{round(streaks1[i]*7*weeks[i]/100)} / {7*weeks[i]}"
-                    f"\n{weeks[i]}-week small work goal: "
-                    f"{round(streaks2[i]*7*weeks[i]/100)} / {7*weeks[i]}"
-                    f"\n{weeks[i]}-week work average: {sums[i]}"
+    row = []
+    for i, asset in enumerate(assets):
+        title = (
+            f"{weeks[i]}-week goals\n"
+            f"\nWork goal: "
+            f"{round(streaks1[i]*7*weeks[i]/100)} / {7*weeks[i]}"
+            f"\nSmall work goal: "
+            f"{round(streaks2[i]*7*weeks[i]/100)} / {7*weeks[i]}"
+            f"\nWork average: {avg_time[i]}"
+            f"\nWork goal percentage: {streaks0[i]}%"
+            f"\nWork average percentage: {avg_percentage[i]}%"
+        )
+
+        row.append(dbc.Col([
+            html.Div([
+                html.Img(
+                    src=f"/assets/{asset[0]}",
+                    title=title, style={
+                        "position": "absolute",
+                        'width': '100%',
+                        'height': '100%',
+                        'z-index': '1',
+                        "clip-path": "polygon(0 0, 100% 0, 0 100%)"
+                    }
+                ),
+                html.Img(
+                    src=f"/assets/{asset[1]}",
+                    title=title, style={
+                        "position": "absolute",
+                        'width': '100%',
+                        'height': '100%'
+                    }
                 )
-            ),
-            html.H5([f"{streaks0[i]}%"]),
-        ], class_name="g-0 justify-content-md-end", style={
-            'margin-right': '15px', 'margin-bottom': '0px'})
-        for i, asset in enumerate(assets)
-    ], class_name="g-0")
-    return row
+            ], style={
+                'position': 'relative', 'width': '40px', 'height': '40px'}),
+            html.H6([f"{streaks0[i]}%", html.Br(), f"{avg_percentage[i]}%"]),
+        ], class_name="g-0 justify-content-md", style={
+            'margin-right': '15px', 'margin-bottom': '0px'}))
+    return dbc.Row(row, class_name="g-0")
 
 
 def make_totals_graph(graph_data: pd.DataFrame):

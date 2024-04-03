@@ -1,64 +1,293 @@
 HIDDEN_APPS:
-  - firefox\.exe
-  - explorer\.exe
+  - firefox
+  - mpc-hc64
+  - explorer
   - photos\.uwp
-FULLSCREEN_APPS:
-  - sandrock\.exe
-  - mpc-hc64\.exe
+  - nautilus
+  - loupe
+  - gimp
+  - chrome
+  - vlc
+  - totem
 WORK_APPS:
-  - BREAK\ TIME
-  - terminal\.exe
-  - code\.exe
-  - windowsterminal\.exe
-  - githubdesktop\.exe
+  - terminal
+  - social
+  - studio64
+  - code
+  - github
+  - GitHub
+  - notion
+  - code-oss
+  - kgx
+  - clipchamp
+  - windowsterminal
+  - balenaetcher
+  - epmui
+  - veracrypt
+  - gnome
+  - docker
+  - digikam
+  - tabby
+  - github-desktop
+  - notepad
+  - control
+  - IDMan
+  - seccenter
+  - obsidian
+  - openrgb
+  - nvidia\ broadcast
+  - bzbui
   - calculator\.uwp
+  - lghub
+  - wordpad
+  - qbittorrent
+  - designer
   - camera\.uwp
-  - taskmgr\.exe
+  - fancontrol
+  - taskmgr
+  - gjs
+  - powertoys\.
+  - resilio
+  - adobe\ premiere\ pro
+  - python
+  - settings\.uwp
+  - mmc
+  - virtualbox
+  - setup
+  - perftune
+  - gimp
+  - nautilus
 PERSONAL_APPS:
-  - signal\.exe
-  - discord\.exe
-  - steam.+\.exe
-  - firefox\.exe
+  - dinkum
+  - signal
+  - game
+  - totem
+  - discord
+  - loupe
+  - steam.+
+  - cities\.x64
+  - curseforge
+  - modrinth
+  - mpc-hc64
+  - scrapmechanic
+  - firefox
+  - sandrock
   - photos\.uwp
-  - minecraft\.exe
+  - chrome
+  - cheatengine
+  - showfoto
+  - minecraft
+  - timberborn
 WORK_DOMAINS:
   - localhost:\d+
+  - glassdoor\.com
+  - healthline\.com
+  - stackexchange
+  - symbolab
+  - jetbrains
+  - backblaze
+  - tableau
+  - wyze\.com
+  - datascience
+  - wellfound
+  - aws\.
+  - quintoandar\.com
+  - imoveis\.com
+  - \.aws
+  - snaphunt
+  - llama
+  - recruit
+  - greenhouse\.io
+  - paypal\.com
+  - bank
+  - college
+  - dev
+  - wiseful
+  - work
+  - ruby
+  - candidate
+  - \.jobs
+  - mindsight
+  - turing
+  - career
+  - hire
+  - \.apply
+  - colorcode
+  - mega\.io
+  - pcloud
+  - resilio\.com
+  - apply\.
+  - proxy
+  - gitlab
+  - coder\.com
+  - bitwarden\.com
+  - degree
+  - news
+  - proxies
+  - idrive\.com
+  - selenium\.dev
+  - \.gupy
+  - matema
+  - gitlab\.com
+  - nixos\.org
+  - nix\.dev
+  - meet\.google
+  - gnome\.org
+  - indeed\.com
+  - support\.
   - mail\.google
+  - katex
+  - cloudfront\.
+  - blackmagicdesign
   - w3resource
+  - thumbsmith\.com
+  - grammar
+  - jobs\.
+  - dropbox\.com
+  - dnschecker\.org
+  - shields\.io
+  - readthedocs\.io
+  - home-assistant\.io
+  - codecov\.io
+  - timestamp
+  - miktex\.org
   - mathway\.com
+  - frontend
   - linkedin\.com
+  - superuser\.com
+  - thum\.io
+  - urlbox\.io
+  - canva\.com
+  - photopea
   - vscode\.dev
+  - \d+\.\d+\.\d+\.\d+
+  - ctan\.org
+  - openai
   - drive\.google
+  - dash-bootstrap-components
+  - icons8\.com
+  - yworks\.com
   - file:\/\/
+  - dcide
   - stackoverflow
+  - huggingface\.co
   - edx\.org
-  - coursera\.org
+  - colab\.research\.google\.com
+  - coursera
   - desmos\.com
+  - support\.google
   - github
   - codepen\.io
   - mega\.nz
+  - photomosh\.com
+  - lunapic\.com
   - pytest\.org
+  - numpy
+  - visualstudio\.com
+  - .*\.pycqa\.org
+  - regex
+  - plotly
   - pandas\.pydata
+  - w3schools
+  - python\.
+  - sql
+  - geeksforgeeks
+  - gitguardian
+  - ubuntu
+  - learn
+  - calculator
+  - microsoft
+  - python
+  - docs
+  - dash-
+  - flaticon
   - pypi\.org
+  - mixkit
+  - wiki
+  - physic
+  - translate
+  - bitdefender
+  - piskelapp
   - calendar\.google\.com
+  - khanacademy
+  - programiz
+  - affinity
+  - \.edu
+  - developer
+  - chromewebstore
   - chrome.*\:\/\/
+  - puc-campinas
+  - forum
+  - endeavour
+  - codewars\.com
+  - notion\.so
+  - medium\.com
+  - itsfoss\.com
+  - fosspost\.org
+  - \.indeed
+  - oracle\.
+  - cloudera
+  - pypa\.io
+  - freecodecamp\.org
+  - simplyhired\.com
+  - apache\.org
+  - hadoop
+  - one\.google
+  - docusign\.net
+  - myaccount\.google
+  - css
 PERSONAL_DOMAINS:
   - youtube
+  - reddit
+  - protondb\.com
+  - disney
+  - mercadolivre
+  - netflix\.com
+  - vans\.com
+  - newbalance\.com
+  - nike\.com
+  - gallerycap\.com
+  - gogoanime
+  - fandom
+  - globoplay
+  - epocacosmeticos\.com
   - steamcommunity\.com
+  - unaculture\.com
   - instagram\.com
+  - twitch\.tv
+  - drogasil
+  - curseforge
+  - hbomax
+  - whatsapp\.com
   - tv\.apple
+  - modrinth
 WORK_KEYWORDS:
   - pandas
   - dash
   - datascience
   - dash-bootstrap
   - python
+  - bitdefender
   - algorithm
   - katex
   - \.pdf
+  - figure
+  - plot
+  - anaconda
+  - webdesign
   - code
+  - linux
   - debug
+  - obsidian
+  - query
+  - css
 PERSONAL_KEYWORDS:
   - episode
-  - playthrough
+  - whatsapp
+  - photos
+  - minecraft
+  - steam
+  - worldbox
+  - globoplay
+  - fabric loader
 ...

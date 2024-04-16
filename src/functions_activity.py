@@ -81,7 +81,7 @@ def match_to_url(title: str) -> Optional[tuple[str, str]]:
     # Correct for special characters
     title = title.encode("utf-8").decode("unicode_escape")
     url = load_url(title.removesuffix(" - Brave"))
-    assert url is not None, "URL is None"
+    assert (url is not None) and (not url.empty), f"URL is None for: {title}"
     url = url.loc[0, "url"]
     parsed = urlparse(url)
     if parsed.scheme not in ["http", "https"]:

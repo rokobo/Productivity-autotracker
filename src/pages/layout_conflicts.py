@@ -63,21 +63,20 @@ def update_conflicts(_1):
     CFG = load_config()
     cfg2 = load_categories()
     activity = load_dataframe("activity")
-    activity.drop(columns=[
-        "start_time", "end_time", "url", "rowid", "app"
-    ], inplace=True)
-    activity["work_match"] = pd.Series(activity['process_name'].str.contains(
-        '|'.join(cfg2['WORK_APPS']), case=False, regex=True))
-    activity["personal_match"] = pd.Series(
-        activity['process_name'].str.contains(
-            '|'.join(cfg2['PERSONAL_APPS']), case=False, regex=True))
-    activity["work_match"] = activity["work_match"] | pd.Series(
-        activity['domain'].str.contains(
-            '|'.join(cfg2['WORK_DOMAINS']), case=False, regex=True))
-    activity["personal_match"] = activity["personal_match"] | pd.Series(
-        activity['domain'].str.contains('|'.join(
-            cfg2['PERSONAL_DOMAINS']), case=False, regex=True))
-    activity = activity[activity["personal_match"] & activity["work_match"]]
+    activity = activity.loc[:, ["process_name", "domain"]]
+    activity['work_matches'] = activity['process_name'].str.extract(
+        f'(?i)({"|".join(cfg2["WORK_APPS"])})', expand=False).combine(
+            activity['domain'].str.extract(
+        f'(?i)({"|".join(cfg2["WORK_DOMAINS"])})', expand=False),
+            lambda x, y: f'{x}<br>{y}' if pd.notnull(y) or pd.notnull(x) else x
+        )
+    activity['personal_matches'] = activity['process_name'].str.extract(
+        f'(?i)({"|".join(cfg2["PERSONAL_APPS"])})', expand=False).combine(
+            activity['domain'].str.extract(
+        f'(?i)({"|".join(cfg2["PERSONAL_DOMAINS"])})', expand=False),
+            lambda x, y: f'{x}<br>{y}' if pd.notnull(y) or pd.notnull(x) else x
+        )
+    activity.dropna(inplace=True)
 
     table = go.Table(
         header={'values': activity.columns},

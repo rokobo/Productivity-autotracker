@@ -60,12 +60,12 @@ layout = html.Div([
         ], style={"height": "70vh", "overflow": "scroll"}),
         dbc.CardFooter([dbc.Row([
             dbc.Col(dbc.ButtonGroup([
-                dbc.Button("RIGHT", id="button-1", color="success"),
-                dbc.Button("Right", id="button-2", color="info"),
-                dbc.Button("Guess", id="button-3", color="secondary"),
-                dbc.Button("Guess -", id="button-4", color="secondary"),
-                dbc.Button("Wrong", id="button-5", color="warning"),
-                dbc.Button("WRONG", id="button-6", color="danger"),
+                dbc.Button("RIGHT", id="button-6", color="success"),
+                dbc.Button("Right", id="button-5", color="info"),
+                dbc.Button("Guess", id="button-4", color="secondary"),
+                dbc.Button("Guess -", id="button-3", color="secondary"),
+                dbc.Button("Wrong", id="button-2", color="warning"),
+                dbc.Button("WRONG", id="button-1", color="danger"),
             ])),
             dbc.Col(dbc.Button(
                 "Reveal answer", id="reveal-flashcard",

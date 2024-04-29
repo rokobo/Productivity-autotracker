@@ -12,3 +12,5 @@ default.nix
 /logs
 /logs
 config/categories.yml
+logs/activity.log
+logs/retry.log

@@ -1,4 +1,4 @@
-#!/mnt/Rocket_Kobori/Github_Repositories/Productivity-autotracker/.venv/bin/python3
+#!/mnt/Rocket_Kobori/Github_Repositories/Productivity-autotracker/.venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

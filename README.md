@@ -9,6 +9,7 @@ This project began with a desire to have a time tracking software with the autom
 + [How it works](#how-it-works)
   + [Configuration files](#configuration-files)
   + [Idle detection](#idle-detection)
++ [Flashcards](#flashcards)
 + [Redundancies and error management](#redundancies-and-error-management)
 + [Crowns and study advisor](#crowns-and-study-advisor)
 + [Backup system](#backup-system)
@@ -63,6 +64,7 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 
 + **Productivity pages**:
   + `Dashboard page` - Contains the categoried and aggregated events, along with a graph with the total daily time of each category.
+  + `Flashcards page` - Contains an interface for studying your flashcards.
 
 + **Analytics pages**:
   + `Goals page` - Contains heatmaps that track progress on a number of goals defined by the user.
@@ -82,6 +84,22 @@ Pages are divided into three categories: Productivity, Analytics and Troubleshoo
 
 + **Credits**:
   + `Attributions page` - Contains image attributions for assets used in this project.
+
+## **Flashcards**
+
+Flashcards can be created in the `/flashcards` directory. There, you can create a markdown file, whose name will be the name of the deck of the flashcards. Inside the markdown file, you can add flashcards by putting a question as a header and the answer under it. For example:
+
+```markdown
+# Question 1 ...?
+
+Answer 1
+
+# Question 2...?
+
+Answer 2
+```
+
+You can use markdown normally in the files. This was done so that the flashcards can be easily modified and added to the program, as well as for aesthetic reasons. You can even add images to the file, just put them in the `/flashcards/images` directory.
 
 ## **Redundancies and error management**
 

@@ -9,10 +9,7 @@ backup/
 app.log
 default.nix
 .fuse*
-/logs
-/logs
 config/categories.yml
-logs/activity.log
-logs/retry.log
 config/categories.yml
 src/pages/test.ipynb
+*.log

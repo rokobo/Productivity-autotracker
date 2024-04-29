@@ -63,6 +63,7 @@ def update_conflicts(_1):
     CFG = load_config()
     cfg2 = load_categories()
     activity = load_dataframe("activity")
+    assert (activity is not None) and (not activity.empty)
     activity = activity.loc[:, ["process_name", "domain"]]
     activity['work_matches'] = activity['process_name'].str.extract(
         f'(?i)({"|".join(cfg2["WORK_APPS"])})', expand=False).combine(

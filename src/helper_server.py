@@ -1,7 +1,7 @@
 """
 Collection of helper functions for website routines.
 """
-# pylint: disable=consider-using-f-string, import-error
+# pylint: disable=consider-using-f-string, import-error, too-many-locals
 import sys
 import re
 import time
@@ -128,6 +128,8 @@ def format_duration(seconds: int, long: bool) -> str:
     Returns:
         str: Readable string.
     """
+    if seconds == 0:
+        return "0 sec" if long else "0s"
     t_parts = [seconds // 3600, (seconds % 3600) // 60, seconds % 60]
     t_units = [" hour", " min", " sec"] if long else ["h", "m", "s"]
     separator = ", " if long else " "

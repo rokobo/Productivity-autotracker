@@ -13,7 +13,7 @@ from functions_threads import (
     keyboard_idle_detector,
     activity_detector,
     activity_processor,
-    audio_idle_detector,
+    # audio_idle_detector,
     server_supervisor,
     auxiliary_work,
 )
@@ -59,10 +59,10 @@ if __name__ == "__main__":
     keyboard_thread.start()
     print(f"\033[92m{time.strftime('%X')} keyboard_thread started!\033[00m")
 
-    audio_process = Thread(target=audio_idle_detector)
-    audio_process.daemon = True
-    audio_process.start()
-    print(f"\033[92m{time.strftime('%X')} audio_process started!\033[00m")
+    # audio_process = Thread(target=audio_idle_detector)
+    # audio_process.daemon = True
+    # audio_process.start()
+    # print(f"\033[92m{time.strftime('%X')} audio_process started!\033[00m")
 
     advisor_process = Process(target=study_advisor)
     advisor_process.daemon = True
@@ -133,16 +133,16 @@ if __name__ == "__main__":
                 print("\033[92mRestarted!\033[00m")
 
             # Audio detection thread
-            if not audio_process.is_alive():
-                print(
-                    f"\033[91m{time.strftime('%X')} Error in",
-                    "audio_process... \033[00m",
-                    end="",
-                )
-                audio_process = Thread(target=audio_idle_detector)
-                audio_process.daemon = True
-                audio_process.start()
-                print("\033[92mRestarted!\033[00m")
+            # if not audio_process.is_alive():
+            #     print(
+            #         f"\033[91m{time.strftime('%X')} Error in",
+            #         "audio_process... \033[00m",
+            #         end="",
+            #     )
+            #     audio_process = Thread(target=audio_idle_detector)
+            #     audio_process.daemon = True
+            #     audio_process.start()
+            #     print("\033[92mRestarted!\033[00m")
 
             # Study advisor process
             if not advisor_process.is_alive():

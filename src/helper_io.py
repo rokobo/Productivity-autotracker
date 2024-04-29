@@ -2,7 +2,8 @@
 Collection of helper functions for input and output rountines.
 """
 # pylint: disable=broad-exception-caught, possibly-unused-variable
-# pylint: disable=unused-argument
+# pylint: disable=unused-argument, ungrouped-imports
+from os import listdir
 import sys
 from os.path import dirname, exists, join, abspath
 import time
@@ -173,47 +174,6 @@ def load_categories() -> dict[str, Any]:
         dict[str, Any]: Dictionary config file.
     """
     return load_yaml("config/categories.yml")
-
-
-@retry(wait=0.1)
-def start_databases() -> None:
-    """Initializes databases with proper schema."""
-    cfg = load_config()
-    path = join(cfg["WORKSPACE"], "data/activity.db")
-    tables = [
-        "activity", "categories", "totals", "settings", "activity_view"
-    ]
-    if not exists(path):
-        conn = sql.connect(path)
-        assert conn is not None, "conn is None"
-        cursor = conn.cursor()
-        for table in tables:
-            schema_path = join(
-                cfg["WORKSPACE"], f'schema/{table}_schema.sql'
-            )
-            with open(schema_path, 'r', encoding='utf-8') as file:
-                schema = file.read()
-            cursor.executescript(schema)
-        conn.commit()
-        conn.close()
-
-    conn = sql.connect(path)
-    assert conn is not None, "conn is None"
-    cursor = conn.cursor()
-    q = "INSERT OR REPLACE INTO settings (label, value) VALUES (?, ?)"
-    cursor.execute(
-        q, ("total_offset", f"{cfg['GMT_OFFSET']} hours"))
-    cursor.execute(
-        q, ("gmt_offset", str(cfg['GMT_OFFSET'])))
-    conn.commit()
-    conn.close()
-
-    # Start these to prevent errors from last interruption
-    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'mouse')
-    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'keyboard')
-    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')
-    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'backend')
-    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'audio')
 
 
 @retry(wait=0.3, log_args=True)
@@ -454,7 +414,7 @@ def load_input_time(name: str) -> int:
     device = load_latest_row(name)
     if device is None:
         return -1
-    recorded_time = device.iloc[0, 0]
+    recorded_time = int(device.at[0, 'time'])
     return recorded_time
 
 
@@ -500,7 +460,7 @@ def set_idle():
     for input_name in inputs:
         input_dataframe = load_latest_row(input_name)
         assert input_dataframe is not None, "Failed to get latest row"
-        if now - input_dataframe.loc[0, "time"] < idle_time:
+        if now - int(input_dataframe.at[0, "time"]) < idle_time:
             input_dataframe.loc[0, "time"] = now - idle_time
             modify_latest_row(input_name, input_dataframe, ["time"])
 
@@ -516,7 +476,7 @@ def timestamp_to_day(values: pd.Series) -> pd.Series:
         pd.Series: Dates series.
     """
     cfg = load_config()
-    dates = (
+    dates = pd.Series(
         pd.to_datetime(values, unit="s")
         + pd.Timedelta(cfg["GMT_OFFSET"], unit="h")
     ).dt.date
@@ -583,3 +543,39 @@ def delete_from_dataframe(name: str, column: str, values: list) -> None:
     cursor.execute(query, values)
     conn.commit()
     conn.close()
+
+
+def start_databases() -> None:
+    """Initializes databases with proper schema."""
+    cfg = load_config()
+    for schema_file in listdir(join(cfg["WORKSPACE"], "schema")):
+        database, table = schema_file.split("-")
+        table = table.split(".")[0]
+        path = join(cfg["WORKSPACE"], f"data/{database}.db")
+        conn = sql.connect(path)
+        assert conn is not None, "conn is None"
+        cursor = conn.cursor()
+        schema_path = join(cfg["WORKSPACE"], f'schema/{schema_file}')
+        with open(schema_path, 'r', encoding='utf-8') as file:
+            schema = file.read()
+        cursor.executescript(schema)
+        conn.commit()
+        conn.close()
+
+    conn = sql.connect(join(cfg["WORKSPACE"], "data/activity.db"))
+    assert conn is not None, "conn is None"
+    cursor = conn.cursor()
+    q = "INSERT OR REPLACE INTO settings (label, value) VALUES (?, ?)"
+    cursor.execute(
+        q, ("total_offset", f"{cfg['GMT_OFFSET']} hours"))
+    cursor.execute(
+        q, ("gmt_offset", str(cfg['GMT_OFFSET'])))
+    conn.commit()
+    conn.close()
+
+    # Start these to prevent errors from last interruption
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'mouse')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'keyboard')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'backend')
+    save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'audio')

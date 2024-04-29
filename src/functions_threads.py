@@ -24,7 +24,7 @@ from helper_io import save_dataframe, load_config, retry
 from pages import layout_dashboard, layout_activity, layout_categories, \
     layout_inputs, layout_credits, layout_configuration, \
     layout_configuration2, layout_urls, layout_milestones, \
-    layout_trends, layout_all, layout_conflicts
+    layout_trends, layout_all, layout_conflicts, layout_flashcards
 
 
 @retry(attempts=2, wait=1.0)
@@ -180,6 +180,8 @@ def server_supervisor() -> None:
     def display_page(pathname):
         """Support for multi-page Dash website."""
         match pathname:
+            case "/flashcards":
+                layout = layout_flashcards.layout
             case "/activity":
                 layout = layout_activity.layout
             case "/categories":

@@ -105,6 +105,13 @@ def test_flake8_layout_all() -> None:
     assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))
 
 
+def test_flake8_layout_flashcards() -> None:
+    """Ensures layout_flashcards passes flake8 specifications."""
+    file = os.path.join(pages_folder, "layout_flashcards.py")
+    result = flake8.get_style_guide().check_files([file])
+    assert result.total_errors == 0, result.get_statistics(('F', 'E', 'W'))
+
+
 def test_flake8_layout_menu() -> None:
     """Ensures layout_menu passes flake8 specifications."""
     file = os.path.join(pages_folder, "layout_menu.py")

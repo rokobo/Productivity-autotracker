@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 menu_items = [
     dbc.DropdownMenuItem("Productivity pages", header=True),
     dbc.DropdownMenuItem("Dashboard page", href="/"),
+    dbc.DropdownMenuItem("Flashcards page", href="/flashcards"),
     dbc.DropdownMenuItem(divider=True),
     dbc.DropdownMenuItem("Analytics pages", header=True),
     dbc.DropdownMenuItem("Trends page", href="/trends"),

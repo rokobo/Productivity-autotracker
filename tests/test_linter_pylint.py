@@ -105,6 +105,13 @@ def test_pylint_layout_all() -> None:
     assert result.global_note == 10, result.by_msg
 
 
+def test_pylint_layout_flashcards() -> None:
+    """Ensures layout_flashcards passes pylint specifications."""
+    file = os.path.join(pages_folder, "layout_flashcards.py")
+    result = Run([file], exit=False).linter.stats
+    assert result.global_note == 10, result.by_msg
+
+
 def test_pylint_layout_menu() -> None:
     """Ensures layout_menu passes pylint specifications."""
     file = os.path.join(pages_folder, "layout_menu.py")

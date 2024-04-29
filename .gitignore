@@ -12,4 +12,5 @@ default.nix
 config/categories.yml
 config/categories.yml
 src/pages/test.ipynb
-*.log
+*.log*
+flashcards/*.md

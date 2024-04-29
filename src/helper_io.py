@@ -156,6 +156,7 @@ def load_config() -> dict[str, Any]:
     config["WORKSPACE"] = workspace
     config["ASSETS"] = join(workspace, "assets/")
     config["BACKUP"] = join(workspace, "backup/")
+    config["FLASHCARDS"] = join(workspace, "flashcards/")
     app_name = "Productivity Dashboard - Study Advisor"
     config["NOTIFICATION"] = Notify(
         default_notification_application_name=app_name,
@@ -579,3 +580,171 @@ def start_databases() -> None:
     save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')
     save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'backend')
     save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'audio')
+
+
+def format_deck(lines: list, deck_name: str) -> list:
+    """
+    Format the lines of a deck into a list of card tuples.
+
+    Args:
+        lines (list): Lines of the deck file.
+        deck_name (str): Name of the deck.
+
+    Returns:
+        list: List of tuples (question, answer, deck name).
+    """
+    data = []
+    current_header = None
+    current_content = []
+    for line in lines:
+        if line.startswith('#'):
+            if current_header is not None:
+                data.append((
+                    current_header[1:].strip(),
+                    ''.join(current_content).strip(), deck_name
+                ))
+                current_content = []
+            current_header = line.strip()
+        elif current_header is not None:
+            current_content.append(line)
+
+    if current_header is not None:
+        data.append((
+            current_header[1:].strip(),
+            ''.join(current_content).strip(), deck_name
+        ))
+    return data
+
+
+def parse_decks() -> pd.DataFrame:
+    """
+    Parse the decks into a [question, answer, deck name] dataframe
+
+    Returns:
+        pd.DataFrame: Cards dataframe.
+    """
+    cfg = load_config()
+    cards = []
+    for file_name in listdir(cfg["FLASHCARDS"]):
+        if file_name[-3:] != ".md":
+            continue
+        file_path = join(cfg["FLASHCARDS"], file_name)
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+        cards.extend(format_deck(lines, file_name))
+    cards_df = pd.DataFrame(cards, columns=['question', 'answer', 'deck_name'])
+    return cards_df
+
+
+def process_flashcard_feedback(
+    recall: int, interval: float, old_ef: float
+) -> tuple[float, float]:
+    """
+    Process the flashcard feedback and update relevant variables.
+
+    Args:
+        recall (int): How well the user recalls the flashcard.
+        interval (float): Current interval between flashcards.
+        old_ef (float): Current ease factor.
+
+    Returns:
+        tuple[float, float]: New interval and new ease factor after processing.
+    """
+    new_ef = old_ef + (0.1 - (6 - recall) * (0.08 + (6 - recall) * 0.02))
+    new_ef = min(max(new_ef, 1.3), 10)
+
+    if recall >= 3:
+        new_interval = interval * new_ef
+        # Limit to [60 seconds, 1 months]
+        new_interval = max(min(new_interval, 86400 * 30), 60)
+    else:
+        new_interval = 60
+    return int(new_interval), new_ef
+
+
+def update_flashcard(
+    flashcards: pd.DataFrame, confidence: int, card: tuple
+) -> Optional[pd.DataFrame]:
+    """
+    Update flashcard dataframe with new updated flashcard.
+
+    Args:
+        flashcards (pd.DataFrame): Flashcards dataframe.
+        confidence (int): Confidence of the user's answer.
+        card (tuple): Card information.
+
+    Returns:
+        Optional[pd.DataFrame]: Updated flashcards dataframe.
+    """
+    if flashcards is None:
+        return None
+
+    # Find the index of the card in the dataframe
+    index = flashcards.index[
+        (flashcards['deck_name'] == card[0]) &
+        (flashcards['question'] == card[1])
+    ]
+
+    # Get the old values
+    old_interval, old_ef = flashcards.loc[
+        index[0], ['access_interval', 'ease_factor']]
+
+    # Process the feedback
+    new_interval, new_ef = process_flashcard_feedback(
+        confidence, old_interval, old_ef)
+
+    # Update the dataframe
+    flashcards.loc[
+        index[0], ['access_interval', 'ease_factor']
+    ] = [new_interval, new_ef]
+    flashcards.loc[index[0], 'next_access'] = int(time.time()) + new_interval
+    flashcards.loc[index[0], 'last_access'] = int(time.time())
+
+    flashcards = flashcards.sort_values(
+        by=["next_access", "last_access", "ease_factor"],
+        ascending=[True, True, True]
+    ).reset_index(drop=True)
+    save_dataframe(flashcards, "flashcards", "flashcards")
+    return flashcards
+
+
+@retry(attempts=3, print_fail=True)
+def update_flashcards_database() -> pd.DataFrame:
+    """
+    Update the flashcards database with local flashcard files.
+
+    Returns:
+        pd.DataFrame: Flashcards dataframe.
+    """
+    loaded_cards = parse_decks()
+    cards = load_dataframe("flashcards", True, "flashcards", False)
+    assert cards is not None, "Flashcards is None"
+
+    # If the flashcards is empty, initialize it
+    if cards.empty:
+        cards = pd.DataFrame(columns=[
+            "question", "deck_name", "last_access",
+            "access_interval", "ease_factor", "next_access", "answer"])
+
+    # Merge the new flashcards with the old ones
+    cards = cards.merge(
+        loaded_cards, on=['question', 'deck_name'], how='right'
+    )
+    cards = cards.drop("answer_x", axis=1)
+    cards = cards.rename(columns={"answer_y": "answer"})
+
+    # Fill in the missing values from new flashcards
+    default_values = {
+        'last_access': int(time.time()),
+        'access_interval': 0,
+        'ease_factor': 2.5
+    }
+    cards = cards.fillna(default_values).infer_objects(copy=False)
+
+    cards["next_access"] = cards["last_access"] + cards["access_interval"]
+    cards = cards.sort_values(
+        by=["next_access", "last_access", "ease_factor"],
+        ascending=[True, True, True]
+    ).reset_index(drop=True)
+    save_dataframe(cards, "flashcards", "flashcards")
+    return cards

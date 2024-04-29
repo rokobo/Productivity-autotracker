@@ -1,4 +1,4 @@
-CREATE TABLE "activity" (
+CREATE TABLE IF NOT EXISTS "activity" (
     start_time INTEGER NOT NULL,
     end_time INTEGER NOT NULL,
     app TEXT DEFAULT "" NOT NULL,

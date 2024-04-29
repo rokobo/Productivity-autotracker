@@ -1,4 +1,5 @@
-CREATE TABLE "categories_partial" (
+DROP TABLE IF EXISTS "categories_partial";
+CREATE TABLE IF NOT EXISTS "categories_partial" (
     "process_name" TEXT,
     "day" TEXT,
     "subtitle" TEXT,

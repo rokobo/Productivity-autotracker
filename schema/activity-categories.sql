@@ -1,4 +1,5 @@
-CREATE TABLE "categories" (
+DROP TABLE IF EXISTS "categories";
+CREATE TABLE IF NOT EXISTS "categories" (
     "process_name" TEXT,
     "day" TEXT,
     "subtitle" TEXT,

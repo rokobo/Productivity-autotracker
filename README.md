@@ -101,6 +101,8 @@ Answer 2
 
 You can use markdown normally in the files. This was done so that the flashcards can be easily modified and added to the program, as well as for aesthetic reasons. You can even add images to the file, just put them in the `/flashcards/images` directory.
 
+Additionally, one thing I personally do to enhance my experience with this functionality is to enable port forwarding in Visual Studio Code. This way, I can access the flashcards from my phone, tablet, or laptop.
+
 ## **Redundancies and error management**
 
 The program uses a configuration file to define various parameters like database paths, schema file locations, and retry attempts as well as database schemas, which are defined in separate SQL files and are loaded to create and test the main `activity.db` database.

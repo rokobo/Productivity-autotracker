@@ -14,3 +14,4 @@ config/categories.yml
 src/pages/test.ipynb
 *.log*
 flashcards/*.md
+config/categories.yml

@@ -44,6 +44,7 @@ To make this program work for Linux and Windows, `PyWinCtl` was used to capture 
     + This file has `RegEx` patterns used to match your current activity to either the personal or work category.
     + Any activity that does not match is considered neutral.
     + Univeral windows platform (UWP) apps will have their process names ending with .UWP for simplicity and organization.
+    + An example file is provided in the `config` folder. Do note that the file has to be named `categories.yml` and placed in the `config` folder for it to work.
 
 2. `config/config.yml`:
     + This file has some values that can be personalized, including color, intervals, spacings and others.

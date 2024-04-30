@@ -1,0 +1,30 @@
+HIDDEN_APPS:
+  - firefox
+  - nautilus
+WORK_APPS:
+  - terminal
+  - studio64
+  - code
+  - github
+PERSONAL_APPS:
+  - signal
+  - discord
+  - steam.+
+WORK_DOMAINS:
+  - localhost:\d+
+  - llama
+  - dev
+  - file:\/\/
+  - chrome.*\:\/\/
+PERSONAL_DOMAINS:
+  - youtube
+  - www\.netflix\.com
+WORK_KEYWORDS:
+  - pandas
+  - python
+  - algorithm
+  - \.pdf
+PERSONAL_KEYWORDS:
+  - whatsapp
+  - steam
+...

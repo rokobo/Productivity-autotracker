@@ -57,15 +57,15 @@ layout = html.Div([
             dbc.Fade([
                 dbc.Card(dcc.Markdown(id="card-answer"), className="mx-4 my-4 p-2")
             ], id="flashcard-fade", exit=False),
-        ], style={"height": "70vh", "overflow": "scroll"}),
+        ], style={"height": "70vh", "overflow-y": "scroll"}),
         dbc.CardFooter([dbc.Row([
             dbc.Col(dbc.ButtonGroup([
-                dbc.Button("RIGHT", id="button-6", color="success"),
-                dbc.Button("Right", id="button-5", color="info"),
-                dbc.Button("Guess", id="button-4", color="secondary"),
-                dbc.Button("Guess -", id="button-3", color="secondary"),
-                dbc.Button("Wrong", id="button-2", color="warning"),
-                dbc.Button("WRONG", id="button-1", color="danger"),
+                dbc.Button("Vivid", id="button-6", color="success"),
+                dbc.Button("Clear", id="button-5", color="primary"),
+                dbc.Button("Vague", id="button-4", color="info"),
+                dbc.Button("Askew", id="button-3", color="secondary"),
+                dbc.Button("Lousy", id="button-2", color="warning"),
+                dbc.Button("Wrong", id="button-1", color="danger"),
             ])),
             dbc.Col(dbc.Button(
                 "Reveal answer", id="reveal-flashcard",

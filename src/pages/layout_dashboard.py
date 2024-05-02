@@ -1,5 +1,6 @@
 """Dashboard page."""
 # pylint: disable=wrong-import-position, import-error, global-statement
+# pylint: disable=ungrouped-imports
 # flake8: noqa: E402
 import os
 import sys

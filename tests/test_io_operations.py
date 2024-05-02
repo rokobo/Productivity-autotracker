@@ -39,17 +39,17 @@ def test_data_integrity() -> None:
 
 def test_load_input_time() -> None:
     """Tests load_input_time function."""
-    dataframe = pd.DataFrame({'col1': [45]})
+    dataframe = pd.DataFrame({'time': [45]})
     save_dataframe(dataframe, '__test2__')
     input_time = load_input_time('__test2__')
     assert input_time == 45
 
-    dataframe = pd.DataFrame({'col1': [12], 'col2': [45]})
+    dataframe = pd.DataFrame({'time': [12], 'col2': [45]})
     save_dataframe(dataframe, '__test2__')
     input_time = load_input_time('__test2__')
     assert input_time == 12
 
-    dataframe = pd.DataFrame({'col1': [84], 'col2': [56], 'col3': [75]})
+    dataframe = pd.DataFrame({'time': [84], 'col2': [56], 'col3': [75]})
     save_dataframe(dataframe, '__test2__')
     input_time = load_input_time('__test2__')
     assert input_time == 84

@@ -629,7 +629,7 @@ def parse_decks() -> pd.DataFrame:
         if file_name[-3:] != ".md":
             continue
         file_path = join(cfg["FLASHCARDS"], file_name)
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
         cards.extend(format_deck(lines, file_name))
     cards_df = pd.DataFrame(cards, columns=['question', 'answer', 'deck_name'])
@@ -739,7 +739,7 @@ def update_flashcards_database() -> pd.DataFrame:
         'access_interval': 0,
         'ease_factor': 2.5
     }
-    cards = cards.fillna(default_values).infer_objects(copy=False)
+    cards = cards.fillna(default_values).infer_objects()
 
     cards["next_access"] = cards["last_access"] + cards["access_interval"]
     cards = cards.sort_values(

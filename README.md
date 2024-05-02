@@ -51,13 +51,7 @@ To make this program work for Linux and Windows, `PyWinCtl` was used to capture 
 
 ### **Idle detection**
 
-If the program detects you are idle, it will display a warning modal like this:
-
-<p align="center">
-  <img src="https://github.com/rokobo/Productivity-autotracker/blob/main/images/idle_warning.png?raw=true" width="200"/>
-</p>
-
-You also have the option to set your status as idle with the top-right button of the main page. Do note that the idle detection uses multiple sources of activity detection, specifically: audio, keyboard and mouse. If you press the button and move your mouse or forget to pause music, the idle status will be reverted.
+If the program detects you are idle, it will display a blinking warning overlay. You also have the option to set your status as idle with the top-right button of the main page. Do note that the idle detection uses multiple sources of activity detection, specifically: audio, keyboard and mouse. If you press the button and move your mouse or forget to pause music, the idle status will be reverted.
 
 ## **Pages**
 

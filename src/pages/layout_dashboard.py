@@ -7,6 +7,7 @@ import time
 import pandas as pd
 from dash import html, dcc, Input, Output, callback
 import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -59,21 +60,9 @@ layout = html.Div([
         n_intervals=-1
     ),
     dbc.Row(id='categorized_list'),
-    dbc.Modal([
-            dbc.ModalBody([
-                html.Br(),
-                html.H1("Attention, you are currently idle!"),
-                html.Br(),
-                html.Img(
-                    src='/assets/warning.gif',
-                    alt="warning",
-                    style={"display": "block", "margin": "0 auto"}
-                ),
-                html.Br(),
-                html.H1("Attention, you are currently idle!"),
-                html.Br(),
-            ])],
-        id="idle_modal", centered=True, is_open=False
+    html.Div(
+        html.H1("User is currently idle", id='idle_warning_style', style={}),
+        id='idle_warning', className=''
     )
 ])
 
@@ -112,6 +101,12 @@ def update_category(_1):
     }, inplace=True)
 
     fig = make_totals_graph(data)
+    if fig is None:
+        raise PreventUpdate
+
+    crowns = make_crown()
+    if crowns is None:
+        raise PreventUpdate
 
     card_style = {
         'background-color': CFG['CARD_COLOR'],
@@ -129,7 +124,7 @@ def update_category(_1):
         'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
         'margin-top': f"{CFG['DIVISION_PADDING']}px"
     }
-    return card, style, make_crown()
+    return card, style, crowns
 
 
 @callback(
@@ -143,6 +138,9 @@ def update_heatmap_graph(_1):
     CFG = load_config()
 
     fig = make_heatmap()
+    if fig is None:
+        raise PreventUpdate
+
     card_style = {
         'margin-left': "0px",
         'margin-right': "0px",
@@ -180,14 +178,17 @@ def update_element_list(_1):
 
 
 @callback(
-    Output('idle_modal', 'is_open'),
+    Output('idle_warning', 'className'),
+    Output('idle_warning_style', 'style'),
     Input('activity_check_interval', 'n_intervals')
 )
 def update_info_row(_1):
     """Updates idle modal."""
     last_row = load_latest_row('activity')
     idle = last_row.loc[0, "process_name"] == "IDLE TIME"
-    return idle
+    if idle:
+        return 'blinking-warning', {'opacity': 0.5}
+    return '', {'opacity': 0, 'pointer-events': 'none'}
 
 
 @callback(

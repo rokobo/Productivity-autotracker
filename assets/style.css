@@ -21,7 +21,7 @@ body {
         rgb(30, 30, 30) 100%
     );
 	background-size: 500% 400%;
-	animation: background-gradient 3s ease infinite;
+	animation: background-gradient 2.5s ease infinite;
 }
 @keyframes background-gradient {
 	0% {
@@ -70,4 +70,28 @@ body::-webkit-scrollbar {
 .form-control:focus {
     background-color: rgb(43, 43, 43);
     color: white;
+}
+@keyframes blink {
+    0% { background: repeating-linear-gradient(
+        -45deg, rgba(255, 255, 0, 0.07), rgba(255,255,0,0.07) 10%,
+        rgba(0,0,0,0.07) 10%, rgba(0,0,0,0.07) 20%)
+    }
+    50% { background: transparent }
+    100% { background: repeating-linear-gradient(
+        -45deg, rgba(255,255,0,0.07), rgba(255,2550,0,0.07) 10%,
+        rgba(0,0,0,0.07) 10%, rgba(0,0,0,0.07) 20%)
+    }
+}
+.blinking-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    animation: blink 1s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

@@ -2,11 +2,13 @@
 Collection of helper functions for website routines.
 """
 # pylint: disable=consider-using-f-string, import-error, too-many-locals
+from ast import List
 import sys
 import re
 import time
 import datetime
 from typing import Optional
+from click import Option
 import pandas as pd
 from dash import html, dcc
 import dash_bootstrap_components as dbc
@@ -14,6 +16,40 @@ import plotly.graph_objects as go
 import plotly.express as px
 from helper_io import load_config, load_categories, load_day_total, \
     load_dataframe, load_input_time  # , retry
+
+
+def generate_card(
+    first_row: str,
+    second_row: Optional[str],
+    third_row: list[str],
+    id_name: Optional[str] = None
+):
+    cfg = load_config()
+
+    card = dbc.Card([dbc.CardBody([
+        dbc.Row([
+            html.H4(first_row, id=f"{id_name}-1"),
+            html.H5(second_row, id=f"{id_name}-2")
+        ], className="g-0", align='center', style={
+            "color": cfg["TEXT_COLOR"]
+        }),
+        dbc.Row([
+            dbc.Col(
+                html.H6(third_row[0], id=f"{id_name}-3"), width="auto",
+                style={"color": cfg["CATEGORY_CARD_PERCENTAGE_COLOR"]}),
+            dbc.Col(
+                html.H6(third_row[1], id=f"{id_name}-4"), width="auto",
+                style={"color": cfg["TEXT_COLOR"]}),
+            dbc.Col(
+                html.H6(third_row[2], id=f"{id_name}-5"), width="auto",
+                style={"color": cfg["CATEGORY_CARD_PERCENTAGE_COLOR"]})
+        ], className="justify-content-center g-0")
+    ], style={'padding': f'{cfg["CARD_PADDING"]}px'})], style={
+        'background-color': cfg['CARD_COLOR'],
+        'border': f'1px solid {cfg["CARD_OUTLINE_COLOR"]}',
+        'margin-bottom': f'{cfg["CATEGORY_CARD_MARGIN"]}px'
+    })
+    return card
 
 
 def generate_cards(df: pd.DataFrame, totals=None) -> Optional[list[dbc.Col]]:
@@ -34,13 +70,6 @@ def generate_cards(df: pd.DataFrame, totals=None) -> Optional[list[dbc.Col]]:
     cfg = load_config()
     card_list = [[], [], []]
 
-    card_style = {
-        'background-color': cfg['CARD_COLOR'],
-        'border': f'1px solid {cfg["CARD_OUTLINE_COLOR"]}',
-        'margin-bottom': f'{cfg["CATEGORY_CARD_MARGIN"]}px'
-    }
-    cardbody_style = {'padding': f'{cfg["CARD_PADDING"]}px'}
-
     for _, row in df.iterrows():
         if row['total'] < cfg['MINIMUM_ACTIVITY_TIME'] / 3600:
             continue
@@ -50,36 +79,16 @@ def generate_cards(df: pd.DataFrame, totals=None) -> Optional[list[dbc.Col]]:
         assert isinstance(act_total, float)
 
         percentage1 = f'{round(act_total / 16 * 100, 1)}% day '
-        percentage2 = 0 if cat_total == 0 \
+        percentage2 = "0" if cat_total == 0 \
             else f' {round(row["total"] / cat_total * 100, 1)}% total'
         percentage2 = percentage2 if row["process_name"] != "IDLE TIME" else ""
 
-        item = dbc.Card([dbc.CardBody([
-            dbc.Row([
-                html.H4(f'{row["process_name"]} {row["method"]}'),
-                html.H5(row['subtitle']) if row['subtitle'] != "" else None],
-                className="g-0",
-                align='center',
-                style={"color": cfg["TEXT_COLOR"]}
-            ),
-            dbc.Row([
-                dbc.Col(
-                    html.H6(percentage1),
-                    style={"color": cfg["CATEGORY_CARD_PERCENTAGE_COLOR"]},
-                    width="auto"
-                ),
-                dbc.Col(
-                    html.H6(row['duration']),
-                    style={"color": cfg["TEXT_COLOR"]},
-                    width="auto"
-                ),
-                dbc.Col(
-                    html.H6(percentage2),
-                    style={"color": cfg["CATEGORY_CARD_PERCENTAGE_COLOR"]},
-                    width="auto"
-                )
-            ], className="justify-content-center g-0")
-        ], style=cardbody_style)], style=card_style)
+        item = generate_card(
+            f'{row["process_name"]} {row["method"]}',
+            (row['subtitle'] if row['subtitle'] != "" else None),
+            [percentage1, row['duration'], percentage2]
+        )
+
         if category == "Work":
             card_list[0].append(item)
         elif category == "Personal":
@@ -170,7 +179,7 @@ def format_short_duration(seconds: int) -> str:
     return format_duration(seconds, False)
 
 
-def make_listpicker(name: str) -> dbc.Tab:
+def make_listpicker(id_name: str) -> dbc.Tab:
     """
     Makes the listpicker component with config based on name variable.
     Used to modify a list and display state.
@@ -183,35 +192,35 @@ def make_listpicker(name: str) -> dbc.Tab:
         dbc.Tab: Listpicker component.
     """
     cfg2 = load_categories()
-    names = cfg2[name]
+    names = cfg2[id_name]
     listpicker = dbc.Tab([
         html.Br(),
-        html.H2(name),
+        html.H2(id_name),
         dbc.Row([
             dbc.Col(
                 dbc.Input(
                     type="text",
                     placeholder="Enter new item",
-                    id=f'input-{name}', autocomplete='off'
+                    id=f'input-{id_name}', autocomplete='off'
                 ), className="me-3",
             ),
             dbc.Tooltip(
                 "This list uses regex patterns to match events into their \
                     respective categories. Remember to escape special \
                         characters if you want their literals.",
-                target=f'input-{name}', placement="bottom"),
+                target=f'input-{id_name}', placement="bottom"),
             dbc.Col(
-                dbc.Button("Submit", color="primary", id=f'button-{name}'),
+                dbc.Button("Submit", color="primary", id=f'button-{id_name}'),
                 width="auto"
             ),
         ], class_name='g-0'),
         html.Hr(),
         dbc.Checklist(
-            options=names, value=names, id=f'checklist-{name}',
+            options=names, value=names, id=f'checklist-{id_name}',
             style={'font-size': '20px', 'columns': '3'},
             switch=True
         )
-    ], label=name)
+    ], label=id_name)
     return listpicker
 
 
@@ -270,6 +279,42 @@ def make_valuepicker(
         ),
     ], className="g-0")
     return colorpicker
+
+
+def make_input(
+    id_name: str, input_type: str, text: Optional[str],
+    min_val: Optional[int] = None, max_val: Optional[int] = None,
+    step: float = 1.0
+) -> dbc.Row | dbc.Col:
+    """
+    Makes the listpicker component with config based on name variable.
+    Used to modify a list and display state.
+
+    Args:
+        name (str): String used to make labels and ids, such as:
+            input-{name}, button-{name}, checklist-{name}.
+
+    Returns:
+        dbc.Tab: Listpicker component.
+    """
+    if input_type == "text":
+        input_col = dbc.Row([
+            dbc.Input(type=input_type, id=id_name),
+            html.H6(text, style={"text-align": "left"})
+        ], className="g-0")
+    elif input_type == "number":
+        assert max_val is not None, "max_val must be passed for number input"
+        input_col = dbc.Col([
+            dbc.Input(
+                type=input_type, id=id_name,
+                min=min_val, max=max_val, step=step,
+                style={"width": 200, "height": 50}
+            ),
+            html.H6(text, style={"text-align": "left"})
+        ], className="g-0")
+    else:
+        raise ValueError(f"Invalid input type: {input_type}")
+    return input_col
 
 
 def rgb_to_hex(rgb_string: str) -> str:

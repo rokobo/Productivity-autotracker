@@ -32,12 +32,7 @@ layout = html.Div([
                 }
             ),
         )
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], style=CFG["SECTION_STYLE"]),
     dbc.Row([
         dcc.Graph(
             id='conflicts_table',

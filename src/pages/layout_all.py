@@ -20,18 +20,13 @@ layout = html.Div([
     dbc.Row([
         layout_menu.layout,
         dbc.Col(html.H2("All events categorized"), width='auto'),
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], style=CFG["SECTION_STYLE"]),
     dbc.Row([
         dbc.Col(html.H3("Work")),
         dbc.Col(html.H3("Personal")),
         dbc.Col(html.H3("Neutral"))
     ]),
-    dbc.Row(id='all_list'),
+    dbc.Row(id='all_list', style=CFG["SECTION_STYLE"]),
     dcc.Interval(
         id='all_interval',
         interval=60 * 1000,
@@ -42,7 +37,6 @@ layout = html.Div([
 
 @callback(
     Output('all_list', 'children'),
-    Output('all_list', 'style'),
     Input('all_interval', 'n_intervals'),
     # prevent_initial_call=True
 )
@@ -60,10 +54,4 @@ def update_element_list(_1):
         load_dataframe('activity', False, 'totals', False).sum(axis=0)
     ).transpose()
     cards = generate_cards(dataframe, totals)
-    style = {
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }
-    return cards, style
+    return cards

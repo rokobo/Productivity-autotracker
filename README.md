@@ -6,44 +6,48 @@
 
 This project began with a desire to have a time tracking software with the automatic nature of Rescuetime, the flexibility of Toggl and a custom-made data analysis.
 
-+ [How it works](#how-it-works)
-  + [Configuration files](#configuration-files)
-  + [Idle detection](#idle-detection)
-+ [Flashcards](#flashcards)
-+ [Redundancies and error management](#redundancies-and-error-management)
-+ [Crowns and study advisor](#crowns-and-study-advisor)
-+ [Backup system](#backup-system)
-+ [Pages](#pages)
-+ [Browser URL problem](#browser-url-problem)
+- [**Productivity autotracker**](#productivity-autotracker)
+  - [**Running the app**](#running-the-app)
+  - [**How it works**](#how-it-works)
+    - [**Configuration files**](#configuration-files)
+    - [**Idle detection**](#idle-detection)
+  - [**Pages**](#pages)
+  - [**Flashcards**](#flashcards)
+  - [**Redundancies and error management**](#redundancies-and-error-management)
+  - [**Crowns and study advisor**](#crowns-and-study-advisor)
+  - [**Backup system**](#backup-system)
+  - [**Browser URL problem**](#browser-url-problem)
+  - [**Audio detection problem**](#audio-detection-problem)
 
 ## **Running the app**
 
-Navigate to the root directory `Productivity-autotracker/`, activate the virtual environment:
+You need to have `docker` and `docker-compose` installed on your computer. Navigate to the root directory `Productivity-autotracker/`, activate the virtual environment:
 
 ```bash
 source .venv/bin/activate
 ```
 
-then run the `main.py` program:
+then run the start script `start.sh`:
 
 ```bash
-python src/main.py
+./start.sh
 ```
+
+This script will start the docker containers and run the app. Stopping the app will not stop the docker containers, you need to do it manually. However, if you stop the app and not the containers, the `start.sh` script can still be used normally.
 
 ## **How it works**
 
-This program works by having it constantly running (I always have a terminal running a couple programs). It is periodically getting your active window and other pieces of information to determine what you are doing and if you are idle.
+This program works by having it constantly running (I run it in VSCode to expose the ports to the flashcards). It is periodically getting your active window and other pieces of information to determine what you are doing and if you are idle.
 
 Having the window information, the program will try to classify it using the rules defined in the `config/categories.yml` and `config/config.yml`.
 
-To make this program work for Linux and Windows, `PyWinCtl` was used to capture the window information.
+To make this program work, `PyWinCtl` was used to capture the window information.
 
 ### **Configuration files**
 
 1. `config/categories.yml`:
     + This file has `RegEx` patterns used to match your current activity to either the personal or work category.
     + Any activity that does not match is considered neutral.
-    + Univeral windows platform (UWP) apps will have their process names ending with .UWP for simplicity and organization.
     + An example file is provided in the `config` folder. Do note that the file has to be named `categories.yml` and placed in the `config` folder for it to work.
 
 2. `config/config.yml`:
@@ -117,6 +121,8 @@ Additionally, the main dashboard page has crowns that represent the percentage o
 To prevent possible data deletion, the `activity.db` file is periodically backed up in the `backup` folder. Interval between backups and number of stored backups can be changed in settings.
 
 This program was done in such a way that the only fundamental database is the activity database. All other databases can be deleted and no data loss will occur.
+
+The backup system is handled by Apache Airflow.
 
 ## **Browser URL problem**
 

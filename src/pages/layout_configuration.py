@@ -62,12 +62,7 @@ layout = html.Div([
                 n_intervals=-1
             )
         ], className="d-grid gap-2 d-md-flex justify-content-md-end")
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], style=CFG["SECTION_STYLE"]),
     dbc.Row(html.H2('Goal variables (hours)')),
     dbc.Row([
         dbc.Row([
@@ -87,12 +82,7 @@ layout = html.Div([
             make_valuepicker("GOLD_STREAK_VALUE", 1, 100, 0.1),
             make_valuepicker("ENCHANTED_GOLD_STREAK_VALUE", 1, 100, 0.1)
         ], className="g-0"),
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], style=CFG["SECTION_STYLE"]),
     dbc.Row(html.H2('Time variables (seconds)')),
     dbc.Row([
         dbc.Row([
@@ -121,12 +111,7 @@ layout = html.Div([
             make_valuepicker("PARTIAL_CATEGORIES_INTERVAL", 1, 60),
             dbc.Col()
         ], className="g-0"),
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], style=CFG["SECTION_STYLE"]),
     dbc.Row(html.H2('Size variables (pixels)')),
     dbc.Row([
         dbc.Row([
@@ -152,12 +137,7 @@ layout = html.Div([
             make_valuepicker("CATEGORY_COLUMN_SPACE", 1, 100),
             dbc.Col()
         ], className="g-0")
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], style=CFG["SECTION_STYLE"]),
     dbc.Row(html.H2('Color variables')),
     dbc.Row([
         dbc.Row([
@@ -183,12 +163,7 @@ layout = html.Div([
             make_colorpicker('CATEGORY_CARD_PERCENTAGE_COLOR'),
             make_colorpicker('CARD_OUTLINE_COLOR'),
         ], className="g-0")
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], style=CFG["SECTION_STYLE"]),
 ])
 
 

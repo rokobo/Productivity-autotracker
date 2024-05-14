@@ -45,12 +45,7 @@ layout = html.Div([
                     Just press the button and stop moving your mouse.",
                 target='set_idle_button', placement="bottom"
         ),
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], style=CFG["SECTION_STYLE"]),
     dcc.Interval(id='heatmap_interval', interval=30000, n_intervals=-1),
     dbc.Row(id='heatmap_row'),
     dcc.Interval(id='category_interval', interval=15000, n_intervals=-1),
@@ -118,14 +113,7 @@ def update_category(_1):
     card = dbc.Card([dbc.CardBody([
         dcc.Graph(figure=fig, config={'displayModeBar': False}),
     ], style=cardbody_style)], style=card_style)
-
-    style = {
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }
-    return card, style, crowns
+    return card, CFG["SECTION_STYLE"], crowns
 
 
 @callback(
@@ -169,13 +157,7 @@ def update_element_list(_1):
         dataframe['day'] == str(pd.to_datetime('today').date())]
     save_dataframe(pd.DataFrame({'time': [int(time.time())]}), 'frontend')
     cards = generate_cards(dataframe)
-    style = {
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }
-    return cards, style
+    return cards, CFG["SECTION_STYLE"]
 
 
 @callback(

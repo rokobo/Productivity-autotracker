@@ -21,7 +21,7 @@ RETRY_ATTEMPS: 5                   # Retry attempts for various IO operations
 GMT_OFFSET: -3                     # Your localtime GMT offset
 ADVISOR_CHECK_INTERVAL: 30         # Time between study advisor checks
 BACKUP_INTERVAL: 15                # Time between backups of main activity database (in minutes)
-NUMBER_OF_BACKUPS: 20              # How many backups you wish to have
+NUMBER_OF_BACKUPS: 10              # How many backups you wish to have
 
 # Sizes -------------------------------------------------------------------------------------------
 CATEGORY_HEIGHT: 250             # Size of categories graph

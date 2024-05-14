@@ -20,12 +20,7 @@ layout = html.Div([
     dbc.Row([
         layout_menu.layout,
         dbc.Col(html.H2("Credits and attributions"), width='auto'),
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], style=CFG["SECTION_STYLE"]),
     dbc.Row([
         make_credit("favicon.ico", "Application favicon", (
             "Grow icons created by Freepik at "

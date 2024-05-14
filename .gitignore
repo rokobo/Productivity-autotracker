@@ -12,6 +12,7 @@ default.nix
 config/categories.yml
 config/categories.yml
 src/pages/test.ipynb
-*.log*
+logs/
+!logs/README.md
 flashcards/*.md
 config/categories.yml

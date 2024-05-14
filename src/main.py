@@ -15,7 +15,6 @@ from functions_threads import (
     activity_processor,
     # audio_idle_detector,
     server_supervisor,
-    auxiliary_work,
 )
 from study_advisor import study_advisor
 
@@ -68,11 +67,6 @@ if __name__ == "__main__":
     advisor_process.daemon = True
     advisor_process.start()
     print(f"\033[92m{time.strftime('%X')} advisor_process started!\033[00m")
-
-    auxiliary_process = Process(target=auxiliary_work)
-    auxiliary_process.daemon = True
-    auxiliary_process.start()
-    print(f"\033[92m{time.strftime('%X')} auxiliary_process started!\033[00m")
 
     server_process = Process(target=server_supervisor)
     server_process.daemon = True
@@ -166,18 +160,6 @@ if __name__ == "__main__":
                 server_process = Process(target=server_supervisor)
                 server_process.daemon = True
                 server_process.start()
-                print("\033[92mRestarted!\033[00m")
-
-            # Backup process
-            if not auxiliary_process.is_alive():
-                print(
-                    f"\033[91m{time.strftime('%X')} Error in",
-                    "auxiliary_process... \033[00m",
-                    end="",
-                )
-                auxiliary_process = Process(target=auxiliary_work)
-                auxiliary_process.daemon = True
-                auxiliary_process.start()
                 print("\033[92mRestarted!\033[00m")
 
             time.sleep(CFG["IDLE_CHECK_INTERVAL"] * 5)

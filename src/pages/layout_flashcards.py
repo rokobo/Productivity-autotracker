@@ -25,12 +25,7 @@ layout = html.Div([
     dbc.Row([
         layout_menu.layout,
         dbc.Col(html.H2("Flashcards page"))
-    ], style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px"
-    }),
+    ], CFG["SECTION_STYLE"]),
     dbc.Col(dbc.Card([
         dbc.CardHeader([
             dbc.Row([
@@ -77,13 +72,7 @@ layout = html.Div([
         'border': f'1px solid {CFG["CARD_OUTLINE_COLOR"]}',
         'margin-bottom': f'{CFG["CATEGORY_CARD_MARGIN"]}px',
         'color': CFG['TEXT_COLOR']
-    }), style={
-        'margin-left': f"{CFG['SIDE_PADDING']}px",
-        'margin-right': f"{CFG['SIDE_PADDING']}px",
-        'margin-bottom': f"{CFG['DIVISION_PADDING']}px",
-        'margin-top': f"{CFG['DIVISION_PADDING']}px",
-        'align-items': "center"
-    })
+    }), style=CFG["SECTION_STYLE"])
 ])
 
 

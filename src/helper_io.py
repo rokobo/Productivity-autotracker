@@ -164,6 +164,12 @@ def load_config() -> dict[str, Any]:
             workspace, join(workspace, "assets/sprout.gif")
         ),
     )
+    config["SECTION_STYLE"] = {
+        'margin-left': f"{config['SIDE_PADDING']}px",
+        'margin-right': f"{config['SIDE_PADDING']}px",
+        'margin-bottom': f"{config['DIVISION_PADDING']}px",
+        'margin-top': f"{config['DIVISION_PADDING']}px"
+    }
     return config
 
 
